@@ -30,6 +30,8 @@ model User {
   comments           Comment[]
   activities         Activity[]
   notifications      Notification[]
+  calendarToken      CalendarToken?
+  googleCalendarSync GoogleCalendarSync?
 }
 
 model Account {
@@ -273,4 +275,30 @@ model Notification {
   userId    String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Calendar Integration ───────────────────────────────────────────────────
+
+model CalendarToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId])
+}
+
+model GoogleCalendarSync {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String    @db.Text
+  refreshToken String    @db.Text
+  tokenExpiry  DateTime
+  calendarId   String    @default("primary")
+  syncEnabled  Boolean   @default(true)
+  lastSyncAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
