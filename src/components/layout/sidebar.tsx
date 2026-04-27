@@ -14,6 +14,8 @@ import {
   ChevronsUpDown,
   Check,
   CalendarSync,
+  Calendar,
+  Timer,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
@@ -144,6 +146,20 @@ export function Sidebar() {
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => router.push("/calendar")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <Calendar className="h-4 w-4" />
+            Calendrier
+          </button>
+          <button
+            onClick={() => router.push("/time-tracking")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <Timer className="h-4 w-4" />
+            Time Tracking
           </button>
           <button
             onClick={() => router.push("/dashboard/calendar-settings")}
