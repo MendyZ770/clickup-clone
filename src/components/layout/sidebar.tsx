@@ -193,7 +193,7 @@ export function Sidebar() {
                 </button>
               </div>
             ) : (
-              <SidebarNav spaces={spaces} mutateSpaces={mutateSpaces} />
+              <SidebarNav spaces={spaces} workspaceId={currentWorkspace!.id} mutateSpaces={mutateSpaces} />
             )}
           </div>
         </ScrollArea>

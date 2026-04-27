@@ -6,17 +6,20 @@ import type { ListWithStatuses } from "@/types";
 
 interface SidebarListItemProps {
   list: ListWithStatuses & { _count?: { tasks: number } };
+  workspaceId: string;
+  spaceId: string;
 }
 
-export function SidebarListItem({ list }: SidebarListItemProps) {
+export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const isActive = pathname?.includes(`/lists/${list.id}`);
+  const listPath = `/workspace/${workspaceId}/space/${spaceId}/list/${list.id}/list-view`;
+  const isActive = pathname?.includes(`/list/${list.id}`);
   const taskCount = list._count?.tasks;
 
   return (
     <button
-      onClick={() => router.push(`/lists/${list.id}`)}
+      onClick={() => router.push(listPath)}
       className={cn(
         "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors",
         isActive

@@ -51,10 +51,11 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 interface SidebarSpaceItemProps {
   space: SpaceWithContents;
+  workspaceId: string;
   mutateSpaces: KeyedMutator<SpaceWithContents[]>;
 }
 
-export function SidebarSpaceItem({ space, mutateSpaces }: SidebarSpaceItemProps) {
+export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSpaceItemProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [createListOpen, setCreateListOpen] = useState(false);
@@ -114,6 +115,7 @@ export function SidebarSpaceItem({ space, mutateSpaces }: SidebarSpaceItemProps)
               <SidebarFolderItem
                 key={folder.id}
                 folder={folder}
+                workspaceId={workspaceId}
                 spaceId={space.id}
                 mutateSpaces={mutateSpaces}
               />
@@ -121,7 +123,7 @@ export function SidebarSpaceItem({ space, mutateSpaces }: SidebarSpaceItemProps)
 
             {/* Lists directly under space (not in a folder) */}
             {space.lists.map((list) => (
-              <SidebarListItem key={list.id} list={list} />
+              <SidebarListItem key={list.id} list={list} workspaceId={workspaceId} spaceId={space.id} />
             ))}
 
             {space.folders.length === 0 && space.lists.length === 0 && (

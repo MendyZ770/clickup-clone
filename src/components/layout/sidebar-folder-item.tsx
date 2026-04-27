@@ -20,12 +20,14 @@ import { CreateListDialog } from "@/components/list/create-list-dialog";
 
 interface SidebarFolderItemProps {
   folder: FolderWithLists;
+  workspaceId: string;
   spaceId: string;
   mutateSpaces: KeyedMutator<SpaceWithContents[]>;
 }
 
 export function SidebarFolderItem({
   folder,
+  workspaceId,
   spaceId,
   mutateSpaces,
 }: SidebarFolderItemProps) {
@@ -66,7 +68,7 @@ export function SidebarFolderItem({
         <CollapsibleContent>
           <div className="ml-3 border-l border-white/5 pl-1.5">
             {folder.lists.map((list) => (
-              <SidebarListItem key={list.id} list={list} />
+              <SidebarListItem key={list.id} list={list} workspaceId={workspaceId} spaceId={spaceId} />
             ))}
             {folder.lists.length === 0 && (
               <div className="px-2 py-1.5">
