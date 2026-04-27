@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useTimeEntries } from "@/hooks/use-time-entries";
-import { formatSeconds } from "@/components/time-tracking/timer-display";
+import { formatSeconds, formatSecondsShort } from "@/components/time-tracking/timer-display";
 import { TimeReport } from "@/components/time-tracking/time-report";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

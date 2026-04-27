@@ -394,8 +394,9 @@ export function CustomFieldRenderer({
 function renderViewValue(
   type: string,
   value: string | null,
-  /* options is reserved for future dropdown display */
+  _options?: string[]
 ): React.ReactNode {
+  void _options;
   if (!value) {
     return <span className="text-muted-foreground italic">--</span>;
   }
