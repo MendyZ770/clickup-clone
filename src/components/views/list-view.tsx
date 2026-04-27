@@ -11,7 +11,11 @@ import { TaskForm } from "@/components/task/task-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface StatusGroup {
   id: string;

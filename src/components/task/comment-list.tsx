@@ -7,7 +7,11 @@ import { CommentForm } from "./comment-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CommentWithUser } from "@/types";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface CommentListProps {
   taskId: string;

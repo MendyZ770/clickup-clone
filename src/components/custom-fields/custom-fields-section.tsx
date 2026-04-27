@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { CustomFieldRenderer, getFieldTypeIcon } from "./custom-field-renderer";
 import { CustomFieldManager } from "./custom-field-manager";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface CustomField {
   id: string;

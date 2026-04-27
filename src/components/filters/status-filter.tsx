@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface StatusFilterProps {
   listId: string;

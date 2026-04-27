@@ -61,7 +61,11 @@ interface StatusManagerProps {
   onChanged?: () => void;
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 export function StatusManager({
   listId,

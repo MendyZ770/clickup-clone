@@ -15,7 +15,11 @@ import { EmptyState } from "@/components/shared/empty-state";
 import Link from "next/link";
 import type { WorkspaceWithSpaces } from "@/types";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface PageProps {
   params: Promise<{ workspaceId: string }>;

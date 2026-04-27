@@ -15,7 +15,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CreateWorkspaceDialog } from "@/components/workspace/create-workspace-dialog";
 import Link from "next/link";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface WorkspaceItem {
   id: string;

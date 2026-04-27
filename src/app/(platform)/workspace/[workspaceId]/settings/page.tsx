@@ -16,7 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceSettingsForm } from "@/components/workspace/workspace-settings-form";
 import { MemberList } from "@/components/workspace/member-list";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface WorkspaceData {
   id: string;

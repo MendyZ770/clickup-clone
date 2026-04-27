@@ -22,7 +22,11 @@ import { Separator } from "@/components/ui/separator";
 import { getFieldTypeIcon } from "./custom-field-renderer";
 import { cn } from "@/lib/utils";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 const FIELD_TYPES = [
   { value: "text", label: "Text" },
