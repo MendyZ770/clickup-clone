@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Calendar,
@@ -28,6 +28,14 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function CalendarSettingsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+      <CalendarSettingsContent />
+    </Suspense>
+  );
+}
+
+function CalendarSettingsContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
