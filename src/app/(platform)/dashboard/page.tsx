@@ -8,7 +8,11 @@ import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-c
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface DashboardData {
   totalTasks: number;
@@ -85,11 +89,11 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TasksByStatusChart
-          data={data?.tasksByStatus ?? []}
+          data={Array.isArray(data?.tasksByStatus) ? data.tasksByStatus : []}
           isLoading={isLoading}
         />
         <TasksByPriorityChart
-          data={data?.tasksByPriority ?? []}
+          data={Array.isArray(data?.tasksByPriority) ? data.tasksByPriority : []}
           isLoading={isLoading}
         />
       </div>
@@ -97,11 +101,11 @@ export default function DashboardPage() {
       {/* Activity & Deadlines */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RecentActivity
-          activities={data?.recentActivities ?? []}
+          activities={Array.isArray(data?.recentActivities) ? data.recentActivities : []}
           isLoading={isLoading}
         />
         <UpcomingDeadlines
-          tasks={data?.upcomingDeadlines ?? []}
+          tasks={Array.isArray(data?.upcomingDeadlines) ? data.upcomingDeadlines : []}
           isLoading={isLoading}
         />
       </div>

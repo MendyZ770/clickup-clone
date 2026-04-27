@@ -1,16 +1,45 @@
 "use client";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const BarChartComponent = dynamic(
+  () => import("recharts").then((mod) => {
+    const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } = mod;
+    return {
+      default: ({ data }: { data: { name: string; count: number; fill: string }[] }) => (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data} layout="vertical" barCategoryGap="20%">
+            <XAxis type="number" allowDecimals={false} fontSize={12} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={70}
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px",
+                fontSize: "12px",
+              }}
+            />
+            <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={32}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      ),
+    };
+  }),
+  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> }
+);
 
 interface TasksByPriorityChartProps {
   data: { priority: string; count: number }[];
@@ -81,33 +110,7 @@ export function TasksByPriorityChart({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData} layout="vertical" barCategoryGap="20%">
-            <XAxis type="number" allowDecimals={false} fontSize={12} />
-            <YAxis
-              type="category"
-              dataKey="name"
-              width={70}
-              fontSize={12}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
-                fontSize: "12px",
-              }}
-              formatter={(value) => [`${value} task${value !== 1 ? "s" : ""}`, ""]}
-            />
-            <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={32}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <BarChartComponent data={chartData} />
       </CardContent>
     </Card>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import {
   startOfWeek,
   endOfWeek,
@@ -12,14 +13,26 @@ import { Clock, TrendingUp } from "lucide-react";
 import { useTimeReport } from "@/hooks/use-time-entries";
 import { formatSecondsShort } from "./timer-display";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const TimeBarChart = dynamic(
+  () => import("recharts").then((mod) => {
+    const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } = mod;
+    return {
+      default: ({ data }: { data: { day: string; hours: number; seconds: number }[] }) => (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}h`} />
+            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      ),
+    };
+  }),
+  { ssr: false, loading: () => <Skeleton className="h-48 w-full" /> }
+);
 
 interface TimeReportProps {
   workspaceId?: string;
@@ -129,34 +142,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         </CardHeader>
         <CardContent>
           <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => `${v}h`}
-                />
-                <Tooltip
-                  formatter={(value) => [`${value}h`, "Hours"]}
-                  contentStyle={{
-                    fontSize: 12,
-                    borderRadius: 8,
-                  }}
-                />
-                <Bar
-                  dataKey="hours"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <TimeBarChart data={chartData} />
           </div>
         </CardContent>
       </Card>
