@@ -7,6 +7,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "./breadcrumbs";
+import { TimerButton } from "@/components/time-tracking/timer-button";
 
 export function TopBar() {
   const router = useRouter();
@@ -38,6 +39,8 @@ export function TopBar() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1">
+        <TimerButton />
+
         <Button
           variant="ghost"
           size="icon"

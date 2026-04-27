@@ -8,14 +8,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 export function LoginForm() {
@@ -38,8 +30,8 @@ export function LoginForm() {
 
       if (result?.error) {
         toast({
-          title: "Login failed",
-          description: result.error,
+          title: "Connexion echouee",
+          description: "Email ou mot de passe incorrect.",
           variant: "destructive",
         });
       } else {
@@ -48,8 +40,8 @@ export function LoginForm() {
       }
     } catch {
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
+        title: "Erreur",
+        description: "Veuillez reessayer plus tard.",
         variant: "destructive",
       });
     } finally {
@@ -58,60 +50,67 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md border-border/50 shadow-2xl">
-      <CardHeader className="space-y-1 text-center">
-        <div className="flex justify-center mb-2">
-          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">C</span>
+    <div className="w-full animate-fade-in-up">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+            <span className="text-white font-bold text-lg">D</span>
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-        <CardDescription>
-          Enter your credentials to sign in to your account
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={onSubmit}>
-        <CardContent className="space-y-4">
+        <h1 className="text-2xl font-bold text-white">Bon retour</h1>
+        <p className="text-white/40 text-sm mt-1">
+          Connectez-vous a votre espace de travail
+        </p>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-white/60 text-sm">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder="dev@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-white/60 text-sm">Mot de passe</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in"}
-          </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-primary hover:underline font-medium"
-            >
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-semibold py-5 shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5"
+        >
+          {isLoading ? "Connexion..." : "Se connecter"}
+        </Button>
+
+        <p className="text-sm text-white/30 text-center">
+          Pas encore de compte ?{" "}
+          <Link
+            href="/register"
+            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+          >
+            Creer un compte
+          </Link>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }

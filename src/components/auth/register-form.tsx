@@ -8,14 +8,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 export function RegisterForm() {
@@ -32,8 +24,8 @@ export function RegisterForm() {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
+        title: "Mots de passe differents",
+        description: "Les mots de passe ne correspondent pas.",
         variant: "destructive",
       });
       return;
@@ -41,8 +33,8 @@ export function RegisterForm() {
 
     if (password.length < 8) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters long.",
+        title: "Mot de passe trop court",
+        description: "Le mot de passe doit contenir au moins 8 caracteres.",
         variant: "destructive",
       });
       return;
@@ -61,17 +53,12 @@ export function RegisterForm() {
 
       if (!response.ok) {
         toast({
-          title: "Registration failed",
-          description: data.error || "Something went wrong.",
+          title: "Inscription echouee",
+          description: data.error || "Une erreur est survenue.",
           variant: "destructive",
         });
         return;
       }
-
-      toast({
-        title: "Account created",
-        description: "Signing you in...",
-      });
 
       const result = await signIn("credentials", {
         email,
@@ -80,11 +67,6 @@ export function RegisterForm() {
       });
 
       if (result?.error) {
-        toast({
-          title: "Sign in failed",
-          description: "Account created but could not sign in. Please log in manually.",
-          variant: "destructive",
-        });
         router.push("/login");
       } else {
         router.push("/dashboard");
@@ -92,8 +74,8 @@ export function RegisterForm() {
       }
     } catch {
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
+        title: "Erreur",
+        description: "Veuillez reessayer plus tard.",
         variant: "destructive",
       });
     } finally {
@@ -102,87 +84,96 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="w-full max-w-md border-border/50 shadow-2xl">
-      <CardHeader className="space-y-1 text-center">
-        <div className="flex justify-center mb-2">
-          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">C</span>
+    <div className="w-full animate-fade-in-up">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+            <span className="text-white font-bold text-lg">D</span>
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>
-          Enter your details to get started
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={onSubmit}>
-        <CardContent className="space-y-4">
+        <h1 className="text-2xl font-bold text-white">Creer un compte</h1>
+        <p className="text-white/40 text-sm mt-1">
+          Commencez a gerer vos projets en quelques secondes
+        </p>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name" className="text-white/60 text-sm">Nom</Label>
             <Input
               id="name"
               type="text"
-              placeholder="Your name"
+              placeholder="Votre nom"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
               required
               minLength={2}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-white/60 text-sm">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder="dev@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-white/60 text-sm">Mot de passe</Label>
             <Input
               id="password"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="8 caracteres minimum"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
               minLength={8}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-white/60 text-sm">Confirmer</Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="Confirm your password"
+              placeholder="Confirmez votre mot de passe"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isLoading}
               required
               minLength={8}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Creating account..." : "Create account"}
-          </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-primary hover:underline font-medium"
-            >
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-semibold py-5 shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5"
+        >
+          {isLoading ? "Creation..." : "Creer mon compte"}
+        </Button>
+
+        <p className="text-sm text-white/30 text-center">
+          Deja un compte ?{" "}
+          <Link
+            href="/login"
+            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+          >
+            Se connecter
+          </Link>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }

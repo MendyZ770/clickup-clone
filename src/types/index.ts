@@ -13,9 +13,20 @@ import type {
   Activity,
   Workspace,
   WorkspaceMember,
+  TimeEntry,
+  CustomField,
+  CustomFieldValue,
+  TaskDependency,
+  TaskRecurrence,
+  TaskAssignee,
+  Favorite,
 } from "@prisma/client";
 
 // ─── Extended Task Types ────────────────────────────────────────────────────
+
+export type TaskAssigneeWithUser = TaskAssignee & {
+  user: Pick<User, "id" | "name" | "email" | "image">;
+};
 
 export type TaskWithDetails = Task & {
   status: Status;
@@ -25,9 +36,18 @@ export type TaskWithDetails = Task & {
   taskTags: TaskTagWithTag[];
   comments: CommentWithUser[];
   subtasks: Task[];
+  timeEntries?: TimeEntryWithDetails[];
+  customFieldValues?: CustomFieldValueWithField[];
+  dependencies?: TaskDependencyWithTask[];
+  dependents?: TaskDependencyWithTask[];
+  recurrence?: TaskRecurrence | null;
+  assignees?: TaskAssigneeWithUser[];
   _count?: {
     subtasks: number;
     comments: number;
+    timeEntries?: number;
+    dependencies?: number;
+    dependents?: number;
   };
 };
 
@@ -35,6 +55,8 @@ export type TaskSummary = Task & {
   status: Status;
   assignee: Pick<User, "id" | "name" | "email" | "image"> | null;
   taskTags: TaskTagWithTag[];
+  recurrence?: TaskRecurrence | null;
+  assignees?: TaskAssigneeWithUser[];
   _count: {
     subtasks: number;
     comments: number;
@@ -99,6 +121,38 @@ export type WorkspaceWithSpaces = Workspace & {
 
 export type ActivityWithUser = Activity & {
   user: Pick<User, "id" | "name" | "email" | "image">;
+};
+
+// ─── Time Entry Types ──────────────────────────────────────────────────────
+
+export type TimeEntryWithDetails = TimeEntry & {
+  task: Pick<Task, "id" | "title" | "listId">;
+  user: Pick<User, "id" | "name" | "email" | "image">;
+};
+
+// ─── Custom Field Types ────────────────────────────────────────────────
+
+export type CustomFieldWithValues = CustomField & {
+  values: CustomFieldValue[];
+};
+
+export type CustomFieldValueWithField = CustomFieldValue & {
+  field: CustomField;
+};
+
+// ─── Task Dependency Types ─────────────────────────────────────────────
+
+export type TaskDependencyWithTask = TaskDependency & {
+  dependentTask: Pick<Task, "id" | "title" | "priority"> & { status: Status };
+  dependencyTask: Pick<Task, "id" | "title" | "priority"> & { status: Status };
+};
+
+// ─── Favorite Types ────────────────────────────────────────────────────────
+
+export type FavoriteWithDetails = Favorite & {
+  name: string;
+  color?: string | null;
+  icon?: string;
 };
 
 // ─── Session Extension ──────────────────────────────────────────────────────

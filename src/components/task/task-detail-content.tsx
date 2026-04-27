@@ -7,6 +7,9 @@ import { SubtaskList } from "./subtask-list";
 import { ChecklistSection } from "./checklist";
 import { CommentList } from "./comment-list";
 import { ActivityFeed } from "./activity-feed";
+import { TaskTimeTracking } from "@/components/time-tracking/task-time-tracking";
+import { CustomFieldsSection } from "@/components/custom-fields/custom-fields-section";
+import { TaskDependencies } from "./task-dependencies";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,6 +155,23 @@ export function TaskDetailContent({
 
           <Separator />
 
+          {/* Custom Fields */}
+          <CustomFieldsSection
+            taskId={task.id}
+            workspaceId={workspaceId}
+          />
+
+          <Separator />
+
+          {/* Dependencies */}
+          <TaskDependencies
+            taskId={task.id}
+            workspaceId={workspaceId}
+            taskStatus={task.status}
+          />
+
+          <Separator />
+
           {/* Subtasks */}
           <SubtaskList
             taskId={task.id}
@@ -173,6 +193,11 @@ export function TaskDetailContent({
             taskId={task.id}
             onChanged={() => mutate()}
           />
+
+          <Separator />
+
+          {/* Time Tracking */}
+          <TaskTimeTracking taskId={task.id} />
 
           <Separator />
 
