@@ -31,8 +31,8 @@ interface MyTask {
   title: string;
   priority: string;
   dueDate: string | null;
-  status: { id: string; name: string; color: string; type: string };
-  list: { id: string; name: string; space: { id: string; name: string } };
+  status: { id: string; name: string; color: string; type: string } | null;
+  list: { id: string; name: string; space: { id: string; name: string } | null } | null;
   taskTags: { tag: { id: string; name: string; color: string } }[];
   _count: { subtasks: number; comments: number };
 }
@@ -63,7 +63,8 @@ export default function MyTasksPage() {
     const done: MyTask[] = [];
 
     for (const task of tasks) {
-      if (task.status.type === "done" || task.status.type === "closed") {
+      const statusType = task.status?.type;
+      if (statusType === "done" || statusType === "closed") {
         done.push(task);
         continue;
       }
@@ -147,14 +148,19 @@ export default function MyTasksPage() {
                   >
                     <span
                       className="h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: task.status.color }}
+                      style={{ backgroundColor: task.status?.color ?? "#6B7280" }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className={cn("text-sm font-medium truncate", task.status.type === "done" && "line-through text-muted-foreground")}>
+                      <p
+                        className={cn(
+                          "text-sm font-medium truncate",
+                          task.status?.type === "done" && "line-through text-muted-foreground"
+                        )}
+                      >
                         {task.title}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {task.list.space.name} / {task.list.name}
+                        {task.list?.space?.name ?? "—"} / {task.list?.name ?? "—"}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
