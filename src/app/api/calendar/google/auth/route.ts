@@ -14,9 +14,8 @@ export async function GET() {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
     if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: "Google Calendar integration is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables." },
-        { status: 503 }
+      return NextResponse.redirect(
+        `${baseUrl}/dashboard/calendar-settings?error=google_not_configured`
       );
     }
 

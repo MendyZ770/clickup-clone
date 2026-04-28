@@ -4,10 +4,10 @@ import { createICSFromTasks } from "@/lib/calendar-helpers";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params;
+    const { token } = await params;
 
     // Look up the calendar token - the token itself is the auth
     const calendarToken = await prisma.calendarToken.findUnique({

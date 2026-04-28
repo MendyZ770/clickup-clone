@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
 
-    if (!tokens.access_token || !tokens.refresh_token) {
+    if (!tokens.access_token) {
       return NextResponse.redirect(
         `${baseUrl}/dashboard/calendar-settings?error=google_token_exchange_failed`
       );
@@ -51,19 +51,32 @@ export async function GET(request: Request) {
       ? new Date(tokens.expiry_date)
       : new Date(Date.now() + 3600 * 1000);
 
-    // Upsert the GoogleCalendarSync record
+    // Google ne renvoie refresh_token qu'à la première connexion. Si l'utilisateur
+    // s'est déjà connecté, on conserve le refresh_token existant.
+    const existing = await prisma.googleCalendarSync.findUnique({
+      where: { userId: state },
+    });
+
+    const refreshToken = tokens.refresh_token ?? existing?.refreshToken;
+
+    if (!refreshToken) {
+      return NextResponse.redirect(
+        `${baseUrl}/dashboard/calendar-settings?error=google_token_exchange_failed`
+      );
+    }
+
     await prisma.googleCalendarSync.upsert({
       where: { userId: state },
       update: {
         accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        refreshToken,
         tokenExpiry,
         syncEnabled: true,
       },
       create: {
         userId: state,
         accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        refreshToken,
         tokenExpiry,
       },
     });
