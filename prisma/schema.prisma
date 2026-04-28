@@ -35,6 +35,9 @@ model User {
   timeEntries        TimeEntry[]
   taskAssignees      TaskAssignee[]   @relation("TaskAssignees")
   favorites          Favorite[]
+  reminders          Reminder[]
+  attachments        Attachment[]
+  goals              Goal[]
 }
 
 model Account {
@@ -87,6 +90,8 @@ model Workspace {
   spaces       Space[]
   tags         Tag[]
   customFields CustomField[]
+  reminders    Reminder[]
+  goals        Goal[]
 }
 
 model WorkspaceMember {
@@ -143,10 +148,11 @@ model List {
   spaceId   String
   folderId  String?
 
-  space    Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  folder   Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  statuses Status[]
-  tasks    Task[]
+  space       Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  folder      Folder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  statuses    Status[]
+  tasks       Task[]
+  goalTargets GoalTarget[]
 }
 
 // ─── Task Models ────────────────────────────────────────────────────────────
@@ -196,6 +202,8 @@ model Task {
   dependents        TaskDependency[] @relation("DependencyTask")
   recurrence        TaskRecurrence?
   assignees         TaskAssignee[]
+  reminders         Reminder[]
+  attachments       Attachment[]
 }
 
 model Checklist {
@@ -417,4 +425,73 @@ model Favorite {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, targetId])
+}
+
+// ─── Attachments ──────────────────────────────────────────────────────────
+
+model Attachment {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String   @default("link") // "link" | "file"
+  mimeType  String?
+  size      Int?
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Goals ────────────────────────────────────────────────────────────────
+
+model Goal {
+  id          String    @id @default(cuid())
+  name        String
+  description String?   @db.Text
+  color       String    @default("#7C3AED")
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id])
+  targets     GoalTarget[]
+}
+
+model GoalTarget {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   @default("number") // "number" | "currency" | "boolean" | "task_completion"
+  currentValue Float    @default(0)
+  targetValue  Float    @default(100)
+  unit         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  goalId String
+  goal   Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  listId String?
+  list   List? @relation(fields: [listId], references: [id], onDelete: SetNull)
+}
+
+// ─── Reminders ─────────────────────────────────────────────────────────────
+
+model Reminder {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  remindAt    DateTime
+  completed   Boolean   @default(false)
+  taskId      String?
+  userId      String
+  workspaceId String
+  createdAt   DateTime  @default(now())
+
+  task      Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

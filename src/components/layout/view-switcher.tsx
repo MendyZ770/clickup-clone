@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { List, LayoutGrid, Calendar } from "lucide-react";
+import { List, LayoutGrid, Calendar, GanttChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewOption {
@@ -15,6 +15,7 @@ const VIEW_OPTIONS: ViewOption[] = [
   { id: "list", label: "List", icon: List, segment: "list-view" },
   { id: "board", label: "Board", icon: LayoutGrid, segment: "board" },
   { id: "calendar", label: "Calendar", icon: Calendar, segment: "calendar" },
+  { id: "gantt", label: "Gantt", icon: GanttChart, segment: "gantt" },
 ];
 
 interface ViewSwitcherProps {
@@ -35,7 +36,7 @@ export function ViewSwitcher({ basePath }: ViewSwitcherProps) {
       // basePath already contains the full path including current segment
       // We need the list base path (up to [listId])
       const listBasePath = basePath.replace(
-        /\/(list-view|board|calendar)$/,
+        /\/(list-view|board|calendar|gantt)$/,
         ""
       );
       router.push(`${listBasePath}/${view.segment}`);

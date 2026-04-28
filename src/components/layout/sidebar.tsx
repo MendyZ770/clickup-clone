@@ -16,10 +16,14 @@ import {
   CalendarSync,
   Calendar,
   Timer,
+  Target,
+  BellRing,
+  Star,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useFavorites, type FavoriteItem } from "@/hooks/use-favorites";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -42,6 +46,7 @@ export function Sidebar() {
     useWorkspace();
   const { spaces, isLoading: spacesLoading, mutate: mutateSpaces } =
     useSpaces(currentWorkspace?.id);
+  const { favorites } = useFavorites(currentWorkspace?.id);
   const { unreadCount } = useNotifications();
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
@@ -162,6 +167,20 @@ export function Sidebar() {
             Time Tracking
           </button>
           <button
+            onClick={() => router.push("/goals")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <Target className="h-4 w-4" />
+            Objectifs
+          </button>
+          <button
+            onClick={() => router.push("/reminders")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <BellRing className="h-4 w-4" />
+            Rappels
+          </button>
+          <button
             onClick={() => router.push("/dashboard/calendar-settings")}
             className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
           >
@@ -171,6 +190,38 @@ export function Sidebar() {
         </div>
 
         <Separator className="bg-white/10" />
+
+        {/* Favorites */}
+        {favorites.length > 0 && (
+          <>
+            <div className="px-5 pt-3 pb-1">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                Favoris
+              </span>
+            </div>
+            <div className="space-y-0.5 px-3 pb-2">
+              {favorites.map((fav: FavoriteItem) => (
+                <button
+                  key={fav.id}
+                  onClick={() => {
+                    if (fav.type === "space" && currentWorkspace) {
+                      router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}`);
+                    } else if (fav.type === "list" && currentWorkspace) {
+                      router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}/list/${fav.targetId}/list-view`);
+                    } else if (fav.type === "task") {
+                      router.push(`/task/${fav.targetId}`);
+                    }
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-white/5 hover:text-white text-gray-400"
+                >
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
+                  <span className="truncate">{fav.name}</span>
+                </button>
+              ))}
+            </div>
+            <Separator className="bg-white/10" />
+          </>
+        )}
 
         {/* Spaces Header */}
         <div className="flex items-center justify-between px-5 pt-3 pb-1">
