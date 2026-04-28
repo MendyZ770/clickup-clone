@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { useParams } from "next/navigation";
 import useSWR from "swr";
 import {
   Folder,
@@ -21,12 +21,9 @@ const fetcher = (url: string) =>
     return r.json();
   });
 
-interface PageProps {
-  params: Promise<{ workspaceId: string }>;
-}
-
-export default function WorkspacePage({ params }: PageProps) {
-  const { workspaceId } = use(params);
+export default function WorkspacePage() {
+  const params = useParams<{ workspaceId: string }>();
+  const workspaceId = params.workspaceId;
   const { data: workspace, isLoading } = useSWR<WorkspaceWithSpaces>(
     `/api/workspaces/${workspaceId}`,
     fetcher

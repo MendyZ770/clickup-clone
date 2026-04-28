@@ -1,21 +1,18 @@
 "use client";
 
-import { use } from "react";
+import { useParams } from "next/navigation";
 import { ViewSwitcher } from "@/components/layout/view-switcher";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { ListView } from "@/components/views/list-view";
 import { TemplatePicker } from "@/components/task/template-picker";
 
-interface PageProps {
-  params: Promise<{
+export default function ListViewPage() {
+  const params = useParams<{
     workspaceId: string;
     spaceId: string;
     listId: string;
-  }>;
-}
-
-export default function ListViewPage({ params }: PageProps) {
-  const { workspaceId, spaceId, listId } = use(params);
+  }>();
+  const { workspaceId, spaceId, listId } = params;
   const basePath = `/workspace/${workspaceId}/space/${spaceId}/list/${listId}/list-view`;
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { useParams } from "next/navigation";
 import useSWR from "swr";
 import {
   Folder,
@@ -20,12 +20,9 @@ const fetcher = (url: string) =>
     return r.json();
   });
 
-interface PageProps {
-  params: Promise<{ workspaceId: string; spaceId: string }>;
-}
-
-export default function SpacePage({ params }: PageProps) {
-  const { workspaceId, spaceId } = use(params);
+export default function SpacePage() {
+  const params = useParams<{ workspaceId: string; spaceId: string }>();
+  const { workspaceId, spaceId } = params;
   const { data: space, isLoading } = useSWR<SpaceWithContents>(
     `/api/spaces/${spaceId}`,
     fetcher
