@@ -23,8 +23,8 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
       className={cn(
         "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors",
         isActive
-          ? "bg-white/10 text-white"
-          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
       )}
     >
       <div
@@ -33,7 +33,7 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
       />
       <span className="flex-1 truncate text-left">{list.name}</span>
       {taskCount !== undefined && taskCount > 0 && (
-        <span className="shrink-0 text-[10px] text-gray-600">
+        <span className="shrink-0 text-[10px] text-muted-foreground/70">
           {taskCount}
         </span>
       )}

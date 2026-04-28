@@ -64,12 +64,12 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="flex h-screen w-[260px] min-w-[260px] flex-col bg-[#1a1d23] text-gray-300">
+      <aside className="flex h-screen w-[260px] min-w-[260px] flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border">
         {/* Workspace Switcher */}
         <div className="flex items-center px-3 pt-3 pb-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/5">
+              <button className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent">
                 <div
                   className="flex h-6 w-6 items-center justify-center rounded text-[11px] font-bold text-white"
                   style={{
@@ -81,7 +81,7 @@ export function Sidebar() {
                 <span className="flex-1 truncate text-left">
                   {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
                 </span>
-                <ChevronsUpDown className="h-4 w-4 shrink-0 text-gray-500" />
+                <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
@@ -114,20 +114,20 @@ export function Sidebar() {
           </DropdownMenu>
         </div>
 
-        <Separator className="bg-white/10" />
+        <Separator className="bg-sidebar-border" />
 
         {/* Quick Actions */}
         <div className="space-y-0.5 px-3 pt-3 pb-2">
           <button
             onClick={() => router.push("/dashboard")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <LayoutDashboard className="h-4 w-4" />
             Tableau de bord
           </button>
           <button
             onClick={() => router.push("/my-tasks")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <ClipboardList className="h-4 w-4" />
             Mes tâches
@@ -140,17 +140,17 @@ export function Sidebar() {
               });
               document.dispatchEvent(event);
             }}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <Search className="h-4 w-4" />
             <span className="flex-1 text-left">Rechercher</span>
-            <kbd className="pointer-events-none rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-gray-500">
+            <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] text-muted-foreground">
               ⌘K
             </kbd>
           </button>
           <button
             onClick={() => router.push("/notifications")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <Bell className="h-4 w-4" />
             <span className="flex-1 text-left">Notifications</span>
@@ -162,48 +162,48 @@ export function Sidebar() {
           </button>
           <button
             onClick={() => router.push("/calendar")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <Calendar className="h-4 w-4" />
             Calendrier
           </button>
           <button
             onClick={() => router.push("/time-tracking")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <Timer className="h-4 w-4" />
             Suivi du temps
           </button>
           <button
             onClick={() => router.push("/goals")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <Target className="h-4 w-4" />
             Objectifs
           </button>
           <button
             onClick={() => router.push("/reminders")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <BellRing className="h-4 w-4" />
             Rappels
           </button>
           <button
             onClick={() => router.push("/dashboard/calendar-settings")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <CalendarSync className="h-4 w-4" />
             Sync calendrier
           </button>
         </div>
 
-        <Separator className="bg-white/10" />
+        <Separator className="bg-sidebar-border" />
 
         {/* Favorites */}
         {favorites.length > 0 && (
           <>
             <div className="px-5 pt-3 pb-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Favoris
               </span>
             </div>
@@ -220,25 +220,25 @@ export function Sidebar() {
                       router.push(`/task/${fav.targetId}`);
                     }
                   }}
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-white/5 hover:text-white text-gray-400"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
                 >
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
                   <span className="truncate">{fav.name}</span>
                 </button>
               ))}
             </div>
-            <Separator className="bg-white/10" />
+            <Separator className="bg-sidebar-border" />
           </>
         )}
 
         {/* Spaces Header */}
         <div className="flex items-center justify-between px-5 pt-3 pb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Espaces
           </span>
           <button
             onClick={() => setCreateSpaceOpen(true)}
-            className="rounded p-0.5 text-gray-500 transition-colors hover:bg-white/10 hover:text-white"
+            className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
             title="Ajouter un espace"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -253,13 +253,13 @@ export function Sidebar() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-7 animate-pulse rounded bg-white/5"
+                    className="h-7 animate-pulse rounded bg-sidebar-accent/50"
                   />
                 ))}
               </div>
             ) : spaces.length === 0 ? (
               <div className="px-3 py-4 text-center">
-                <p className="text-xs text-gray-500">Aucun espace</p>
+                <p className="text-xs text-muted-foreground">Aucun espace</p>
                 <button
                   onClick={() => setCreateSpaceOpen(true)}
                   className="mt-1 text-xs text-primary hover:underline"
@@ -273,13 +273,13 @@ export function Sidebar() {
           </div>
         </ScrollArea>
 
-        <Separator className="bg-white/10" />
+        <Separator className="bg-sidebar-border" />
 
         {/* User Section */}
         <div className="p-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-white/5">
+              <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-sidebar-accent">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={user?.image ?? undefined} />
                   <AvatarFallback className="bg-primary/20 text-[11px] text-primary">
@@ -287,11 +287,11 @@ export function Sidebar() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-left">
-                  <p className="truncate text-sm font-medium text-white">
+                  <p className="truncate text-sm font-medium text-sidebar-foreground">
                     {user?.name ?? "User"}
                   </p>
                 </div>
-                <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="top" className="w-56">

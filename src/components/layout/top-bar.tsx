@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Sun, Moon } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useTheme } from "@/providers/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "./breadcrumbs";
@@ -14,6 +15,7 @@ export function TopBar() {
   const router = useRouter();
   const { data: session } = useSession();
   const { unreadCount } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const user = session?.user;
 
   const initials = user?.name
@@ -44,6 +46,17 @@ export function TopBar() {
       {/* Right: Actions */}
       <div className="flex items-center gap-1">
         <TimerButton />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          onClick={toggleTheme}
+          aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+          title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+        >
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
 
         <Button
           variant="ghost"

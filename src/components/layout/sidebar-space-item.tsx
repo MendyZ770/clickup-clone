@@ -67,10 +67,10 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
-            <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-white/5">
+            <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">
               <ChevronRight
                 className={cn(
-                  "h-3.5 w-3.5 shrink-0 text-gray-500 transition-transform duration-200",
+                  "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
                   isOpen && "rotate-90"
                 )}
               />
@@ -80,7 +80,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
               >
                 <SpaceIcon className="h-3 w-3 text-white" />
               </div>
-              <span className="flex-1 truncate font-medium text-gray-200">
+              <span className="flex-1 truncate font-medium text-sidebar-foreground/90">
                 {space.name}
               </span>
             </button>
@@ -89,7 +89,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="mr-1 rounded p-0.5 text-gray-500 opacity-0 transition-all hover:bg-white/10 hover:text-white group-hover:opacity-100"
+                className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -98,18 +98,18 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
             <DropdownMenuContent align="start" side="right">
               <DropdownMenuItem onClick={() => setCreateFolderOpen(true)}>
                 <FolderPlus className="mr-2 h-4 w-4" />
-                New Folder
+                Nouveau dossier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCreateListOpen(true)}>
                 <ListPlus className="mr-2 h-4 w-4" />
-                New List
+                Nouvelle liste
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         <CollapsibleContent>
-          <div className="ml-3 border-l border-white/5 pl-1.5">
+          <div className="ml-3 border-l border-sidebar-border pl-1.5">
             {/* Folders */}
             {space.folders.map((folder) => (
               <SidebarFolderItem
@@ -128,7 +128,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
 
             {space.folders.length === 0 && space.lists.length === 0 && (
               <div className="px-2 py-2">
-                <p className="text-[11px] text-gray-600">No lists yet</p>
+                <p className="text-[11px] text-muted-foreground/70">Aucune liste</p>
               </div>
             )}
           </div>
