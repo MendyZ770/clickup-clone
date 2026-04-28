@@ -15,6 +15,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceSettingsForm } from "@/components/workspace/workspace-settings-form";
 import { MemberList } from "@/components/workspace/member-list";
+import { InviteList } from "@/components/workspace/invite-list";
+import { TeamList } from "@/components/workspace/team-list";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -109,6 +111,9 @@ export default function WorkspaceSettingsPage() {
         onSaved={() => mutate()}
       />
 
+      {/* Invites */}
+      <InviteList workspaceId={workspace.id} />
+
       {/* Members */}
       <MemberList
         workspaceId={workspace.id}
@@ -116,6 +121,9 @@ export default function WorkspaceSettingsPage() {
         onMemberAdded={() => mutate()}
         onMemberRemoved={() => mutate()}
       />
+
+      {/* Teams */}
+      <TeamList workspaceId={workspace.id} />
 
       {/* Danger zone */}
       <Card className="border-red-500/30">

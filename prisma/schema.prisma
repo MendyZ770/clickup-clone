@@ -94,19 +94,68 @@ model Workspace {
   reminders      Reminder[]
   goals          Goal[]
   taskTemplates  TaskTemplate[]
+  invites        WorkspaceInvite[]
+  teams          Team[]
 }
 
 model WorkspaceMember {
   id          String   @id @default(cuid())
-  role        String   @default("member")
+  role        String   @default("member") // "owner" | "admin" | "member"
   joinedAt    DateTime @default(now())
   workspaceId String
   userId      String
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamMembers TeamMember[]
 
   @@unique([workspaceId, userId])
+}
+
+model WorkspaceInvite {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  role        String    @default("member")
+  token       String    @unique @default(cuid())
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, email])
+  @@index([token])
+}
+
+// ─── Teams (groupes de membres dans un workspace) ───────────────────────────
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String   @default("#3B82F6")
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members   TeamMember[]
+
+  @@unique([workspaceId, name])
+}
+
+model TeamMember {
+  id                String   @id @default(cuid())
+  teamId            String
+  workspaceMemberId String
+  joinedAt          DateTime @default(now())
+
+  team            Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  workspaceMember WorkspaceMember @relation(fields: [workspaceMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, workspaceMemberId])
 }
 
 // ─── Space / Folder / List Models ───────────────────────────────────────────
