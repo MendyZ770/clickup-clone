@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const SORT_OPTIONS = [
-  { value: "createdAt", label: "Created date" },
-  { value: "dueDate", label: "Due date" },
-  { value: "priority", label: "Priority" },
-  { value: "title", label: "Title" },
-  { value: "status", label: "Status" },
+  { value: "createdAt", label: "Date de création" },
+  { value: "dueDate", label: "Échéance" },
+  { value: "priority", label: "Priorité" },
+  { value: "title", label: "Titre" },
+  { value: "status", label: "Statut" },
 ] as const;
 
 interface SortSelectorProps {
@@ -37,7 +37,7 @@ export function SortSelector({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
           <ArrowUpDown className="h-3 w-3" />
-          {currentLabel ? `Sort: ${currentLabel}` : "Sort"}
+          {currentLabel ? `Tri : ${currentLabel}` : "Trier"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
@@ -60,21 +60,21 @@ export function SortSelector({
               className={cn("gap-1", sortOrder === "asc" && "bg-muted")}
             >
               <ArrowUp className="h-3 w-3" />
-              Ascending
+              Croissant
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => onChange(sortBy, "desc")}
               className={cn("gap-1", sortOrder === "desc" && "bg-muted")}
             >
               <ArrowDown className="h-3 w-3" />
-              Descending
+              Décroissant
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onChange(null, "asc")}
               className="text-muted-foreground"
             >
-              Clear sort
+              Effacer le tri
             </DropdownMenuItem>
           </>
         )}

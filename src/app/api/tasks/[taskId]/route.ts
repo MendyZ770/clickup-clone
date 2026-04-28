@@ -234,6 +234,15 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
+    if (data.startDate !== undefined) {
+      const newStart = data.startDate ? new Date(data.startDate) : null;
+      updateData.startDate = newStart;
+    }
+
+    if (data.timeEstimate !== undefined) {
+      updateData.timeEstimate = data.timeEstimate;
+    }
+
     if (data.position !== undefined) {
       updateData.position = data.position;
     }

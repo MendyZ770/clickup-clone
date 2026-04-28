@@ -19,6 +19,7 @@ import {
   Target,
   BellRing,
   Star,
+  ClipboardList,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
@@ -78,13 +79,13 @@ export function Sidebar() {
                   {currentWorkspace?.name?.[0]?.toUpperCase() ?? "W"}
                 </div>
                 <span className="flex-1 truncate text-left">
-                  {isLoading ? "Loading..." : currentWorkspace?.name ?? "Select workspace"}
+                  {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
                 </span>
                 <ChevronsUpDown className="h-4 w-4 shrink-0 text-gray-500" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+              <DropdownMenuLabel>Espaces de travail</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {workspaces.map((ws) => (
                 <DropdownMenuItem
@@ -107,7 +108,7 @@ export function Sidebar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setCreateWorkspaceOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Create workspace
+                Créer un espace de travail
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -122,7 +123,14 @@ export function Sidebar() {
             className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
           >
             <LayoutDashboard className="h-4 w-4" />
-            Dashboard
+            Tableau de bord
+          </button>
+          <button
+            onClick={() => router.push("/my-tasks")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <ClipboardList className="h-4 w-4" />
+            Mes tâches
           </button>
           <button
             onClick={() => {
@@ -135,7 +143,7 @@ export function Sidebar() {
             className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
           >
             <Search className="h-4 w-4" />
-            <span className="flex-1 text-left">Search</span>
+            <span className="flex-1 text-left">Rechercher</span>
             <kbd className="pointer-events-none rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-gray-500">
               ⌘K
             </kbd>
@@ -164,7 +172,7 @@ export function Sidebar() {
             className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
           >
             <Timer className="h-4 w-4" />
-            Time Tracking
+            Suivi du temps
           </button>
           <button
             onClick={() => router.push("/goals")}
@@ -185,7 +193,7 @@ export function Sidebar() {
             className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 hover:text-white"
           >
             <CalendarSync className="h-4 w-4" />
-            Calendar Sync
+            Sync calendrier
           </button>
         </div>
 
@@ -226,12 +234,12 @@ export function Sidebar() {
         {/* Spaces Header */}
         <div className="flex items-center justify-between px-5 pt-3 pb-1">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-            Spaces
+            Espaces
           </span>
           <button
             onClick={() => setCreateSpaceOpen(true)}
             className="rounded p-0.5 text-gray-500 transition-colors hover:bg-white/10 hover:text-white"
-            title="Add space"
+            title="Ajouter un espace"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
@@ -251,12 +259,12 @@ export function Sidebar() {
               </div>
             ) : spaces.length === 0 ? (
               <div className="px-3 py-4 text-center">
-                <p className="text-xs text-gray-500">No spaces yet</p>
+                <p className="text-xs text-gray-500">Aucun espace</p>
                 <button
                   onClick={() => setCreateSpaceOpen(true)}
                   className="mt-1 text-xs text-primary hover:underline"
                 >
-                  Create your first space
+                  Créer votre premier espace
                 </button>
               </div>
             ) : (
@@ -294,7 +302,7 @@ export function Sidebar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/settings")}>
                 <Settings className="mr-2 h-4 w-4" />
-                Settings
+                Paramètres
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -302,7 +310,7 @@ export function Sidebar() {
                 className="text-red-400 focus:text-red-400"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out
+                Déconnexion
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

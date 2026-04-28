@@ -47,7 +47,7 @@ export function StatusFilter({ listId, selected, onChange }: StatusFilterProps) 
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-          Status
+          Statut
           {selected.length > 0 && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
               {selected.length}

@@ -10,6 +10,10 @@ import { ActivityFeed } from "./activity-feed";
 import { TaskTimeTracking } from "@/components/time-tracking/task-time-tracking";
 import { CustomFieldsSection } from "@/components/custom-fields/custom-fields-section";
 import { TaskDependencies } from "./task-dependencies";
+import { TaskRecurrence } from "./task-recurrence";
+import { MultiAssigneeSelector } from "./multi-assignee-selector";
+import { TaskAttachments } from "./task-attachments";
+import { FavoriteButton } from "@/components/shared/favorite-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,14 +67,14 @@ export function TaskDetailContent({
 
   if (isLoading || !task) {
     return (
-      <div className="flex h-full">
-        <div className="flex-1 p-6 space-y-4">
+      <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
+        <div className="flex-1 p-4 md:p-6 space-y-4">
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-40 w-full" />
         </div>
-        <div className="w-72 border-l p-4 space-y-4">
+        <div className="w-full md:w-72 border-t md:border-t-0 md:border-l p-4 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-1">
               <Skeleton className="h-3 w-16" />
@@ -83,41 +87,54 @@ export function TaskDetailContent({
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
       {/* Left: Main content */}
       <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
-          {/* Title */}
-          {editingTitle ? (
-            <input
-              ref={titleRef}
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={handleTitleBlur}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleTitleBlur();
-                }
-                if (e.key === "Escape") {
-                  setTitleValue(task.title);
-                  setEditingTitle(false);
-                }
-              }}
-              className="w-full bg-transparent text-2xl font-bold outline-none border-b-2 border-primary pb-1"
-              autoFocus
+        <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+          {/* Title + Favorite */}
+          <div className="flex items-start gap-2">
+            <div className="flex-1 min-w-0">
+              {editingTitle ? (
+                <input
+                  ref={titleRef}
+                  value={titleValue}
+                  onChange={(e) => setTitleValue(e.target.value)}
+                  onBlur={handleTitleBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleTitleBlur();
+                    }
+                    if (e.key === "Escape") {
+                      setTitleValue(task.title);
+                      setEditingTitle(false);
+                    }
+                  }}
+                  className="w-full bg-transparent text-xl md:text-2xl font-bold outline-none border-b-2 border-primary pb-1"
+                  autoFocus
+                />
+              ) : (
+                <h1
+                  onClick={() => {
+                    setEditingTitle(true);
+                    setTimeout(() => titleRef.current?.focus(), 0);
+                  }}
+                  className="text-xl md:text-2xl font-bold cursor-text hover:text-primary/80 transition-colors"
+                >
+                  {task.title}
+                </h1>
+              )}
+            </div>
+            <FavoriteButton
+              type="task"
+              targetId={task.id}
+              workspaceId={workspaceId}
+              size="md"
             />
-          ) : (
-            <h1
-              onClick={() => {
-                setEditingTitle(true);
-                setTimeout(() => titleRef.current?.focus(), 0);
-              }}
-              className="text-2xl font-bold cursor-text hover:text-primary/80 transition-colors"
-            >
-              {task.title}
-            </h1>
-          )}
+          </div>
+
+          {/* Recurrence */}
+          <TaskRecurrence taskId={task.id} />
 
           {/* Description */}
           <div>
@@ -138,7 +155,7 @@ export function TaskDetailContent({
                 }}
                 className="min-h-[100px] text-sm resize-y"
                 autoFocus
-                placeholder="Add a description..."
+                placeholder="Ajouter une description..."
               />
             ) : (
               <div
@@ -148,9 +165,19 @@ export function TaskDetailContent({
                 }}
                 className="min-h-[60px] cursor-text rounded-md border border-transparent p-2 text-sm text-muted-foreground hover:border-border transition-colors whitespace-pre-wrap"
               >
-                {task.description || "Add a description..."}
+                {task.description || "Ajouter une description..."}
               </div>
             )}
+          </div>
+
+          <Separator />
+
+          {/* Multi-Assignees */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Assignés
+            </label>
+            <MultiAssigneeSelector taskId={task.id} workspaceId={workspaceId} />
           </div>
 
           <Separator />
@@ -201,6 +228,11 @@ export function TaskDetailContent({
 
           <Separator />
 
+          {/* Attachments */}
+          <TaskAttachments taskId={task.id} />
+
+          <Separator />
+
           {/* Comments */}
           <CommentList taskId={task.id} />
 
@@ -212,7 +244,7 @@ export function TaskDetailContent({
       </ScrollArea>
 
       {/* Right: Properties sidebar */}
-      <div className="w-72 border-l shrink-0">
+      <div className="w-full md:w-72 border-t md:border-t-0 md:border-l md:shrink-0">
         <ScrollArea className="h-full">
           <div className="p-4">
             <TaskProperties

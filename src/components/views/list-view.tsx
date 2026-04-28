@@ -85,8 +85,8 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
     return (
       <EmptyState
         icon={ListTodo}
-        title="No statuses configured"
-        description="This list needs at least one status before you can add tasks."
+        title="Aucun statut configuré"
+        description="Cette liste a besoin d'au moins un statut avant d'ajouter des tâches."
       />
     );
   }
@@ -130,11 +130,11 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
                 {/* Column headers */}
                 <div className="flex items-center gap-2 border-b px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   <span className="w-4" />
-                  <span className="flex-1">Title</span>
+                  <span className="flex-1">Titre</span>
                   <span className="hidden sm:block w-16" />
-                  <span className="w-20 text-center">Status</span>
+                  <span className="w-20 text-center">Statut</span>
                   <span className="w-10 text-center">Pri</span>
-                  <span className="hidden lg:block w-24">Due</span>
+                  <span className="hidden lg:block w-24">Échéance</span>
                   <span className="w-8" />
                 </div>
                 {groupTasks.map((task) => (

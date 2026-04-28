@@ -20,7 +20,7 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[80vw] h-[90vh] p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] md:max-w-[80vw] h-[95vh] md:h-[90vh] p-0 gap-0 overflow-hidden">
         <div className="flex items-center justify-between border-b px-4 py-2">
           <span className="text-xs text-muted-foreground font-mono">
             {taskId.slice(0, 8)}

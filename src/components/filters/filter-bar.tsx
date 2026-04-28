@@ -72,7 +72,7 @@ export function FilterBar({ listId, workspaceId }: FilterBarProps) {
           onClick={clearFilters}
         >
           <X className="h-3 w-3" />
-          Clear
+          Effacer
         </Button>
       )}
 

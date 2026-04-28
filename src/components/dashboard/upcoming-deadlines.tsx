@@ -61,7 +61,7 @@ export function UpcomingDeadlines({
       <Card className="border-border/50">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">
-            Upcoming Deadlines
+            Échéances à venir
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -83,7 +83,7 @@ export function UpcomingDeadlines({
     <Card className="border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">
-          Upcoming Deadlines
+          Échéances à venir
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -91,7 +91,7 @@ export function UpcomingDeadlines({
           <div className="flex flex-col items-center justify-center py-8">
             <CalendarDays className="mb-2 h-8 w-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
-              No upcoming deadlines
+              Aucune échéance à venir
             </p>
           </div>
         ) : (

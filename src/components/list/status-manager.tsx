@@ -121,7 +121,7 @@ export function StatusManager({
       mutate();
       onChanged?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     }
   };
 
@@ -147,7 +147,7 @@ export function StatusManager({
       mutate();
       onChanged?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setAdding(false);
     }
@@ -171,7 +171,7 @@ export function StatusManager({
       mutate();
       onChanged?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setDeletingId(null);
     }
@@ -181,10 +181,10 @@ export function StatusManager({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage Statuses</DialogTitle>
+          <DialogTitle>Gérer les statuts</DialogTitle>
           <DialogDescription>
-            Customize the statuses for this list. Default statuses cannot be
-            deleted.
+            Personnalisez les statuts de cette liste. Les statuts par défaut
+            ne peuvent pas être supprimés.
           </DialogDescription>
         </DialogHeader>
 
@@ -254,7 +254,7 @@ export function StatusManager({
                         className="h-6 w-6"
                         onClick={handleSaveEdit}
                       >
-                        <span className="text-xs text-green-500">Save</span>
+                        <span className="text-xs text-green-500">OK</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -307,7 +307,7 @@ export function StatusManager({
         {/* Add new status */}
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">
-            Add new status
+            Ajouter un nouveau statut
           </Label>
           <div className="flex items-center gap-2">
             <Popover>
@@ -338,7 +338,7 @@ export function StatusManager({
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="New status name"
+              placeholder="Nom du nouveau statut"
               className="flex-1"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAddStatus();

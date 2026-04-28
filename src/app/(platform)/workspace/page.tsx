@@ -41,10 +41,10 @@ export default function WorkspaceListPage() {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Workspaces</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Workspaces</h1>
           <p className="text-sm text-muted-foreground">
             Select a workspace or create a new one
           </p>
@@ -66,7 +66,7 @@ export default function WorkspaceListPage() {
           {(workspaces ?? []).map((ws) => (
             <Link key={ws.id} href={`/workspace/${ws.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="flex items-center gap-4 p-4">
+                <CardContent className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
                   <div
                     className="h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"
                     style={{ backgroundColor: ws.color }}
@@ -91,7 +91,7 @@ export default function WorkspaceListPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex -space-x-2 shrink-0">
+                  <div className="hidden sm:flex -space-x-2 shrink-0">
                     {ws.members.slice(0, 4).map((m) => (
                       <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
                         <AvatarImage src={m.user.image ?? undefined} />

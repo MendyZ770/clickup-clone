@@ -87,7 +87,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
           <Button variant="outline" size="sm" onClick={goToPrevMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-semibold min-w-[180px] text-center">
+          <h2 className="text-sm md:text-lg font-semibold min-w-[140px] md:min-w-[180px] text-center">
             {format(currentDate, "MMMM yyyy")}
           </h2>
           <Button variant="outline" size="sm" onClick={goToNextMonth}>
@@ -125,7 +125,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
               <div
                 key={dateKey}
                 className={cn(
-                  "min-h-[100px] border-b border-r p-1.5 transition-colors",
+                  "min-h-[60px] md:min-h-[100px] border-b border-r p-1 md:p-1.5 transition-colors",
                   !isCurrentMonth && "bg-muted/20",
                   today && "bg-primary/5"
                 )}

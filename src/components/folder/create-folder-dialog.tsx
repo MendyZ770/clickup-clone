@@ -56,7 +56,7 @@ export function CreateFolderDialog({
       resetForm();
       onCreated?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -77,18 +77,18 @@ export function CreateFolderDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Folder</DialogTitle>
+          <DialogTitle>Créer un dossier</DialogTitle>
           <DialogDescription>
-            Folders help you organize lists within a space.
+            Les dossiers vous aident à organiser les listes dans un espace.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="folder-name">Name</Label>
+            <Label htmlFor="folder-name">Nom</Label>
             <Input
               id="folder-name"
-              placeholder="Sprint 1, Q4 Planning..."
+              placeholder="Sprint 1, Planification Q4..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
@@ -105,10 +105,10 @@ export function CreateFolderDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? "Creating..." : "Create Folder"}
+              {isLoading ? "Création..." : "Créer le dossier"}
             </Button>
           </DialogFooter>
         </form>

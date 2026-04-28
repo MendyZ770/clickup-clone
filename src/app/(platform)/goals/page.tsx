@@ -109,12 +109,12 @@ export default function GoalsPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Target className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold">Objectifs</h1>
+              <h1 className="text-xl md:text-2xl font-bold">Objectifs</h1>
               <p className="text-sm text-muted-foreground">Suivez vos objectifs et KPIs</p>
             </div>
           </div>

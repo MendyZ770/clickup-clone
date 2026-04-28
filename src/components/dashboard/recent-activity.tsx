@@ -99,7 +99,7 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
       <Card className="border-border/50">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">
-            Recent Activity
+            Activité récente
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -121,14 +121,14 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
     <Card className="border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">
-          Recent Activity
+          Activité récente
         </CardTitle>
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
             <Activity className="mb-2 h-8 w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">No recent activity</p>
+            <p className="text-sm text-muted-foreground">Aucune activité récente</p>
           </div>
         ) : (
           <div className="space-y-4">

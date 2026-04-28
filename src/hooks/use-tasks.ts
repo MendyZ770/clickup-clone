@@ -95,6 +95,8 @@ export function useUpdateTask() {
         description?: string | null;
         priority?: string;
         dueDate?: string | null;
+        startDate?: string | null;
+        timeEstimate?: number | null;
         statusId?: string;
         assigneeId?: string | null;
         position?: number;

@@ -10,8 +10,8 @@ import { ToastProvider } from "@/providers/toast-provider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "ClickUp Clone",
-  description: "Project management tool built with Next.js",
+  title: "DevFlow",
+  description: "Outil de gestion de projets pour développeurs web",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="fr" className="dark">
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased`}>
         <AuthProvider>
           <WorkspaceProvider>

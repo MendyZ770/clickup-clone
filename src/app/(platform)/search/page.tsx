@@ -104,12 +104,12 @@ function SearchContent() {
   const showEmpty = results && totalResults === 0 && debouncedQuery.trim();
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Search</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Rechercher</h1>
         <p className="text-sm text-muted-foreground">
-          Find tasks, lists, and spaces in your workspace
+          Trouvez des tâches, listes et espaces dans votre espace de travail
         </p>
       </div>
 
@@ -117,7 +117,7 @@ function SearchContent() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search tasks, lists, spaces..."
+          placeholder="Rechercher tâches, listes, espaces..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-10 pr-10"
@@ -137,7 +137,7 @@ function SearchContent() {
               <div className="mb-3 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Tasks
+                  Tâches
                 </h2>
                 <Badge variant="secondary" className="text-[10px]">
                   {results.tasks.length}
@@ -162,7 +162,7 @@ function SearchContent() {
                         {task.title}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        in {task.list.name}
+                        dans {task.list.name}
                       </p>
                     </div>
                     <Badge
@@ -184,7 +184,7 @@ function SearchContent() {
               <div className="mb-3 flex items-center gap-2">
                 <List className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Lists
+                  Listes
                 </h2>
                 <Badge variant="secondary" className="text-[10px]">
                   {results.lists.length}
@@ -212,7 +212,7 @@ function SearchContent() {
                         {list.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        in {list.space.name} &middot; {list._count.tasks} tasks
+                        dans {list.space.name} &middot; {list._count.tasks} tâches
                       </p>
                     </div>
                     <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -228,7 +228,7 @@ function SearchContent() {
               <div className="mb-3 flex items-center gap-2">
                 <Compass className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Spaces
+                  Espaces
                 </h2>
                 <Badge variant="secondary" className="text-[10px]">
                   {results.spaces.length}
@@ -281,10 +281,10 @@ function SearchContent() {
           <div className="mb-4 rounded-full bg-muted p-4">
             <Search className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold">No results found</h3>
+          <h3 className="mb-1 text-lg font-semibold">Aucun résultat</h3>
           <p className="max-w-sm text-center text-sm text-muted-foreground">
-            No tasks, lists, or spaces match &quot;{debouncedQuery}&quot;.
-            Try different keywords.
+            Aucune tâche, liste ou espace ne correspond à &quot;{debouncedQuery}&quot;.
+            Essayez d&apos;autres mots-clés.
           </p>
         </div>
       )}
@@ -296,15 +296,15 @@ function SearchContent() {
             <Search className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="mb-1 text-lg font-semibold">
-            Search your workspace
+            Recherchez dans votre espace
           </h3>
           <p className="max-w-sm text-center text-sm text-muted-foreground">
-            Find tasks by title or description, search for lists and spaces.
-            You can also press{" "}
+            Trouvez des tâches par titre ou description, recherchez des listes et espaces.
+            Vous pouvez aussi appuyer sur{" "}
             <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
               Cmd+K
             </kbd>{" "}
-            from anywhere.
+            depuis n&apos;importe où.
           </p>
         </div>
       )}

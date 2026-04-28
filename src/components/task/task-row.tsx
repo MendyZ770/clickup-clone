@@ -1,15 +1,23 @@
 "use client";
 
 import { MessageSquare, GitBranch } from "lucide-react";
+import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "./priority-badge";
 import { StatusBadge } from "./status-badge";
 import { AssigneeSelector } from "./assignee-selector";
 import { DueDatePicker } from "./due-date-picker";
+import { TaskActionMenu } from "./task-action-menu";
 import { useUpdateTask } from "@/hooks/use-tasks";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import type { TaskSummary } from "@/types";
+
+const statusFetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error("Failed to fetch");
+    return r.json();
+  });
 
 interface TaskRowProps {
   task: TaskSummary;
@@ -26,6 +34,10 @@ export function TaskRow({
 }: TaskRowProps) {
   const { openTaskModal } = useModal();
   const { updateTask } = useUpdateTask();
+
+  const { data: statuses } = useSWR<
+    { id: string; name: string; color: string; type: string; order: number }[]
+  >(`/api/lists/${task.listId}/statuses`, statusFetcher);
 
   const isDone =
     task.status.type === "done" || task.status.type === "closed";
@@ -46,10 +58,13 @@ export function TaskRow({
       <Checkbox
         checked={isDone}
         onCheckedChange={async (checked) => {
-          // Toggle to done / back to first status - handled via status change
-          // This is a simplified toggle
+          if (!statuses) return;
           if (checked) {
-            // Find a "done" status - for now just mark via the current status
+            const doneStatus = statuses.find((s) => s.type === "done");
+            if (doneStatus) await handleUpdate({ statusId: doneStatus.id });
+          } else {
+            const todoStatus = statuses.find((s) => s.type === "todo") ?? statuses[0];
+            if (todoStatus) await handleUpdate({ statusId: todoStatus.id });
           }
         }}
         className="h-4 w-4"
@@ -128,6 +143,13 @@ export function TaskRow({
         assignee={task.assignee}
         workspaceId={workspaceId}
         onChange={(assigneeId) => handleUpdate({ assigneeId })}
+      />
+
+      {/* Action menu */}
+      <TaskActionMenu
+        taskId={task.id}
+        currentListId={task.listId}
+        onAction={onUpdated}
       />
     </div>
   );

@@ -3,6 +3,7 @@
 import { format, isToday, isPast } from "date-fns";
 import { CalendarIcon, MessageSquare, GitBranch } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TaskActionMenu } from "./task-action-menu";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import type { TaskSummary } from "@/types";
@@ -17,9 +18,10 @@ const PRIORITY_COLORS: Record<string, string> = {
 interface TaskCardProps {
   task: TaskSummary;
   className?: string;
+  onAction?: () => void;
 }
 
-export function TaskCard({ task, className }: TaskCardProps) {
+export function TaskCard({ task, className, onAction }: TaskCardProps) {
   const { openTaskModal } = useModal();
   const dateObj = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dateObj ? isPast(dateObj) && !isToday(dateObj) : false;
@@ -42,10 +44,17 @@ export function TaskCard({ task, className }: TaskCardProps) {
       />
 
       <div className="pl-2.5 space-y-2">
-        {/* Title */}
-        <p className="text-sm font-medium leading-snug line-clamp-2">
-          {task.title}
-        </p>
+        {/* Title + Actions */}
+        <div className="flex items-start justify-between gap-1">
+          <p className="text-sm font-medium leading-snug line-clamp-2 flex-1">
+            {task.title}
+          </p>
+          <TaskActionMenu
+            taskId={task.id}
+            currentListId={task.listId}
+            onAction={onAction}
+          />
+        </div>
 
         {/* Tags */}
         {task.taskTags.length > 0 && (

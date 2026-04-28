@@ -106,44 +106,44 @@ export default function TimeTrackingPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Clock className="h-6 w-6 text-primary" />
+            <Clock className="h-6 w-6 text-primary shrink-0" />
             <div>
-              <h1 className="text-2xl font-bold">Time Tracking</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl md:text-2xl font-bold">Time Tracking</h1>
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Track and manage your time across all tasks
               </p>
             </div>
           </div>
 
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 self-start sm:self-auto">
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
         </div>
 
         {/* Week navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 shrink-0"
               onClick={() => setWeekOffset((o) => o - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium min-w-[200px] text-center">
+            <span className="text-xs sm:text-sm font-medium min-w-[160px] sm:min-w-[200px] text-center">
               {format(currentWeekStart, "MMM d")} -{" "}
               {format(currentWeekEnd, "MMM d, yyyy")}
             </span>
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 shrink-0"
               onClick={() => setWeekOffset((o) => o + 1)}
             >
               <ChevronRight className="h-4 w-4" />
@@ -176,7 +176,7 @@ export default function TimeTrackingPage() {
         </div>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-muted-foreground mb-1">
@@ -256,7 +256,7 @@ export default function TimeTrackingPage() {
                     {dayEntries.map((entry) => (
                       <div
                         key={entry.id}
-                        className="flex items-center gap-3 rounded-md border px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+                        className="flex items-center gap-2 md:gap-3 rounded-md border px-2 md:px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
                       >
                         <Avatar className="h-6 w-6 shrink-0">
                           <AvatarImage src={entry.user.image ?? undefined} />
@@ -286,7 +286,7 @@ export default function TimeTrackingPage() {
                           )}
                         </div>
 
-                        <span className="text-[11px] text-muted-foreground shrink-0">
+                        <span className="text-[11px] text-muted-foreground shrink-0 hidden sm:inline">
                           {format(new Date(entry.startTime), "h:mm a")}
                           {entry.endTime &&
                             ` - ${format(new Date(entry.endTime), "h:mm a")}`}

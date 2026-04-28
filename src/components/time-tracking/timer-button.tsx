@@ -86,12 +86,12 @@ export function TimerButton() {
       setPopoverOpen(false);
       setTaskSearch("");
       toast({
-        title: "Timer started",
-        description: "Tracking time for this task.",
+        title: "Chrono démarré",
+        description: "Suivi du temps pour cette tâche.",
       });
     } catch (err) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description:
           err instanceof Error ? err.message : "Failed to start timer",
         variant: "destructive",
@@ -106,12 +106,12 @@ export function TimerButton() {
       mutate();
       localStorage.removeItem("runningTimer");
       toast({
-        title: "Timer stopped",
-        description: "Time entry has been saved.",
+        title: "Chrono arrêté",
+        description: "Entrée de temps sauvegardée.",
       });
     } catch (err) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description:
           err instanceof Error ? err.message : "Failed to stop timer",
         variant: "destructive",
@@ -157,18 +157,18 @@ export function TimerButton() {
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="end">
         <div className="space-y-2">
-          <p className="text-sm font-medium">Start Timer</p>
+          <p className="text-sm font-medium">Démarrer le chrono</p>
           <p className="text-xs text-muted-foreground">
-            Search for a task to start tracking time
+            Rechercher une tâche pour commencer le suivi
           </p>
           <Input
-            placeholder="Search tasks..."
+            placeholder="Rechercher des tâches..."
             value={taskSearch}
             onChange={(e) => setTaskSearch(e.target.value)}
             autoFocus
           />
           {searching && (
-            <p className="text-xs text-muted-foreground py-2">Searching...</p>
+            <p className="text-xs text-muted-foreground py-2">Recherche...</p>
           )}
           {searchResults.length > 0 && (
             <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -186,7 +186,7 @@ export function TimerButton() {
           )}
           {taskSearch && !searching && searchResults.length === 0 && (
             <p className="text-xs text-muted-foreground py-2">
-              No tasks found. Try a different search term.
+              Aucune tâche trouvée. Essayez un autre terme.
             </p>
           )}
         </div>

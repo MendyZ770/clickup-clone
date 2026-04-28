@@ -21,9 +21,9 @@ const PRIORITY_CONFIG: Record<
   { icon: typeof Flag; color: string; label: string }
 > = {
   urgent: { icon: Flag, color: "text-red-500", label: "Urgent" },
-  high: { icon: ArrowUp, color: "text-orange-500", label: "High" },
-  normal: { icon: Minus, color: "text-blue-500", label: "Normal" },
-  low: { icon: ArrowDown, color: "text-gray-400", label: "Low" },
+  high: { icon: ArrowUp, color: "text-orange-500", label: "Haute" },
+  normal: { icon: Minus, color: "text-blue-500", label: "Normale" },
+  low: { icon: ArrowDown, color: "text-gray-400", label: "Basse" },
 };
 
 interface PriorityBadgeProps {

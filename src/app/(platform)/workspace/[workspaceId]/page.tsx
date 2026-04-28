@@ -49,8 +49,8 @@ export default function WorkspacePage({ params }: PageProps) {
     return (
       <EmptyState
         icon={LayoutGrid}
-        title="Workspace not found"
-        description="This workspace does not exist or you do not have access."
+        title="Espace de travail introuvable"
+        description="Cet espace de travail n'existe pas ou vous n'y avez pas accès."
       />
     );
   }
@@ -89,7 +89,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
             <div>
               <p className="text-2xl font-bold">{workspace.spaces.length}</p>
-              <p className="text-xs text-muted-foreground">Spaces</p>
+              <p className="text-xs text-muted-foreground">Espaces</p>
             </div>
           </CardContent>
         </Card>
@@ -100,7 +100,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalFolders}</p>
-              <p className="text-xs text-muted-foreground">Folders</p>
+              <p className="text-xs text-muted-foreground">Dossiers</p>
             </div>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalLists}</p>
-              <p className="text-xs text-muted-foreground">Lists</p>
+              <p className="text-xs text-muted-foreground">Listes</p>
             </div>
           </CardContent>
         </Card>
@@ -124,7 +124,7 @@ export default function WorkspacePage({ params }: PageProps) {
               <p className="text-2xl font-bold">
                 {(workspace as unknown as { members: unknown[] }).members?.length ?? 0}
               </p>
-              <p className="text-xs text-muted-foreground">Members</p>
+              <p className="text-xs text-muted-foreground">Membres</p>
             </div>
           </CardContent>
         </Card>
@@ -132,12 +132,12 @@ export default function WorkspacePage({ params }: PageProps) {
 
       {/* Spaces */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Spaces</h2>
+        <h2 className="text-lg font-semibold mb-3">Espaces</h2>
         {workspace.spaces.length === 0 ? (
           <EmptyState
             icon={LayoutGrid}
-            title="No spaces yet"
-            description="Create a space to organize your work."
+            title="Aucun espace"
+            description="Créez un espace pour organiser votre travail."
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -161,7 +161,7 @@ export default function WorkspacePage({ params }: PageProps) {
                     <div className="flex items-center gap-4">
                       <span className="inline-flex items-center gap-1">
                         <Folder className="h-3.5 w-3.5" />
-                        {space.folders.length} folders
+                        {space.folders.length} dossiers
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <List className="h-3.5 w-3.5" />
@@ -170,7 +170,7 @@ export default function WorkspacePage({ params }: PageProps) {
                             (acc, f) => acc + f.lists.length,
                             0
                           )}{" "}
-                        lists
+                        listes
                       </span>
                     </div>
                     {space.description && (

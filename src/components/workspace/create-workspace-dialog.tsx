@@ -60,7 +60,7 @@ export function CreateWorkspaceDialog({
       resetForm();
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -83,18 +83,18 @@ export function CreateWorkspaceDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Workspace</DialogTitle>
+          <DialogTitle>{"Créer un espace de travail"}</DialogTitle>
           <DialogDescription>
-            A workspace is a shared environment where your team collaborates.
+            {"Un espace de travail est un environnement partagé pour votre équipe."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="ws-name">Name</Label>
+            <Label htmlFor="ws-name">Nom</Label>
             <Input
               id="ws-name"
-              placeholder="My Workspace"
+              placeholder="Mon espace de travail"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
@@ -103,10 +103,10 @@ export function CreateWorkspaceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ws-desc">Description (optional)</Label>
+            <Label htmlFor="ws-desc">Description (optionnel)</Label>
             <Textarea
               id="ws-desc"
-              placeholder="What is this workspace for?"
+              placeholder="À quoi sert cet espace de travail ?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={isLoading}
@@ -115,7 +115,7 @@ export function CreateWorkspaceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>Couleur</Label>
             <div className="flex flex-wrap gap-2">
               {SIDEBAR_COLORS.map((c) => (
                 <button
@@ -145,10 +145,10 @@ export function CreateWorkspaceDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? "Creating..." : "Create Workspace"}
+              {isLoading ? "Création..." : "Créer"}
             </Button>
           </DialogFooter>
         </form>

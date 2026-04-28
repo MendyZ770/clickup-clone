@@ -55,9 +55,9 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 const PRIORITY_LABELS: Record<string, string> = {
   urgent: "Urgent",
-  high: "High",
-  normal: "Normal",
-  low: "Low",
+  high: "Haute",
+  normal: "Normale",
+  low: "Basse",
 };
 
 export function TasksByPriorityChart({
@@ -75,7 +75,7 @@ export function TasksByPriorityChart({
       <Card className="border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Tasks by Priority
+            Tâches par priorité
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 pb-6">
@@ -92,7 +92,7 @@ export function TasksByPriorityChart({
       <Card className="border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Tasks by Priority
+            Tâches par priorité
           </CardTitle>
         </CardHeader>
         <CardContent className="flex h-[300px] items-center justify-center">

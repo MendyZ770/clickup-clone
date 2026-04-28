@@ -20,7 +20,7 @@ interface StatsCardsProps {
 const stats = [
   {
     key: "totalTasks" as const,
-    label: "Total Tasks",
+    label: "Total tâches",
     icon: CheckSquare,
     color: "text-blue-500",
     bgColor: "bg-blue-500/10",
@@ -28,7 +28,7 @@ const stats = [
   },
   {
     key: "completedTasks" as const,
-    label: "Completed",
+    label: "Terminées",
     icon: CircleCheckBig,
     color: "text-green-500",
     bgColor: "bg-green-500/10",
@@ -36,7 +36,7 @@ const stats = [
   },
   {
     key: "overdueTasks" as const,
-    label: "Overdue",
+    label: "En retard",
     icon: AlertTriangle,
     color: "text-red-500",
     bgColor: "bg-red-500/10",
@@ -44,7 +44,7 @@ const stats = [
   },
   {
     key: "tasksDueThisWeek" as const,
-    label: "Due This Week",
+    label: "Échéance cette semaine",
     icon: CalendarClock,
     color: "text-orange-500",
     bgColor: "bg-orange-500/10",

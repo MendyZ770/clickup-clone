@@ -59,7 +59,7 @@ export function SidebarFolderItem({
               setCreateListOpen(true);
             }}
             className="mr-1 rounded p-0.5 text-gray-500 opacity-0 transition-all hover:bg-white/10 hover:text-white group-hover:opacity-100"
-            title="Add list"
+            title="Ajouter une liste"
           >
             <Plus className="h-3 w-3" />
           </button>
@@ -72,7 +72,7 @@ export function SidebarFolderItem({
             ))}
             {folder.lists.length === 0 && (
               <div className="px-2 py-1.5">
-                <p className="text-[11px] text-gray-600">No lists</p>
+                <p className="text-[11px] text-gray-600">Aucune liste</p>
               </div>
             )}
           </div>

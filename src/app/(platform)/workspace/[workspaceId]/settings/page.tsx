@@ -74,7 +74,7 @@ export default function WorkspaceSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl p-6 space-y-6">
+      <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
         <div className="space-y-2">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-64" />
@@ -88,18 +88,18 @@ export default function WorkspaceSettingsPage() {
   if (!workspace) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Workspace not found</p>
+        <p className="text-muted-foreground">Espace de travail introuvable</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Workspace Settings</h1>
+        <h1 className="text-xl md:text-2xl font-bold">{"Paramètres de l'espace"}</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your workspace configuration and members.
+          Gérez la configuration et les membres de votre espace de travail.
         </p>
       </div>
 
@@ -122,19 +122,18 @@ export default function WorkspaceSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg text-red-500">
             <AlertTriangle className="h-5 w-5" />
-            Danger Zone
+            Zone de danger
           </CardTitle>
           <CardDescription>
-            Irreversible and destructive actions.
+            Actions irréversibles et destructives.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4">
             <div>
-              <p className="text-sm font-medium">Delete this workspace</p>
+              <p className="text-sm font-medium">{"Supprimer cet espace de travail"}</p>
               <p className="text-xs text-muted-foreground">
-                Permanently delete this workspace and all of its data. This
-                cannot be undone.
+                {"Supprimer définitivement cet espace et toutes ses données. Cette action est irréversible."}
               </p>
             </div>
             <Button
@@ -142,7 +141,7 @@ export default function WorkspaceSettingsPage() {
               size="sm"
               onClick={() => setDeleteOpen(true)}
             >
-              Delete workspace
+              {"Supprimer l'espace"}
             </Button>
           </div>
         </CardContent>
@@ -151,8 +150,8 @@ export default function WorkspaceSettingsPage() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete workspace"
-        description={`Are you sure you want to delete "${workspace.name}"? This will permanently delete all spaces, lists, tasks, and data within this workspace. This action cannot be undone.`}
+        title="Supprimer l'espace de travail"
+        description={`Êtes-vous sûr de vouloir supprimer "${workspace.name}" ? Cela supprimera définitivement tous les espaces, listes, tâches et données de cet espace de travail. Cette action est irréversible.`}
         onConfirm={handleDelete}
         variant="destructive"
       />

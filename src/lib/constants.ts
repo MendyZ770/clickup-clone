@@ -8,9 +8,9 @@ export const DEFAULT_STATUSES = [
 
 export const PRIORITY_LEVELS = [
   { value: "urgent", label: "Urgent", color: "#EF4444", icon: "🔴" },
-  { value: "high", label: "High", color: "#F97316", icon: "🟠" },
-  { value: "normal", label: "Normal", color: "#3B82F6", icon: "🔵" },
-  { value: "low", label: "Low", color: "#6B7280", icon: "⚪" },
+  { value: "high", label: "Haute", color: "#F97316", icon: "🟠" },
+  { value: "normal", label: "Normale", color: "#3B82F6", icon: "🔵" },
+  { value: "low", label: "Basse", color: "#6B7280", icon: "⚪" },
 ] as const;
 
 export const SIDEBAR_COLORS = [

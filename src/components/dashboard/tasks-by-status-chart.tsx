@@ -62,7 +62,7 @@ export function TasksByStatusChart({
       <Card className="border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Tasks by Status
+            Tâches par statut
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center pb-6">
@@ -77,7 +77,7 @@ export function TasksByStatusChart({
       <Card className="border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Tasks by Status
+            Tâches par statut
           </CardTitle>
         </CardHeader>
         <CardContent className="flex h-[300px] items-center justify-center">
@@ -91,7 +91,7 @@ export function TasksByStatusChart({
     <Card className="border-border/50">
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold">
-          Tasks by Status
+          Tâches par statut
         </CardTitle>
       </CardHeader>
       <CardContent>

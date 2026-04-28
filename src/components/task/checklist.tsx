@@ -83,7 +83,7 @@ export function Checklist({ checklist, taskId, onChanged }: ChecklistProps) {
             <Input
               value={newText}
               onChange={(e) => setNewText(e.target.value)}
-              placeholder="Add an item..."
+              placeholder="Ajouter un élément..."
               className="h-7 text-xs"
               disabled={isCreating}
               onKeyDown={(e) => {
@@ -145,7 +145,7 @@ export function ChecklistSection({
             onClick={() => setIsAdding(true)}
           >
             <Plus className="h-3 w-3" />
-            Add Checklist
+            Ajouter une checklist
           </Button>
         )}
       </div>
@@ -155,7 +155,7 @@ export function ChecklistSection({
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Checklist title..."
+            placeholder="Titre de la checklist..."
             className="h-8 text-sm"
             autoFocus
             disabled={isCreating}
@@ -176,7 +176,7 @@ export function ChecklistSection({
             onClick={handleCreateChecklist}
             disabled={!newTitle.trim() || isCreating}
           >
-            Add
+            Ajouter
           </Button>
         </div>
       )}

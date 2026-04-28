@@ -163,8 +163,8 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
     return (
       <EmptyState
         icon={LayoutGrid}
-        title="No statuses configured"
-        description="This list needs at least one status to show the board."
+        title="Aucun statut configuré"
+        description="Cette liste a besoin d'au moins un statut pour afficher le tableau."
       />
     );
   }
@@ -182,6 +182,7 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
                 .sort((a, b) => a.position - b.position)}
               listId={listId}
               onTaskCreated={() => mutate()}
+              onTaskAction={() => mutate()}
             />
           ))}
         </div>

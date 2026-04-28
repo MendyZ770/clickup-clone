@@ -38,11 +38,11 @@ export function DueDatePicker({
   };
 
   const getDateLabel = () => {
-    if (!dateObj) return "No due date";
-    if (isOverdue) return `Overdue: ${format(dateObj, "MMM d")}`;
-    if (isDueToday) return "Today";
-    if (isDueTomorrow) return "Tomorrow";
-    return format(dateObj, "MMM d, yyyy");
+    if (!dateObj) return "Sans échéance";
+    if (isOverdue) return `En retard : ${format(dateObj, "d MMM")}`;
+    if (isDueToday) return "Aujourd'hui";
+    if (isDueTomorrow) return "Demain";
+    return format(dateObj, "d MMM yyyy");
   };
 
   const trigger = (
@@ -86,7 +86,7 @@ export function DueDatePicker({
               }}
             >
               <X className="h-3 w-3" />
-              Remove due date
+              {"Supprimer l'échéance"}
             </Button>
           </div>
         )}

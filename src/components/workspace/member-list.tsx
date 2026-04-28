@@ -55,9 +55,9 @@ const ROLE_CONFIG: Record<
   string,
   { label: string; icon: typeof Shield; color: string }
 > = {
-  owner: { label: "Owner", icon: Crown, color: "text-yellow-500" },
+  owner: { label: "Propriétaire", icon: Crown, color: "text-yellow-500" },
   admin: { label: "Admin", icon: ShieldCheck, color: "text-blue-500" },
-  member: { label: "Member", icon: Shield, color: "text-muted-foreground" },
+  member: { label: "Membre", icon: Shield, color: "text-muted-foreground" },
 };
 
 function getInitials(name: string | null, email: string): string {
@@ -111,7 +111,7 @@ export function MemberList({
       setRole("member");
       onMemberAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setInviting(false);
     }
@@ -132,7 +132,7 @@ export function MemberList({
 
       onMemberRemoved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setRemovingId(null);
       setConfirmRemove(null);
@@ -142,22 +142,22 @@ export function MemberList({
   return (
     <Card className="border-border/50">
       <CardHeader>
-        <CardTitle className="text-lg">Members</CardTitle>
+        <CardTitle className="text-lg">Membres</CardTitle>
         <CardDescription>
-          Manage who has access to this workspace.
+          {"Gérez qui a accès à cet espace de travail."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Invite form */}
         <form onSubmit={handleInvite} className="flex items-end gap-2">
           <div className="flex-1 space-y-2">
-            <Label htmlFor="invite-email">Invite by email</Label>
+            <Label htmlFor="invite-email">Inviter par email</Label>
             <Input
               id="invite-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="colleague@company.com"
+              placeholder="collegue@entreprise.com"
             />
           </div>
           <Select value={role} onValueChange={setRole}>
@@ -165,7 +165,7 @@ export function MemberList({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="member">Membre</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
@@ -238,8 +238,8 @@ export function MemberList({
       <ConfirmDialog
         open={!!confirmRemove}
         onOpenChange={() => setConfirmRemove(null)}
-        title="Remove member"
-        description={`Are you sure you want to remove ${confirmRemove?.user.name ?? confirmRemove?.user.email} from this workspace?`}
+        title="Retirer le membre"
+        description={`Êtes-vous sûr de vouloir retirer ${confirmRemove?.user.name ?? confirmRemove?.user.email} de cet espace de travail ?`}
         onConfirm={() => confirmRemove && handleRemove(confirmRemove)}
         variant="destructive"
       />

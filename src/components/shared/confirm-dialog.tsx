@@ -27,8 +27,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = "Confirmer",
+  cancelLabel = "Annuler",
   variant = "destructive",
   onConfirm,
   isLoading = false,
@@ -53,7 +53,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Loading..." : confirmLabel}
+            {isLoading ? "Chargement..." : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

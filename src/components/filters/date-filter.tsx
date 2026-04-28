@@ -10,11 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 const DATE_OPTIONS = [
-  { value: "overdue", label: "Overdue" },
-  { value: "today", label: "Due today" },
-  { value: "this_week", label: "This week" },
-  { value: "next_week", label: "Next week" },
-  { value: "no_date", label: "No due date" },
+  { value: "overdue", label: "En retard" },
+  { value: "today", label: "Aujourd'hui" },
+  { value: "this_week", label: "Cette semaine" },
+  { value: "next_week", label: "Semaine prochaine" },
+  { value: "no_date", label: "Sans échéance" },
 ] as const;
 
 interface DateFilterProps {
@@ -30,7 +30,7 @@ export function DateFilter({ selected, onChange }: DateFilterProps) {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
           <CalendarDays className="h-3 w-3" />
-          Due Date
+          Échéance
           {selected && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
               1

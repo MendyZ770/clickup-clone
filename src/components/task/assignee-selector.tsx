@@ -92,7 +92,7 @@ export function AssigneeSelector({
               <UserIcon className="h-3 w-3 text-muted-foreground/50" />
             </div>
             <span className={cn("text-muted-foreground", textSize)}>
-              Unassigned
+              Non assigné
             </span>
           </button>
           {(members ?? []).map((m) => (

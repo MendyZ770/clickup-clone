@@ -91,17 +91,17 @@ export function CreateReminderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Reminder</DialogTitle>
+          <DialogTitle>Créer un rappel</DialogTitle>
           <DialogDescription>
-            Set a reminder to stay on track with your tasks and deadlines.
+            Définissez un rappel pour rester organisé avec vos tâches et échéances.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Titre</Label>
             <Input
               id="title"
-              placeholder="Reminder title"
+              placeholder="Titre du rappel"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -109,10 +109,10 @@ export function CreateReminderDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">Description (optionnel)</Label>
             <Textarea
               id="description"
-              placeholder="Add details..."
+              placeholder="Ajouter des détails..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -131,7 +131,7 @@ export function CreateReminderDialog({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
+                  {date ? format(date, "PPP") : "Choisir une date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -146,7 +146,7 @@ export function CreateReminderDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="time">Time</Label>
+            <Label htmlFor="time">Heure</Label>
             <Input
               id="time"
               type="time"
@@ -157,14 +157,14 @@ export function CreateReminderDialog({
 
           {tasks && tasks.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="task">Link to Task (optional)</Label>
+              <Label htmlFor="task">Lier à une tâche (optionnel)</Label>
               <select
                 id="task"
                 value={taskId}
                 onChange={(e) => setTaskId(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
-                <option value="">No task linked</option>
+                <option value="">Aucune tâche liée</option>
                 {tasks.map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.title}
@@ -183,10 +183,10 @@ export function CreateReminderDialog({
                 onOpenChange(false);
               }}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={!title.trim() || !date || isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Reminder"}
+              {isSubmitting ? "Création..." : "Créer le rappel"}
             </Button>
           </DialogFooter>
         </form>

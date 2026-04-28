@@ -87,7 +87,7 @@ export function CreateSpaceDialog({
       resetForm();
       onCreated?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -110,18 +110,18 @@ export function CreateSpaceDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Space</DialogTitle>
+          <DialogTitle>{"Créer un espace"}</DialogTitle>
           <DialogDescription>
-            A space groups related folders and lists together.
+            {"Un espace regroupe des dossiers et listes liés ensemble."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="space-name">Name</Label>
+            <Label htmlFor="space-name">Nom</Label>
             <Input
               id="space-name"
-              placeholder="Engineering, Marketing..."
+              placeholder="Ingénierie, Marketing..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
@@ -130,7 +130,7 @@ export function CreateSpaceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Icon</Label>
+            <Label>Icône</Label>
             <div className="flex flex-wrap gap-2">
               {SPACE_ICONS.map((iconName) => {
                 const IconComp = ICON_MAP[iconName] ?? Folder;
@@ -154,7 +154,7 @@ export function CreateSpaceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>Couleur</Label>
             <div className="flex flex-wrap gap-2">
               {SIDEBAR_COLORS.map((c) => (
                 <button
@@ -182,10 +182,10 @@ export function CreateSpaceDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? "Creating..." : "Create Space"}
+              {isLoading ? "Création..." : "Créer l'espace"}
             </Button>
           </DialogFooter>
         </form>

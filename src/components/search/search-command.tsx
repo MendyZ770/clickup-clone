@@ -108,36 +108,36 @@ export function SearchCommand() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder="Search tasks, lists, spaces..."
+        placeholder="Rechercher tâches, listes, espaces..."
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
         {!query && (
-          <CommandGroup heading="Quick Actions">
+          <CommandGroup heading="Actions rapides">
             <CommandItem onSelect={() => handleSelect("/dashboard")}>
               <Clock className="mr-2 h-4 w-4" />
-              Go to Dashboard
+              Aller au tableau de bord
             </CommandItem>
             <CommandItem onSelect={() => handleSelect("/notifications")}>
               <Clock className="mr-2 h-4 w-4" />
-              View Notifications
+              Voir les notifications
             </CommandItem>
           </CommandGroup>
         )}
 
         {query && !isSearching && !hasResults && (
-          <CommandEmpty>No results found for &quot;{query}&quot;</CommandEmpty>
+          <CommandEmpty>Aucun résultat pour &quot;{query}&quot;</CommandEmpty>
         )}
 
         {query && isSearching && (
           <div className="py-6 text-center text-sm text-muted-foreground">
-            Searching...
+            Recherche en cours...
           </div>
         )}
 
         {results && results.tasks.length > 0 && (
-          <CommandGroup heading="Tasks">
+          <CommandGroup heading="Tâches">
             {results.tasks.map((task) => (
               <CommandItem
                 key={task.id}
@@ -153,7 +153,7 @@ export function SearchCommand() {
                   <span className="flex-1 truncate">{task.title}</span>
                   {task.list && (
                     <span className="ml-2 text-xs text-muted-foreground">
-                      in {task.list.name}
+                      dans {task.list.name}
                     </span>
                   )}
                 </div>
@@ -165,7 +165,7 @@ export function SearchCommand() {
         {results && results.lists.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Lists">
+            <CommandGroup heading="Listes">
               {results.lists.map((list) => (
                 <CommandItem
                   key={list.id}
@@ -177,12 +177,12 @@ export function SearchCommand() {
                     <span className="flex-1 truncate">{list.name}</span>
                     {list.space && (
                       <span className="ml-2 text-xs text-muted-foreground">
-                        in {list.space.name}
+                        dans {list.space.name}
                       </span>
                     )}
                     {list._count && (
                       <span className="text-xs text-muted-foreground">
-                        {list._count.tasks} tasks
+                        {list._count.tasks} tâches
                       </span>
                     )}
                   </div>
@@ -195,7 +195,7 @@ export function SearchCommand() {
         {results && results.spaces.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading="Spaces">
+            <CommandGroup heading="Espaces">
               {results.spaces.map((space) => (
                 <CommandItem
                   key={space.id}

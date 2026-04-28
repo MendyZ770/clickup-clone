@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "./breadcrumbs";
 import { TimerButton } from "@/components/time-tracking/timer-button";
+import { MobileSidebar } from "./mobile-sidebar";
 
 export function TopBar() {
   const router = useRouter();
@@ -33,9 +34,12 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
-      {/* Left: Breadcrumbs */}
-      <Breadcrumbs />
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-3 md:px-4">
+      {/* Left: Mobile menu + Breadcrumbs */}
+      <div className="flex items-center gap-2">
+        <MobileSidebar />
+        <Breadcrumbs />
+      </div>
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1">

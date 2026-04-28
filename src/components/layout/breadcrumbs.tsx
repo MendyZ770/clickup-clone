@@ -15,13 +15,13 @@ function getSegmentsFromPath(pathname: string): BreadcrumbSegment[] {
 
   // Map known route segments to friendly names
   const routeLabels: Record<string, string> = {
-    dashboard: "Dashboard",
+    dashboard: "Tableau de bord",
     notifications: "Notifications",
-    settings: "Settings",
-    spaces: "Spaces",
-    folders: "Folders",
-    lists: "Lists",
-    tasks: "Tasks",
+    settings: "Paramètres",
+    spaces: "Espaces",
+    folders: "Dossiers",
+    lists: "Listes",
+    tasks: "Tâches",
   };
 
   let currentPath = "";
@@ -61,7 +61,7 @@ export function Breadcrumbs() {
   }
 
   return (
-    <nav className="flex items-center gap-1 text-sm">
+    <nav className="flex items-center gap-1 text-xs md:text-sm min-w-0 overflow-hidden">
       <Link
         href="/dashboard"
         className="text-muted-foreground transition-colors hover:text-foreground"
@@ -72,7 +72,7 @@ export function Breadcrumbs() {
         <div key={segment.href} className="flex items-center gap-1">
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
           {index === segments.length - 1 ? (
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-foreground truncate max-w-[120px] md:max-w-none">
               {segment.label}
             </span>
           ) : (

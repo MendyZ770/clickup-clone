@@ -38,6 +38,7 @@ model User {
   reminders          Reminder[]
   attachments        Attachment[]
   goals              Goal[]
+  taskTemplates      TaskTemplate[]
 }
 
 model Account {
@@ -86,12 +87,13 @@ model Workspace {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members      WorkspaceMember[]
-  spaces       Space[]
-  tags         Tag[]
-  customFields CustomField[]
-  reminders    Reminder[]
-  goals        Goal[]
+  members        WorkspaceMember[]
+  spaces         Space[]
+  tags           Tag[]
+  customFields   CustomField[]
+  reminders      Reminder[]
+  goals          Goal[]
+  taskTemplates  TaskTemplate[]
 }
 
 model WorkspaceMember {
@@ -172,19 +174,21 @@ model Status {
 }
 
 model Task {
-  id          String    @id @default(cuid())
-  title       String
-  description String?   @db.Text
-  priority    String    @default("normal")
-  dueDate     DateTime?
-  position    Float     @default(65536)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  listId      String
-  statusId    String
-  assigneeId  String?
-  creatorId   String
-  parentId    String?
+  id           String    @id @default(cuid())
+  title        String
+  description  String?   @db.Text
+  priority     String    @default("normal")
+  dueDate      DateTime?
+  startDate    DateTime?
+  timeEstimate Int?
+  position     Float     @default(65536)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  listId       String
+  statusId     String
+  assigneeId   String?
+  creatorId    String
+  parentId     String?
 
   list              List              @relation(fields: [listId], references: [id], onDelete: Cascade)
   status            Status            @relation(fields: [statusId], references: [id], onDelete: Cascade)
@@ -493,5 +497,23 @@ model Reminder {
 
   task      Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ─── Task Templates ────────────────────────────────────────────────────────
+
+model TaskTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  priority    String   @default("normal")
+  checklists  Json?
+  tags        Json?
+  creatorId   String
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator   User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }

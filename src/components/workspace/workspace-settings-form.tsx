@@ -39,7 +39,7 @@ export function WorkspaceSettingsForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError("Name is required");
+      setError("Le nom est requis");
       return;
     }
 
@@ -64,7 +64,7 @@ export function WorkspaceSettingsForm({
 
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setSaving(false);
     }
@@ -73,20 +73,20 @@ export function WorkspaceSettingsForm({
   return (
     <Card className="border-border/50">
       <CardHeader>
-        <CardTitle className="text-lg">General</CardTitle>
+        <CardTitle className="text-lg">Général</CardTitle>
         <CardDescription>
-          Update your workspace name, description, and color.
+          {"Modifiez le nom, la description et la couleur de votre espace de travail."}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Workspace Name</Label>
+            <Label htmlFor="name">{"Nom de l'espace"}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Workspace"
+              placeholder="Mon espace de travail"
             />
           </div>
 
@@ -96,13 +96,13 @@ export function WorkspaceSettingsForm({
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this workspace for?"
+              placeholder="À quoi sert cet espace de travail ?"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>Couleur</Label>
             <div className="flex flex-wrap gap-2">
               {SIDEBAR_COLORS.map((c) => (
                 <button
@@ -127,7 +127,7 @@ export function WorkspaceSettingsForm({
 
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save changes
+            Enregistrer
           </Button>
         </form>
       </CardContent>

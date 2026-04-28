@@ -49,13 +49,13 @@ export default async function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-sm font-medium text-purple-300 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Concu pour les developpeurs
+            Conçu pour les développeurs
           </div>
 
           {/* Title */}
           <h1 className="mt-8 text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[1.05]">
             <span className="bg-gradient-to-r from-purple-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent">
-              Gerez vos projets.
+              Gérez vos projets.
             </span>
             <br />
             <span className="text-white">
@@ -144,10 +144,10 @@ export default async function Home() {
                     <div className="flex items-center justify-between mb-5">
                       <div>
                         <div className="text-sm font-semibold text-white/90">Sprint 12 — Site e-commerce</div>
-                        <div className="text-[11px] text-white/30 mt-0.5">12 taches · 3 assignes</div>
+                        <div className="text-[11px] text-white/30 mt-0.5">12 tâches · 3 assignés</div>
                       </div>
                       <div className="flex gap-1.5">
-                        {["List", "Board", "Cal"].map((v, i) => (
+                        {["Liste", "Tableau", "Cal"].map((v, i) => (
                           <div key={v} className={`px-3 py-1 rounded-md text-[10px] font-medium ${i === 1 ? "bg-purple-500/20 text-purple-300" : "text-white/30"}`}>{v}</div>
                         ))}
                       </div>
@@ -155,9 +155,9 @@ export default async function Home() {
 
                     <div className="grid grid-cols-3 gap-3 h-[calc(100%-60px)]">
                       {[
-                        { title: "A faire", color: "bg-slate-500", cards: ["Setup CI/CD pipeline", "Config Tailwind v4", "API endpoints auth"] },
-                        { title: "En cours", color: "bg-blue-500", cards: ["Composants UI", "Integration Stripe"] },
-                        { title: "Termine", color: "bg-emerald-500", cards: ["Maquettes Figma", "Schema DB", "Setup Next.js 14", "Tests unitaires"] },
+                        { title: "À faire", color: "bg-slate-500", cards: ["Setup CI/CD pipeline", "Config Tailwind v4", "API endpoints auth"] },
+                        { title: "En cours", color: "bg-blue-500", cards: ["Composants UI", "Intégration Stripe"] },
+                        { title: "Terminé", color: "bg-emerald-500", cards: ["Maquettes Figma", "Schéma DB", "Setup Next.js 14", "Tests unitaires"] },
                       ].map((col) => (
                         <div key={col.title} className="flex flex-col">
                           <div className="flex items-center gap-2 mb-3">
@@ -199,7 +199,7 @@ export default async function Home() {
               a besoin
             </h2>
             <p className="mt-4 text-white/40 max-w-xl mx-auto">
-              Fini les outils eparpilles. Un seul espace pour planifier, developper et livrer.
+              Fini les outils éparpillés. Un seul espace pour planifier, développer et livrer.
             </p>
           </div>
 
@@ -213,14 +213,14 @@ export default async function Home() {
               },
               {
                 icon: "⏱",
-                title: "Time Tracking",
-                desc: "Chronometrez votre temps par tache. Generez des rapports pour vos clients.",
+                title: "Suivi du temps",
+                desc: "Chronométrez votre temps par tâche. Générez des rapports pour vos clients.",
                 gradient: "from-blue-500/10 to-cyan-500/10",
               },
               {
                 icon: "🔗",
-                title: "Dependances",
-                desc: "Gerez les blocages entre taches. Visualisez le chemin critique de vos projets.",
+                title: "Dépendances",
+                desc: "Gérez les blocages entre tâches. Visualisez le chemin critique de vos projets.",
                 gradient: "from-emerald-500/10 to-teal-500/10",
               },
               {
@@ -231,14 +231,14 @@ export default async function Home() {
               },
               {
                 icon: "🎨",
-                title: "Champs personnalises",
+                title: "Champs personnalisés",
                 desc: "Ajoutez vos propres champs : budget, stack technique, lien Figma...",
                 gradient: "from-pink-500/10 to-rose-500/10",
               },
               {
                 icon: "📊",
                 title: "Dashboard analytics",
-                desc: "Suivez la progression de vos projets avec des graphiques en temps reel.",
+                desc: "Suivez la progression de vos projets avec des graphiques en temps réel.",
                 gradient: "from-violet-500/10 to-purple-500/10",
               },
             ].map((feature) => (
@@ -275,14 +275,14 @@ export default async function Home() {
         {/* Final CTA */}
         <section className="max-w-3xl mx-auto px-6 py-20 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Pret a{" "}
+            Prêt à{" "}
             <span className="bg-gradient-to-r from-purple-300 via-fuchsia-300 to-indigo-300 bg-clip-text text-transparent">
               booster
             </span>{" "}
             vos projets ?
           </h2>
           <p className="text-white/40 mb-8 max-w-lg mx-auto">
-            Rejoignez des developpeurs qui gerent leurs projets clients plus efficacement.
+            Rejoignez des développeurs qui gèrent leurs projets clients plus efficacement.
           </p>
           <Link
             href="/register"

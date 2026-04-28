@@ -100,13 +100,13 @@ export default function GlobalCalendarPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CalendarIcon className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold">Calendrier</h1>
+              <h1 className="text-xl md:text-2xl font-bold">Calendrier</h1>
               <p className="text-sm text-muted-foreground">
                 Vue d&apos;ensemble de toutes vos tâches avec une date limite
               </p>
@@ -114,16 +114,16 @@ export default function GlobalCalendarPage() {
           </div>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
           {/* Calendar grid */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h2 className="text-lg font-semibold min-w-[200px] text-center">
+                <h2 className="text-sm md:text-lg font-semibold min-w-[140px] md:min-w-[200px] text-center">
                   {format(currentDate, "MMMM yyyy")}
                 </h2>
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
@@ -160,7 +160,7 @@ export default function GlobalCalendarPage() {
                       key={dateKey}
                       onClick={() => setSelectedDay(day)}
                       className={cn(
-                        "min-h-[90px] border-b border-r p-1.5 text-left transition-colors hover:bg-muted/30",
+                        "min-h-[60px] md:min-h-[90px] border-b border-r p-1 md:p-1.5 text-left transition-colors hover:bg-muted/30",
                         !isCurrentMonth && "bg-muted/10",
                         today && "bg-primary/5",
                         isSelected && "ring-2 ring-primary ring-inset"
@@ -182,7 +182,7 @@ export default function GlobalCalendarPage() {
                           </span>
                         )}
                       </div>
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 hidden md:block">
                         {dayTasks.slice(0, 3).map((task) => (
                           <div
                             key={task.id}
@@ -201,6 +201,17 @@ export default function GlobalCalendarPage() {
                           </div>
                         )}
                       </div>
+                      {dayTasks.length > 0 && (
+                        <div className="flex gap-0.5 md:hidden mt-0.5 justify-center flex-wrap">
+                          {dayTasks.slice(0, 3).map((task) => (
+                            <span
+                              key={task.id}
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: task.status.color }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -209,8 +220,8 @@ export default function GlobalCalendarPage() {
           </div>
 
           {/* Side panel - selected day details */}
-          <div className="w-72 shrink-0">
-            <div className="sticky top-6 rounded-lg border p-4 space-y-4">
+          <div className="w-full lg:w-72 lg:shrink-0">
+            <div className="lg:sticky lg:top-6 rounded-lg border p-4 space-y-4">
               <h3 className="font-semibold text-sm">
                 {selectedDay ? format(selectedDay, "EEEE d MMMM") : "Sélectionnez un jour"}
               </h3>

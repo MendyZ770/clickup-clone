@@ -94,7 +94,7 @@ function ReminderItem({
           </p>
         )}
         <p className={`mt-1 text-xs ${colorClass}`}>
-          {format(new Date(reminder.remindAt), "MMM d, yyyy 'at' h:mm a")}
+          {format(new Date(reminder.remindAt), "d MMM yyyy 'à' HH:mm")}
         </p>
       </div>
       <Button
@@ -185,9 +185,9 @@ export function ReminderList({
           <div className="mb-4 rounded-full bg-muted p-4">
             <Bell className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-1 text-lg font-semibold">No reminders</h3>
+          <h3 className="mb-1 text-lg font-semibold">Aucun rappel</h3>
           <p className="max-w-sm text-center text-sm text-muted-foreground">
-            Create a reminder to stay on top of your tasks and deadlines.
+            Créez un rappel pour rester organisé avec vos tâches et échéances.
           </p>
         </div>
       </div>
@@ -197,7 +197,7 @@ export function ReminderList({
   return (
     <div className="rounded-lg border border-border/50 overflow-hidden">
       <ReminderGroup
-        title="Overdue"
+        title="En retard"
         reminders={grouped.overdue}
         onToggleComplete={onToggleComplete}
         onDelete={onDelete}
@@ -205,7 +205,7 @@ export function ReminderList({
         dotColor="bg-red-500"
       />
       <ReminderGroup
-        title="Today"
+        title="Aujourd'hui"
         reminders={grouped.today}
         onToggleComplete={onToggleComplete}
         onDelete={onDelete}
@@ -213,7 +213,7 @@ export function ReminderList({
         dotColor="bg-orange-500"
       />
       <ReminderGroup
-        title="This Week"
+        title="Cette semaine"
         reminders={grouped.thisWeek}
         onToggleComplete={onToggleComplete}
         onDelete={onDelete}
@@ -221,7 +221,7 @@ export function ReminderList({
         dotColor="bg-blue-500"
       />
       <ReminderGroup
-        title="Later"
+        title="Plus tard"
         reminders={grouped.later}
         onToggleComplete={onToggleComplete}
         onDelete={onDelete}

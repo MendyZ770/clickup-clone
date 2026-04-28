@@ -22,7 +22,6 @@ import type { TaskSummary } from "@/types";
 const DAY_WIDTH = 40;
 const ROW_HEIGHT = 36;
 const HEADER_HEIGHT = 50;
-const TASK_NAME_WIDTH = 220;
 const TOTAL_DAYS = 42;
 
 interface GanttViewProps {
@@ -35,8 +34,16 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
   const { getFilter } = useFilters();
   const { openTaskModal, setWorkspaceId } = useModal();
   const [startDate, setStartDate] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [taskNameWidth, setTaskNameWidth] = useState(220);
 
   useEffect(() => { setWorkspaceId(workspaceId); }, [workspaceId, setWorkspaceId]);
+
+  useEffect(() => {
+    const update = () => setTaskNameWidth(window.innerWidth < 768 ? 140 : 220);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   const { tasks, isLoading } = useTasks(listId, {
     statusId: getFilter("statusId") ?? undefined,
@@ -81,12 +88,12 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <div className="flex items-center gap-2">
+    <div className="p-2 md:p-4 space-y-3">
+      <div className="flex items-center gap-1 md:gap-2 flex-wrap">
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setStartDate(addDays(startDate, -7))}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-medium min-w-[200px] text-center">
+        <span className="text-xs md:text-sm font-medium min-w-[140px] md:min-w-[200px] text-center">
           {format(startDate, "d MMM")} - {format(addDays(startDate, TOTAL_DAYS - 1), "d MMM yyyy")}
         </span>
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setStartDate(addDays(startDate, 7))}>
@@ -100,7 +107,7 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
       <div className="border rounded-lg overflow-hidden">
         <div className="flex">
           {/* Task names column */}
-          <div className="shrink-0 border-r bg-muted/30" style={{ width: TASK_NAME_WIDTH }}>
+          <div className="shrink-0 border-r bg-muted/30" style={{ width: taskNameWidth }}>
             <div className="border-b px-3 flex items-center text-xs font-medium text-muted-foreground" style={{ height: HEADER_HEIGHT }}>
               Tâches ({tasksWithDates.length})
             </div>

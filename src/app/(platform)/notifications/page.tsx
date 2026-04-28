@@ -20,15 +20,15 @@ export default function NotificationsPage() {
       : notifications;
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Notifications</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
           <p className="text-sm text-muted-foreground">
             {unreadCount > 0
-              ? `You have ${unreadCount} unread notification${unreadCount !== 1 ? "s" : ""}`
-              : "You're all caught up"}
+              ? `Vous avez ${unreadCount} notification${unreadCount !== 1 ? "s" : ""} non lue${unreadCount !== 1 ? "s" : ""}`
+              : "Tout est à jour"}
           </p>
         </div>
         {unreadCount > 0 && (
@@ -39,7 +39,7 @@ export default function NotificationsPage() {
             className="gap-2"
           >
             <CheckCheck className="h-4 w-4" />
-            Mark all as read
+            Tout marquer comme lu
           </Button>
         )}
       </div>
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          All
+          Toutes
         </button>
         <button
           onClick={() => setFilter("unread")}
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Unread
+          Non lues
           {unreadCount > 0 && (
             <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
               {unreadCount}
@@ -95,13 +95,13 @@ export default function NotificationsPage() {
             </div>
             <h3 className="mb-1 text-lg font-semibold">
               {filter === "unread"
-                ? "No unread notifications"
-                : "No notifications yet"}
+                ? "Aucune notification non lue"
+                : "Aucune notification"}
             </h3>
             <p className="max-w-sm text-center text-sm text-muted-foreground">
               {filter === "unread"
-                ? "You've read all your notifications. Nice work!"
-                : "When you get assigned tasks, receive comments, or have upcoming deadlines, notifications will appear here."}
+                ? "Vous avez lu toutes vos notifications. Bien joué !"
+                : "Quand vous recevez des tâches, des commentaires ou des échéances, les notifications apparaîtront ici."}
             </p>
           </div>
         ) : (

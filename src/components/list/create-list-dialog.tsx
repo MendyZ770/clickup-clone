@@ -63,7 +63,7 @@ export function CreateListDialog({
       resetForm();
       onCreated?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -85,18 +85,18 @@ export function CreateListDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create List</DialogTitle>
+          <DialogTitle>Créer une liste</DialogTitle>
           <DialogDescription>
-            Lists hold your tasks. Default statuses will be created automatically.
+            Les listes contiennent vos tâches. Les statuts par défaut seront créés automatiquement.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="list-name">Name</Label>
+            <Label htmlFor="list-name">Nom</Label>
             <Input
               id="list-name"
-              placeholder="Backlog, Sprint Tasks..."
+              placeholder="Backlog, Tâches Sprint..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
@@ -105,7 +105,7 @@ export function CreateListDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Color (optional)</Label>
+            <Label>Couleur (optionnel)</Label>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -145,10 +145,10 @@ export function CreateListDialog({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? "Creating..." : "Create List"}
+              {isLoading ? "Création..." : "Créer la liste"}
             </Button>
           </DialogFooter>
         </form>

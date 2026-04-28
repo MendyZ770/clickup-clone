@@ -29,7 +29,7 @@ export function SpaceSettings({ space, onSaved }: SpaceSettingsProps) {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError("Name is required");
+      setError("Le nom est requis");
       return;
     }
 
@@ -57,7 +57,7 @@ export function SpaceSettings({ space, onSaved }: SpaceSettingsProps) {
       onSaved();
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setSaving(false);
     }
@@ -67,18 +67,18 @@ export function SpaceSettings({ space, onSaved }: SpaceSettingsProps) {
     <div className="space-y-4">
       {/* Name */}
       <div className="space-y-2">
-        <Label htmlFor="space-name">Space Name</Label>
+        <Label htmlFor="space-name">{"Nom de l'espace"}</Label>
         <Input
           id="space-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Space name"
+          placeholder="Nom de l'espace"
         />
       </div>
 
       {/* Color */}
       <div className="space-y-2">
-        <Label>Color</Label>
+        <Label>Couleur</Label>
         <div className="flex flex-wrap gap-2">
           {SIDEBAR_COLORS.map((c) => (
             <button
@@ -97,7 +97,7 @@ export function SpaceSettings({ space, onSaved }: SpaceSettingsProps) {
 
       {/* Icon */}
       <div className="space-y-2">
-        <Label>Icon</Label>
+        <Label>Icône</Label>
         <div className="flex flex-wrap gap-2">
           {SPACE_ICONS.map((i) => (
             <button
@@ -125,7 +125,7 @@ export function SpaceSettings({ space, onSaved }: SpaceSettingsProps) {
         ) : success ? (
           <Check className="h-4 w-4" />
         ) : null}
-        {success ? "Saved" : "Save changes"}
+        {success ? "Sauvegardé" : "Enregistrer"}
       </Button>
     </div>
   );

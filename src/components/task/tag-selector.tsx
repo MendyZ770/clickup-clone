@@ -140,7 +140,7 @@ export function TagSelector({
             <div className="space-y-2">
               <div className="flex gap-1">
                 <Input
-                  placeholder="New tag..."
+                  placeholder="Nouveau tag..."
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   className="h-7 text-xs"
@@ -157,7 +157,7 @@ export function TagSelector({
                   onClick={handleCreateTag}
                   disabled={!newTagName.trim() || isCreating}
                 >
-                  Add
+                  Ajouter
                 </Button>
               </div>
               <div className="max-h-40 overflow-y-auto space-y-0.5">

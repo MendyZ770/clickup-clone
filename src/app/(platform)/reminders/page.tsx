@@ -58,7 +58,7 @@ export default function RemindersPage() {
       <div className="mx-auto max-w-3xl p-6">
         <div className="flex flex-col items-center justify-center py-16">
           <p className="text-muted-foreground">
-            Please select a workspace to view reminders.
+            Sélectionnez un espace de travail pour voir les rappels.
           </p>
         </div>
       </div>
@@ -66,25 +66,25 @@ export default function RemindersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6 space-y-6">
+    <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
+          <div className="rounded-lg bg-primary/10 p-2 shrink-0">
             <Bell className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Reminders</h1>
+            <h1 className="text-xl md:text-2xl font-bold">Rappels</h1>
             <p className="text-sm text-muted-foreground">
               {reminders.length === 0
-                ? "No reminders yet"
-                : `${reminders.length} reminder${reminders.length !== 1 ? "s" : ""}`}
+                ? "Aucun rappel"
+                : `${reminders.length} rappel${reminders.length !== 1 ? "s" : ""}`}
             </p>
           </div>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
+        <Button onClick={() => setDialogOpen(true)} className="gap-2 self-start sm:self-auto">
           <Plus className="h-4 w-4" />
-          New Reminder
+          Nouveau rappel
         </Button>
       </div>
 
@@ -98,7 +98,7 @@ export default function RemindersPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          All
+          Tous
         </button>
         <button
           onClick={() => setFilter("upcoming")}
@@ -108,7 +108,7 @@ export default function RemindersPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Upcoming
+          À venir
           {upcomingCount > 0 && (
             <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
               {upcomingCount}
@@ -123,7 +123,7 @@ export default function RemindersPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Completed
+          Terminés
           {completedCount > 0 && (
             <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-muted-foreground/20 px-1.5 text-[10px] font-bold text-muted-foreground">
               {completedCount}

@@ -48,8 +48,8 @@ export default function SpacePage({ params }: PageProps) {
     return (
       <EmptyState
         icon={FolderOpen}
-        title="Space not found"
-        description="This space does not exist or you do not have access."
+        title="Espace introuvable"
+        description="Cet espace n'existe pas ou vous n'y avez pas accès."
       />
     );
   }
@@ -75,7 +75,7 @@ export default function SpacePage({ params }: PageProps) {
         <div>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <Folder className="h-5 w-5" />
-            Folders
+            Dossiers
           </h2>
           <div className="space-y-3">
             {space.folders.map((folder) => (
@@ -89,7 +89,7 @@ export default function SpacePage({ params }: PageProps) {
                 <CardContent>
                   {folder.lists.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      No lists in this folder
+                      Aucune liste dans ce dossier
                     </p>
                   ) : (
                     <div className="space-y-1">
@@ -102,7 +102,7 @@ export default function SpacePage({ params }: PageProps) {
                           <List className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="flex-1">{list.name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {list.statuses.length} statuses
+                            {list.statuses.length} statuts
                           </span>
                           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
@@ -121,7 +121,7 @@ export default function SpacePage({ params }: PageProps) {
         <div>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <List className="h-5 w-5" />
-            Lists
+            Listes
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {space.lists.map((list) => (
@@ -158,8 +158,8 @@ export default function SpacePage({ params }: PageProps) {
       {space.folders.length === 0 && space.lists.length === 0 && (
         <EmptyState
           icon={FolderOpen}
-          title="This space is empty"
-          description="Create folders and lists to organize your tasks."
+          title="Cet espace est vide"
+          description="Créez des dossiers et des listes pour organiser vos tâches."
         />
       )}
     </div>

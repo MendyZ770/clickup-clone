@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
-import { Paperclip, Link2, Trash2, Plus, ExternalLink, Loader2, FileText, Image, File } from "lucide-react";
+import { Paperclip, Trash2, Plus, ExternalLink, Loader2, FileText, Image, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

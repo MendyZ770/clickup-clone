@@ -6,11 +6,14 @@ import {
   Flag,
   User,
   CalendarDays,
+  CalendarRange,
   Tag,
   Clock,
   Timer,
+  Hourglass,
   Link2,
 } from "lucide-react";
+import { useState } from "react";
 import { StatusBadge } from "./status-badge";
 import { PriorityBadge } from "./priority-badge";
 import { AssigneeSelector } from "./assignee-selector";
@@ -47,14 +50,14 @@ export function TaskProperties({
   return (
     <div className="space-y-4">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Details
+        Détails
       </h3>
 
       {/* Status */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <CircleDot className="h-3.5 w-3.5" />
-          <span>Status</span>
+          <span>Statut</span>
         </div>
         <StatusBadge
           status={task.status}
@@ -67,7 +70,7 @@ export function TaskProperties({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Flag className="h-3.5 w-3.5" />
-          <span>Priority</span>
+          <span>Priorité</span>
         </div>
         <PriorityBadge
           priority={task.priority}
@@ -80,7 +83,7 @@ export function TaskProperties({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <User className="h-3.5 w-3.5" />
-          <span>Assignee</span>
+          <span>Assigné à</span>
         </div>
         <AssigneeSelector
           assignee={task.assignee}
@@ -94,11 +97,35 @@ export function TaskProperties({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5" />
-          <span>Due Date</span>
+          <span>Échéance</span>
         </div>
         <DueDatePicker
           date={task.dueDate}
           onChange={(dueDate) => onUpdate({ dueDate })}
+        />
+      </div>
+
+      {/* Start Date */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <CalendarRange className="h-3.5 w-3.5" />
+          <span>Date de début</span>
+        </div>
+        <DueDatePicker
+          date={task.startDate}
+          onChange={(startDate) => onUpdate({ startDate })}
+        />
+      </div>
+
+      {/* Time Estimate */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Hourglass className="h-3.5 w-3.5" />
+          <span>Estimation</span>
+        </div>
+        <TimeEstimateInput
+          value={task.timeEstimate}
+          onChange={(timeEstimate) => onUpdate({ timeEstimate })}
         />
       </div>
 
@@ -124,7 +151,7 @@ export function TaskProperties({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Timer className="h-3.5 w-3.5" />
-            <span>Time Tracked</span>
+            <span>Temps suivi</span>
           </div>
           <div className="text-sm font-medium font-mono">
             {formatSecondsShort(totalTrackedSeconds)}
@@ -137,17 +164,17 @@ export function TaskProperties({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Link2 className="h-3.5 w-3.5" />
-            <span>Dependencies</span>
+            <span>Dépendances</span>
           </div>
           <div className="text-sm space-y-0.5">
             {dependencyCount > 0 && (
               <span className="block text-xs text-orange-500">
-                Waiting on {dependencyCount} task{dependencyCount > 1 ? "s" : ""}
+                En attente de {dependencyCount} tâche{dependencyCount > 1 ? "s" : ""}
               </span>
             )}
             {dependentCount > 0 && (
               <span className="block text-xs text-red-500">
-                Blocking {dependentCount} task{dependentCount > 1 ? "s" : ""}
+                Bloque {dependentCount} tâche{dependentCount > 1 ? "s" : ""}
               </span>
             )}
           </div>
@@ -159,7 +186,7 @@ export function TaskProperties({
         <>
           <Separator />
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Custom Fields
+            Champs personnalisés
           </h3>
           {fields.slice(0, 5).map((field) => {
             const Icon = getFieldTypeIcon(field.type);
@@ -185,7 +212,7 @@ export function TaskProperties({
           })}
           {fields.length > 5 && (
             <p className="text-xs text-muted-foreground">
-              +{fields.length - 5} more fields
+              +{fields.length - 5} champs supplémentaires
             </p>
           )}
         </>
@@ -197,22 +224,22 @@ export function TaskProperties({
       <div className="space-y-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="h-3.5 w-3.5" />
-          <span>Created</span>
+          <span>Créé le</span>
           <span className="ml-auto text-foreground">
-            {format(new Date(task.createdAt), "MMM d, yyyy")}
+            {format(new Date(task.createdAt), "d MMM yyyy")}
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="h-3.5 w-3.5" />
-          <span>Updated</span>
+          <span>Modifié le</span>
           <span className="ml-auto text-foreground">
-            {format(new Date(task.updatedAt), "MMM d, yyyy")}
+            {format(new Date(task.updatedAt), "d MMM yyyy")}
           </span>
         </div>
         {task.creator && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <User className="h-3.5 w-3.5" />
-            <span>Created by</span>
+            <span>Créé par</span>
             <span className="ml-auto text-foreground truncate max-w-[120px]">
               {task.creator.name ?? task.creator.email}
             </span>
@@ -220,5 +247,69 @@ export function TaskProperties({
         )}
       </div>
     </div>
+  );
+}
+
+function TimeEstimateInput({
+  value,
+  onChange,
+}: {
+  value: number | null | undefined;
+  onChange: (val: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const hours = value ? Math.floor(value / 3600) : 0;
+  const minutes = value ? Math.floor((value % 3600) / 60) : 0;
+
+  const [h, setH] = useState(String(hours));
+  const [m, setM] = useState(String(minutes));
+
+  const handleSave = () => {
+    const totalSeconds = (parseInt(h) || 0) * 3600 + (parseInt(m) || 0) * 60;
+    onChange(totalSeconds > 0 ? totalSeconds : null);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="number"
+          min={0}
+          value={h}
+          onChange={(e) => setH(e.target.value)}
+          className="w-12 h-6 rounded border px-1 text-xs text-center"
+          placeholder="h"
+          autoFocus
+        />
+        <span className="text-[10px] text-muted-foreground">h</span>
+        <input
+          type="number"
+          min={0}
+          max={59}
+          value={m}
+          onChange={(e) => setM(e.target.value)}
+          className="w-12 h-6 rounded border px-1 text-xs text-center"
+          placeholder="m"
+        />
+        <span className="text-[10px] text-muted-foreground">m</span>
+        <button onClick={handleSave} className="text-[10px] text-primary hover:underline ml-1">
+          OK
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => {
+        setH(String(hours));
+        setM(String(minutes));
+        setEditing(true);
+      }}
+      className="text-sm hover:text-primary transition-colors"
+    >
+      {value ? `${hours}h ${minutes > 0 ? `${minutes}m` : ""}` : "Aucune"}
+    </button>
   );
 }

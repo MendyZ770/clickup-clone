@@ -12,9 +12,9 @@ interface ViewOption {
 }
 
 const VIEW_OPTIONS: ViewOption[] = [
-  { id: "list", label: "List", icon: List, segment: "list-view" },
-  { id: "board", label: "Board", icon: LayoutGrid, segment: "board" },
-  { id: "calendar", label: "Calendar", icon: Calendar, segment: "calendar" },
+  { id: "list", label: "Liste", icon: List, segment: "list-view" },
+  { id: "board", label: "Tableau", icon: LayoutGrid, segment: "board" },
+  { id: "calendar", label: "Calendrier", icon: Calendar, segment: "calendar" },
   { id: "gantt", label: "Gantt", icon: GanttChart, segment: "gantt" },
 ];
 
@@ -59,14 +59,14 @@ export function ViewSwitcher({ basePath }: ViewSwitcherProps) {
             key={option.id}
             onClick={() => handleViewChange(option)}
             className={cn(
-              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+              "flex items-center gap-1 md:gap-1.5 rounded-md px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium transition-all",
               isActive
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Icon className="h-4 w-4" />
-            <span>{option.label}</span>
+            <span className="hidden sm:inline">{option.label}</span>
           </button>
         );
       })}
