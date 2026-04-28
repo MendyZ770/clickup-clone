@@ -66,7 +66,7 @@ export function StatsCards({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.key} className="border-border/50">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-5">
               <div className="flex items-center gap-4">
                 <Skeleton className="h-12 w-12 rounded-lg" />
                 <div className="space-y-2">
@@ -89,9 +89,9 @@ export function StatsCards({
         return (
           <Card
             key={s.key}
-            className={`border-border/50 transition-shadow hover:shadow-md`}
+            className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all"
           >
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-5">
               <div className="flex items-center gap-4">
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${s.bgColor}`}

@@ -1,7 +1,9 @@
 "use client";
 
 import useSWR from "swr";
+import { LayoutDashboard } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { PageHeader } from "@/components/shared/page-header";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart";
 import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
@@ -66,16 +68,16 @@ export default function DashboardPage() {
   const isLoading = workspaceLoading || dataLoading;
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold">Tableau de bord</h1>
-        <p className="text-sm text-muted-foreground">
-          {currentWorkspace
+    <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-4 md:space-y-6">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Tableau de bord"
+        description={
+          currentWorkspace
             ? `Vue d'ensemble de ${currentWorkspace.name}`
-            : "Sélectionnez un espace de travail pour commencer"}
-        </p>
-      </div>
+            : "Sélectionnez un espace de travail pour commencer"
+        }
+      />
 
       {/* Stats Cards */}
       <StatsCards

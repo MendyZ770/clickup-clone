@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCheck, Inbox } from "lucide-react";
+import { CheckCheck, Inbox, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationItem } from "@/components/notifications/notification-item";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 
 type Filter = "all" | "unread";
 
@@ -21,28 +23,29 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
-          <p className="text-sm text-muted-foreground">
-            {unreadCount > 0
-              ? `Vous avez ${unreadCount} notification${unreadCount !== 1 ? "s" : ""} non lue${unreadCount !== 1 ? "s" : ""}`
-              : "Tout est à jour"}
-          </p>
-        </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => markAllAsRead()}
-            className="gap-2"
-          >
-            <CheckCheck className="h-4 w-4" />
-            Tout marquer comme lu
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        icon={Bell}
+        title="Notifications"
+        description={
+          unreadCount > 0
+            ? `${unreadCount} notification${unreadCount > 1 ? "s" : ""} non lue${unreadCount > 1 ? "s" : ""}`
+            : "Tout est à jour"
+        }
+        actions={
+          unreadCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsRead()}
+              className="gap-2"
+            >
+              <CheckCheck className="h-4 w-4" />
+              <span className="hidden sm:inline">Tout marquer comme lu</span>
+              <span className="sm:hidden">Tout lire</span>
+            </Button>
+          )
+        }
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
@@ -89,21 +92,19 @@ export default function NotificationsPage() {
             ))}
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="mb-4 rounded-full bg-muted p-4">
-              <Inbox className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="mb-1 text-lg font-semibold">
-              {filter === "unread"
+          <EmptyState
+            icon={Inbox}
+            title={
+              filter === "unread"
                 ? "Aucune notification non lue"
-                : "Aucune notification"}
-            </h3>
-            <p className="max-w-sm text-center text-sm text-muted-foreground">
-              {filter === "unread"
+                : "Aucune notification"
+            }
+            description={
+              filter === "unread"
                 ? "Vous avez lu toutes vos notifications. Bien joué !"
-                : "Quand vous recevez des tâches, des commentaires ou des échéances, les notifications apparaîtront ici."}
-            </p>
-          </div>
+                : "Les tâches assignées, commentaires et échéances apparaîtront ici."
+            }
+          />
         ) : (
           <div className="divide-y divide-border/50">
             {filteredNotifications.map((notification) => (

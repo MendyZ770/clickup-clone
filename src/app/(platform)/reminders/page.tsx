@@ -8,6 +8,8 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useReminders } from "@/hooks/use-reminders";
 import { ReminderList } from "@/components/reminders/reminder-list";
 import { CreateReminderDialog } from "@/components/reminders/create-reminder-dialog";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 
 type Filter = "all" | "upcoming" | "completed";
 
@@ -55,38 +57,34 @@ export default function RemindersPage() {
 
   if (!currentWorkspace) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <div className="flex flex-col items-center justify-center py-16">
-          <p className="text-muted-foreground">
-            Sélectionnez un espace de travail pour voir les rappels.
-          </p>
-        </div>
+      <div className="mx-auto max-w-3xl p-4 md:p-6">
+        <EmptyState
+          icon={Bell}
+          title="Aucun espace sélectionné"
+          description="Sélectionnez un espace de travail pour voir vos rappels."
+        />
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2 shrink-0">
-            <Bell className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold">Rappels</h1>
-            <p className="text-sm text-muted-foreground">
-              {reminders.length === 0
-                ? "Aucun rappel"
-                : `${reminders.length} rappel${reminders.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2 self-start sm:self-auto">
-          <Plus className="h-4 w-4" />
-          Nouveau rappel
-        </Button>
-      </div>
+      <PageHeader
+        icon={Bell}
+        title="Rappels"
+        description={
+          reminders.length === 0
+            ? "Aucun rappel"
+            : `${reminders.length} rappel${reminders.length > 1 ? "s" : ""}`
+        }
+        actions={
+          <Button onClick={() => setDialogOpen(true)} className="gap-2" size="sm">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nouveau rappel</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
+        }
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">

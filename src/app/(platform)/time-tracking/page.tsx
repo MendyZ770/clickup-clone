@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Clock,
   ChevronLeft,
@@ -14,6 +15,8 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useTimeEntries } from "@/hooks/use-time-entries";
 import { formatSeconds, formatSecondsShort } from "@/components/time-tracking/timer-display";
 import { TimeReport } from "@/components/time-tracking/time-report";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,7 +84,7 @@ export default function TimeTrackingPage() {
 
   const handleExport = () => {
     const rows = [
-      ["Date", "Task", "Description", "Duration (HH:MM:SS)", "Billable", "User"],
+      ["Date", "Tâche", "Description", "Durée (HH:MM:SS)", "Facturable", "Utilisateur"],
     ];
     for (const entry of weekEntries) {
       if (entry.duration == null) continue;
@@ -90,7 +93,7 @@ export default function TimeTrackingPage() {
         entry.task.title,
         entry.description ?? "",
         formatSeconds(entry.duration),
-        entry.billable ? "Yes" : "No",
+        entry.billable ? "Oui" : "Non",
         entry.user.name ?? entry.user.email,
       ]);
     }
@@ -106,24 +109,19 @@ export default function TimeTrackingPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Clock className="h-6 w-6 text-primary shrink-0" />
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold">Time Tracking</h1>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Track and manage your time across all tasks
-              </p>
-            </div>
-          </div>
-
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 self-start sm:self-auto">
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
+      <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-4 md:space-y-6">
+        <PageHeader
+          icon={Clock}
+          title="Suivi du temps"
+          description="Suivez et gérez votre temps passé sur vos tâches"
+          actions={
+            <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5">
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Exporter CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
+          }
+        />
 
         {/* Week navigation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -137,8 +135,8 @@ export default function TimeTrackingPage() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-xs sm:text-sm font-medium min-w-[160px] sm:min-w-[200px] text-center">
-              {format(currentWeekStart, "MMM d")} -{" "}
-              {format(currentWeekEnd, "MMM d, yyyy")}
+              {format(currentWeekStart, "d MMM", { locale: fr })} —{" "}
+              {format(currentWeekEnd, "d MMM yyyy", { locale: fr })}
             </span>
             <Button
               variant="outline"
@@ -155,21 +153,21 @@ export default function TimeTrackingPage() {
                 className="text-xs"
                 onClick={() => setWeekOffset(0)}
               >
-                Today
+                {"Aujourd'hui"}
               </Button>
             )}
           </div>
 
           <div className="flex items-center gap-2">
             <Select value={billableFilter} onValueChange={(v) => setBillableFilter(v as typeof billableFilter)}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
+              <SelectTrigger className="h-8 w-[160px] text-xs">
                 <Filter className="h-3 w-3 mr-1.5" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All entries</SelectItem>
-                <SelectItem value="billable">Billable only</SelectItem>
-                <SelectItem value="non-billable">Non-billable</SelectItem>
+                <SelectItem value="all">Toutes les entrées</SelectItem>
+                <SelectItem value="billable">Facturables</SelectItem>
+                <SelectItem value="non-billable">Non facturables</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -177,30 +175,30 @@ export default function TimeTrackingPage() {
 
         {/* Summary stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-          <Card>
-            <CardContent className="pt-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4 md:p-5">
               <p className="text-xs text-muted-foreground mb-1">
-                Total This Week
+                {"Total cette semaine"}
               </p>
               <p className="text-2xl font-bold font-mono">
                 {formatSecondsShort(weekTotal)}
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4 md:p-5">
               <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                 <DollarSign className="h-3 w-3" />
-                Billable
+                Facturable
               </p>
               <p className="text-2xl font-bold font-mono text-green-600">
                 {formatSecondsShort(billableTotal)}
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs text-muted-foreground mb-1">Entries</p>
+          <Card className="border-border/50">
+            <CardContent className="p-4 md:p-5">
+              <p className="text-xs text-muted-foreground mb-1">Entrées</p>
               <p className="text-2xl font-bold">
                 {weekEntries.filter((e: TimeEntryWithDetails) => e.duration != null).length}
               </p>
@@ -215,7 +213,7 @@ export default function TimeTrackingPage() {
 
         {/* Entries grouped by date */}
         <div className="space-y-4">
-          <h2 className="text-sm font-semibold">Time Entries</h2>
+          <h2 className="text-sm font-semibold">Entrées de temps</h2>
 
           {isLoading ? (
             <div className="space-y-3">
@@ -227,15 +225,11 @@ export default function TimeTrackingPage() {
               ))}
             </div>
           ) : groupedEntries.length === 0 ? (
-            <div className="text-center py-12">
-              <Clock className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
-                No time entries for this week.
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Start a timer on any task to begin tracking time.
-              </p>
-            </div>
+            <EmptyState
+              icon={Clock}
+              title="Aucune entrée cette semaine"
+              description="Démarrez un chrono sur une tâche pour commencer à suivre votre temps."
+            />
           ) : (
             groupedEntries.map(([dateKey, dayEntries]) => {
               const dayTotal = dayEntries.reduce(
@@ -245,8 +239,8 @@ export default function TimeTrackingPage() {
               return (
                 <div key={dateKey} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {format(new Date(dateKey + "T12:00:00"), "EEEE, MMM d")}
+                    <span className="text-xs font-medium text-muted-foreground capitalize">
+                      {format(new Date(dateKey + "T12:00:00"), "EEEE d MMM", { locale: fr })}
                     </span>
                     <span className="text-xs font-mono font-medium">
                       {formatSecondsShort(dayTotal)}
@@ -287,9 +281,9 @@ export default function TimeTrackingPage() {
                         </div>
 
                         <span className="text-[11px] text-muted-foreground shrink-0 hidden sm:inline">
-                          {format(new Date(entry.startTime), "h:mm a")}
+                          {format(new Date(entry.startTime), "HH:mm")}
                           {entry.endTime &&
-                            ` - ${format(new Date(entry.endTime), "h:mm a")}`}
+                            ` — ${format(new Date(entry.endTime), "HH:mm")}`}
                         </span>
 
                         <span className="font-mono text-xs font-semibold tabular-nums shrink-0 min-w-[60px] text-right">

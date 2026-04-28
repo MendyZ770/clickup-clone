@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Target, Plus, Loader2, Trash2 } from "lucide-react";
 import useSWR from "swr";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -109,44 +112,45 @@ export default function GoalsPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Target className="h-6 w-6 text-primary" />
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold">Objectifs</h1>
-              <p className="text-sm text-muted-foreground">Suivez vos objectifs et KPIs</p>
-            </div>
-          </div>
-
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" />
-                Nouvel objectif
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Créer un objectif</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3 pt-2">
-                <Input placeholder="Nom de l'objectif" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                <Input placeholder="Description (optionnel)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
-                <Button onClick={handleCreate} disabled={creating || !newName.trim()} className="w-full">
-                  {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Créer
+      <div className="mx-auto max-w-4xl p-4 md:p-6 space-y-4 md:space-y-6">
+        <PageHeader
+          icon={Target}
+          title="Objectifs"
+          description="Suivez vos objectifs et KPIs"
+          actions={
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Nouvel objectif</span>
+                  <span className="sm:hidden">Nouveau</span>
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un objectif</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 pt-2">
+                  <Input placeholder="Nom de l'objectif" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                  <Input placeholder="Description (optionnel)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
+                  <Button onClick={handleCreate} disabled={creating || !newName.trim()} className="w-full">
+                    {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Créer
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          }
+        />
 
         {(!goals || goals.length === 0) && (
-          <div className="text-center py-16">
-            <Target className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Aucun objectif pour le moment</p>
-          </div>
+          <EmptyState
+            icon={Target}
+            title="Aucun objectif"
+            description="Créez un objectif pour suivre vos KPIs et la progression de vos équipes."
+            actionLabel="Créer un objectif"
+            onAction={() => setDialogOpen(true)}
+          />
         )}
 
         <div className="grid gap-4">
@@ -154,9 +158,9 @@ export default function GoalsPage() {
             const progress = getProgress(goal);
             const isExpanded = selectedGoal === goal.id;
             return (
-              <Card key={goal.id} className="overflow-hidden">
+              <Card key={goal.id} className="overflow-hidden border-border/50 hover:border-border transition-colors">
                 <div className="h-1" style={{ backgroundColor: goal.color }} />
-                <CardContent className="pt-4 space-y-3">
+                <CardContent className="p-4 md:p-5 space-y-3">
                   <div className="flex items-start justify-between">
                     <button onClick={() => setSelectedGoal(isExpanded ? null : goal.id)} className="text-left flex-1">
                       <h3 className="font-semibold">{goal.name}</h3>
@@ -173,8 +177,8 @@ export default function GoalsPage() {
                   <Progress value={progress} className="h-2" />
 
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{goal.targets.length} cible(s)</span>
-                    {goal.dueDate && <span>Échéance: {format(new Date(goal.dueDate), "d MMM yyyy")}</span>}
+                    <span>{goal.targets.length} cible{goal.targets.length > 1 ? "s" : ""}</span>
+                    {goal.dueDate && <span>Échéance : {format(new Date(goal.dueDate), "d MMM yyyy", { locale: fr })}</span>}
                   </div>
 
                   {isExpanded && (

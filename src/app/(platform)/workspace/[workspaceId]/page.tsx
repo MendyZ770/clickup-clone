@@ -34,11 +34,16 @@ export default function WorkspacePage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-4 md:space-y-6">
         <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-20" />
+          ))}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-40" />
+            <Skeleton key={i} className="h-32" />
           ))}
         </div>
       </div>
@@ -69,10 +74,10 @@ export default function WorkspacePage({ params }: PageProps) {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">{workspace.name}</h1>
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight">{workspace.name}</h1>
         {workspace.description && (
           <p className="text-sm text-muted-foreground mt-1">
             {workspace.description}
@@ -81,8 +86,8 @@ export default function WorkspacePage({ params }: PageProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <Card className="border-border/50">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-primary/10 p-2">
               <LayoutGrid className="h-5 w-5 text-primary" />
@@ -93,7 +98,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/50">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-orange-500/10 p-2">
               <Folder className="h-5 w-5 text-orange-500" />
@@ -104,7 +109,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/50">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-blue-500/10 p-2">
               <List className="h-5 w-5 text-blue-500" />
@@ -115,7 +120,7 @@ export default function WorkspacePage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border/50">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-green-500/10 p-2">
               <Users className="h-5 w-5 text-green-500" />
@@ -145,23 +150,24 @@ export default function WorkspacePage({ params }: PageProps) {
               <Link
                 key={space.id}
                 href={`/workspace/${workspaceId}/space/${space.id}`}
+                className="group"
               >
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <Card className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer h-full">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <span
-                        className="h-4 w-4 rounded"
+                        className="h-4 w-4 rounded shrink-0"
                         style={{ backgroundColor: space.color ?? "#6B7280" }}
                       />
-                      {space.name}
-                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" />
+                      <span className="truncate">{space.name}</span>
+                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground">
                     <div className="flex items-center gap-4">
                       <span className="inline-flex items-center gap-1">
                         <Folder className="h-3.5 w-3.5" />
-                        {space.folders.length} dossiers
+                        {space.folders.length} dossier{space.folders.length > 1 ? "s" : ""}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <List className="h-3.5 w-3.5" />
@@ -170,7 +176,7 @@ export default function WorkspacePage({ params }: PageProps) {
                             (acc, f) => acc + f.lists.length,
                             0
                           )}{" "}
-                        listes
+                        liste{space.lists.length > 1 ? "s" : ""}
                       </span>
                     </div>
                     {space.description && (

@@ -2,13 +2,23 @@
 
 import { useMemo } from "react";
 import { format, isPast, isToday } from "date-fns";
+import { fr } from "date-fns/locale";
 import { ClipboardList, Calendar, AlertTriangle, CheckCircle2 } from "lucide-react";
 import useSWR from "swr";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useModal } from "@/hooks/use-modal";
+import { PageHeader } from "@/components/shared/page-header";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+
+const PRIORITY_LABELS: Record<string, string> = {
+  urgent: "Urgent",
+  high: "Haute",
+  normal: "Normale",
+  low: "Basse",
+};
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -79,41 +89,41 @@ export default function MyTasksPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-        <div className="flex items-center gap-3">
-          <ClipboardList className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold">Mes tâches</h1>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {tasks ? `${tasks.length} tâche(s) assignée(s)` : "Chargement..."}
-            </p>
-          </div>
-        </div>
+      <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-4 md:space-y-6">
+        <PageHeader
+          icon={ClipboardList}
+          title="Mes tâches"
+          description={
+            tasks
+              ? `${tasks.length} tâche${tasks.length > 1 ? "s" : ""} assignée${tasks.length > 1 ? "s" : ""}`
+              : "Chargement..."
+          }
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card>
-            <CardContent className="pt-3 pb-3 px-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4">
               <p className="text-[10px] uppercase tracking-wider text-red-500 font-medium">En retard</p>
-              <p className="text-xl font-bold">{grouped.overdue.length}</p>
+              <p className="text-2xl font-bold mt-1">{grouped.overdue.length}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-3 pb-3 px-4">
-              <p className="text-[10px] uppercase tracking-wider text-orange-500 font-medium">Aujourd&apos;hui</p>
-              <p className="text-xl font-bold">{grouped.today.length}</p>
+          <Card className="border-border/50">
+            <CardContent className="p-4">
+              <p className="text-[10px] uppercase tracking-wider text-orange-500 font-medium">{"Aujourd'hui"}</p>
+              <p className="text-2xl font-bold mt-1">{grouped.today.length}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-3 pb-3 px-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4">
               <p className="text-[10px] uppercase tracking-wider text-blue-500 font-medium">À venir</p>
-              <p className="text-xl font-bold">{grouped.upcoming.length}</p>
+              <p className="text-2xl font-bold mt-1">{grouped.upcoming.length}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-3 pb-3 px-4">
+          <Card className="border-border/50">
+            <CardContent className="p-4">
               <p className="text-[10px] uppercase tracking-wider text-green-500 font-medium">Terminées</p>
-              <p className="text-xl font-bold">{grouped.done.length}</p>
+              <p className="text-2xl font-bold mt-1">{grouped.done.length}</p>
             </CardContent>
           </Card>
         </div>
@@ -157,13 +167,13 @@ export default function MyTasksPage() {
                       ))}
                       <Badge
                         variant="outline"
-                        className={cn("text-[9px] capitalize h-4", PRIORITY_COLORS[task.priority])}
+                        className={cn("text-[9px] h-4", PRIORITY_COLORS[task.priority])}
                       >
-                        {task.priority}
+                        {PRIORITY_LABELS[task.priority] ?? task.priority}
                       </Badge>
                       {task.dueDate && (
                         <span className="text-[10px] text-muted-foreground hidden sm:inline">
-                          {format(new Date(task.dueDate), "d MMM")}
+                          {format(new Date(task.dueDate), "d MMM", { locale: fr })}
                         </span>
                       )}
                     </div>
@@ -175,10 +185,11 @@ export default function MyTasksPage() {
         })}
 
         {tasks && tasks.length === 0 && (
-          <div className="text-center py-16">
-            <ClipboardList className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Aucune tâche assignée</p>
-          </div>
+          <EmptyState
+            icon={ClipboardList}
+            title="Aucune tâche assignée"
+            description="Les tâches qui vous sont assignées apparaîtront ici."
+          />
         )}
       </div>
     </div>
