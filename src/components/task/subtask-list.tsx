@@ -84,7 +84,7 @@ export function SubtaskList({
         ) : (
           <ChevronDown className="h-4 w-4" />
         )}
-        Subtasks
+        Sous-tâches
         <span className="text-xs font-normal text-muted-foreground">
           ({doneCount}/{items.length})
         </span>
@@ -127,7 +127,7 @@ export function SubtaskList({
               <Input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Subtask name..."
+                placeholder="Nom de la sous-tâche..."
                 className="h-7 text-xs"
                 autoFocus
                 disabled={isCreating}
@@ -154,7 +154,7 @@ export function SubtaskList({
               className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Plus className="h-3 w-3" />
-              Add subtask
+              Ajouter une sous-tâche
             </button>
           )}
         </>

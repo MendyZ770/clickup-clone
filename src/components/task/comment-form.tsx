@@ -39,7 +39,7 @@ export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Write a comment..."
+        placeholder="Écrire un commentaire..."
         className="min-h-[80px] text-sm resize-none"
         disabled={isSubmitting}
         onKeyDown={(e) => {
@@ -57,7 +57,7 @@ export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
           disabled={!content.trim() || isSubmitting}
         >
           <Send className="h-3.5 w-3.5" />
-          {isSubmitting ? "Sending..." : "Comment"}
+          {isSubmitting ? "Envoi..." : "Commenter"}
         </Button>
       </div>
     </div>

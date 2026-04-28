@@ -47,6 +47,7 @@ export function SearchCommand() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
 
   // Listen for Cmd+K
@@ -66,21 +67,25 @@ export function SearchCommand() {
   useEffect(() => {
     if (!debouncedQuery || !currentWorkspace?.id) {
       setResults(null);
+      setSearchError(false);
       return;
     }
 
     const doSearch = async () => {
       setIsSearching(true);
+      setSearchError(false);
       try {
         const res = await fetch(
           `/api/search?q=${encodeURIComponent(debouncedQuery)}&workspaceId=${currentWorkspace.id}`
         );
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data);
+        if (!res.ok) {
+          throw new Error("Search request failed");
         }
+        const data = await res.json();
+        setResults(data);
       } catch {
-        // Silently fail search
+        setSearchError(true);
+        setResults(null);
       } finally {
         setIsSearching(false);
       }
@@ -126,7 +131,13 @@ export function SearchCommand() {
           </CommandGroup>
         )}
 
-        {query && !isSearching && !hasResults && (
+        {query && !isSearching && searchError && (
+          <div className="py-6 text-center text-sm text-destructive">
+            {"Erreur lors de la recherche. Réessayez."}
+          </div>
+        )}
+
+        {query && !isSearching && !searchError && !hasResults && (
           <CommandEmpty>Aucun résultat pour &quot;{query}&quot;</CommandEmpty>
         )}
 

@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { useCreateTask } from "@/hooks/use-tasks";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const PRIORITIES = [
   { value: "urgent", label: "Urgent", color: "bg-red-500" },
@@ -41,6 +43,7 @@ export function TaskForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { createTask } = useCreateTask();
+  const { toast } = useToast();
 
   const handleSubmit = async () => {
     const trimmed = title.trim();
@@ -61,8 +64,12 @@ export function TaskForm({
 
       onCreated?.();
       inputRef.current?.focus();
-    } catch {
-      // silently fail
+    } catch (err) {
+      toast({
+        title: "Impossible de créer la tâche",
+        description: err instanceof Error ? err.message : "Une erreur est survenue",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -159,7 +166,7 @@ export function TaskForm({
           <PopoverTrigger asChild>
             <button className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted transition-colors">
               <CalendarIcon className="h-2.5 w-2.5" />
-              {dueDate ? format(dueDate, "d MMM") : "Échéance"}
+              {dueDate ? format(dueDate, "d MMM", { locale: fr }) : "Échéance"}
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">

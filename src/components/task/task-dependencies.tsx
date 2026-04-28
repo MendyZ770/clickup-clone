@@ -68,21 +68,21 @@ interface TaskDependenciesProps {
 
 const TYPE_CONFIG = {
   blocking: {
-    label: "Blocking",
+    label: "Bloque",
     icon: Ban,
     color: "text-red-500",
     bgColor: "bg-red-50 dark:bg-red-950/20",
     borderColor: "border-red-200 dark:border-red-800",
   },
   waiting_on: {
-    label: "Waiting on",
+    label: "En attente de",
     icon: Clock,
     color: "text-orange-500",
     bgColor: "bg-orange-50 dark:bg-orange-950/20",
     borderColor: "border-orange-200 dark:border-orange-800",
   },
   linked_to: {
-    label: "Linked to",
+    label: "Lié à",
     icon: Link2,
     color: "text-blue-500",
     bgColor: "bg-blue-50 dark:bg-blue-950/20",
@@ -211,7 +211,7 @@ export function TaskDependencies({
           onClick={() => setAddDialogOpen(true)}
         >
           <Plus className="h-3 w-3 mr-1" />
-          Add
+          Ajouter
         </Button>
       </div>
 
@@ -219,21 +219,20 @@ export function TaskDependencies({
         <div className="flex items-center gap-2 rounded-md bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 px-3 py-2">
           <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
           <span className="text-xs text-orange-700 dark:text-orange-400">
-            This task is waiting on incomplete tasks
+            {"Cette tâche est en attente de tâches non terminées"}
           </span>
         </div>
       )}
 
       {totalDeps === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No dependencies. Add one to track task relationships.
+          {"Aucune dépendance. Ajoutez-en pour suivre les liens entre tâches."}
         </p>
       ) : (
         <div className="space-y-2">
-          {/* Blocking section */}
           {blocking.length > 0 && (
             <DependencyGroup
-              label="Blocking"
+              label="Bloque"
               deps={blocking}
               taskId={taskId}
               type="blocking"
@@ -243,10 +242,9 @@ export function TaskDependencies({
             />
           )}
 
-          {/* Waiting on section */}
           {waitingOn.length > 0 && (
             <DependencyGroup
-              label="Waiting on"
+              label="En attente de"
               deps={waitingOn}
               taskId={taskId}
               type="waiting_on"
@@ -256,10 +254,9 @@ export function TaskDependencies({
             />
           )}
 
-          {/* Linked section */}
           {linked.length > 0 && (
             <DependencyGroup
-              label="Linked"
+              label="Liée à"
               deps={linked}
               taskId={taskId}
               type="linked_to"
@@ -275,14 +272,14 @@ export function TaskDependencies({
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Dependency</DialogTitle>
+            <DialogTitle>Ajouter une dépendance</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Dependency type selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
-                Relationship Type
+                Type de relation
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(TYPE_CONFIG).map(([key, config]) => {
@@ -309,14 +306,14 @@ export function TaskDependencies({
             {/* Task search */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">
-                Search Task
+                Rechercher une tâche
               </label>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Type to search tasks..."
+                  placeholder="Tapez pour rechercher..."
                   className="pl-8 h-8"
                   autoFocus
                 />
@@ -352,7 +349,7 @@ export function TaskDependencies({
               searchResults &&
               searchResults.filter((t) => t.id !== taskId).length === 0 && (
                 <p className="text-xs text-muted-foreground text-center py-2">
-                  No tasks found
+                  Aucune tâche trouvée
                 </p>
               )}
 

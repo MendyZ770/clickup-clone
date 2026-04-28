@@ -50,6 +50,8 @@ export function TopBar() {
           size="icon"
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={openSearch}
+          aria-label="Rechercher (⌘K)"
+          title="Rechercher (⌘K)"
         >
           <Search className="h-4 w-4" />
         </Button>
@@ -59,16 +61,29 @@ export function TopBar() {
           size="icon"
           className="relative h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={() => router.push("/notifications")}
+          aria-label={
+            unreadCount > 0
+              ? `Notifications (${unreadCount} non lue${unreadCount > 1 ? "s" : ""})`
+              : "Notifications"
+          }
+          title="Notifications"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
+            <span
+              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white"
+              aria-hidden="true"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>
 
-        <Avatar className="ml-1 h-7 w-7 cursor-pointer">
+        <Avatar
+          className="ml-1 h-7 w-7"
+          aria-label={user?.name ?? user?.email ?? "Utilisateur"}
+          title={user?.name ?? user?.email ?? ""}
+        >
           <AvatarImage src={user?.image ?? undefined} />
           <AvatarFallback className="bg-primary/20 text-[10px] text-primary">
             {initials}

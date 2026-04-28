@@ -61,21 +61,47 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
   const handleDuplicate = async () => {
     setDuplicating(true);
     try {
-      await fetch(`/api/tasks/${taskId}/duplicate`, { method: "POST" });
+      const res = await fetch(`/api/tasks/${taskId}/duplicate`, { method: "POST" });
+      if (!res.ok) throw new Error("Duplicate failed");
+      toast({ title: "Tâche dupliquée", description: "Une copie a été créée." });
       onAction?.();
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "Impossible de dupliquer la tâche",
+        variant: "destructive",
+      });
     } finally {
       setDuplicating(false);
     }
   };
 
-  const handleMove = async (listId: string) => {
-    await updateTask(taskId, { listId } as Parameters<typeof updateTask>[1]);
-    onAction?.();
+  const handleMove = async (listId: string, listName: string) => {
+    try {
+      await updateTask(taskId, { listId } as Parameters<typeof updateTask>[1]);
+      toast({ title: "Tâche déplacée", description: `Déplacée vers ${listName}` });
+      onAction?.();
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "Impossible de déplacer la tâche",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async () => {
-    await deleteTask(taskId);
-    onAction?.();
+    try {
+      await deleteTask(taskId);
+      toast({ title: "Tâche supprimée" });
+      onAction?.();
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la tâche",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveAsTemplate = async () => {
@@ -94,9 +120,9 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
           workspaceId: currentWorkspace.id,
         }),
       });
-      toast({ title: "Template sauvegardé", description: `"${task.title}" ajouté aux templates` });
+      toast({ title: "Modèle enregistré", description: `« ${task.title} » ajouté aux modèles` });
     } catch {
-      toast({ title: "Erreur", description: "Impossible de sauvegarder le template", variant: "destructive" });
+      toast({ title: "Erreur", description: "Impossible d'enregistrer le modèle", variant: "destructive" });
     }
   };
 
@@ -141,7 +167,10 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-h-60 overflow-y-auto">
               {otherLists.map((list) => (
-                <DropdownMenuItem key={list.id} onClick={() => handleMove(list.id)}>
+                <DropdownMenuItem
+                  key={list.id}
+                  onClick={() => handleMove(list.id, `${list.space.name} / ${list.name}`)}
+                >
                   <span className="truncate">{list.space.name} / {list.name}</span>
                 </DropdownMenuItem>
               ))}
@@ -151,7 +180,7 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
 
         <DropdownMenuItem onClick={handleSaveAsTemplate}>
           <BookmarkPlus className="mr-2 h-3.5 w-3.5" />
-          Sauvegarder comme template
+          Enregistrer comme modèle
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
