@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Lock } from "lucide-react";
 
 interface TaskDetailContentProps {
   taskId: string;
@@ -91,10 +92,19 @@ export function TaskDetailContent({
       {/* Left: Main content */}
       <ScrollArea className="flex-1">
         <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+          {task.locked && (
+            <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                Cette tâche est verrouillée. Déverrouillez-la depuis le menu ⋯ pour la modifier ou la supprimer.
+              </span>
+            </div>
+          )}
+
           {/* Title + Favorite */}
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0">
-              {editingTitle ? (
+              {editingTitle && !task.locked ? (
                 <input
                   ref={titleRef}
                   value={titleValue}
@@ -116,11 +126,15 @@ export function TaskDetailContent({
               ) : (
                 <h1
                   onClick={() => {
+                    if (task.locked) return;
                     setEditingTitle(true);
                     setTimeout(() => titleRef.current?.focus(), 0);
                   }}
-                  className="text-xl md:text-2xl font-bold cursor-text hover:text-primary/80 transition-colors"
+                  className={`text-xl md:text-2xl font-bold transition-colors inline-flex items-center gap-2 ${
+                    task.locked ? "cursor-default" : "cursor-text hover:text-primary/80"
+                  }`}
                 >
+                  {task.locked && <Lock className="h-4 w-4 text-amber-500 shrink-0" />}
                   {task.title}
                 </h1>
               )}

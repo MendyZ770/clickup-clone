@@ -182,6 +182,7 @@ model Task {
   startDate    DateTime?
   timeEstimate Int?
   position     Float     @default(65536)
+  locked       Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   listId       String
@@ -456,6 +457,7 @@ model Goal {
   description String?   @db.Text
   color       String    @default("#7C3AED")
   dueDate     DateTime?
+  locked      Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

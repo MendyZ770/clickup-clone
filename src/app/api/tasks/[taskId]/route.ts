@@ -136,10 +136,21 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const data = parsed.data;
+
+    // Si la tâche est verrouillée, seul le champ `locked` peut être modifié (pour déverrouiller)
+    if (existingTask.locked) {
+      const onlyLockedField = Object.keys(data).length === 1 && data.locked !== undefined;
+      if (!onlyLockedField) {
+        return NextResponse.json(
+          { error: "Cette tâche est verrouillée. Déverrouillez-la avant de la modifier." },
+          { status: 403 }
+        );
+      }
+    }
+
     const updateData: Record<string, unknown> = {};
     const activities: Array<{ field: string; oldValue: string; newValue: string }> = [];
-
-    const data = parsed.data;
 
     if (data.title !== undefined && data.title !== existingTask.title) {
       updateData.title = data.title;
@@ -256,6 +267,15 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
+    if (data.locked !== undefined && data.locked !== existingTask.locked) {
+      updateData.locked = data.locked;
+      activities.push({
+        field: "locked",
+        oldValue: existingTask.locked ? "locked" : "unlocked",
+        newValue: data.locked ? "locked" : "unlocked",
+      });
+    }
+
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(existingTask);
     }
@@ -330,6 +350,13 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!task || task.list.space.workspace.members.length === 0) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    if (task.locked) {
+      return NextResponse.json(
+        { error: "Cette tâche est verrouillée. Déverrouillez-la avant de la supprimer." },
+        { status: 403 }
+      );
     }
 
     // Log activity before deletion

@@ -25,6 +25,7 @@ export const updateTaskSchema = z.object({
   assigneeId: z.string().optional().nullable(),
   position: z.number().optional(),
   listId: z.string().optional(),
+  locked: z.boolean().optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

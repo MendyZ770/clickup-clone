@@ -1,7 +1,8 @@
 "use client";
 
 import { format, isToday, isPast } from "date-fns";
-import { CalendarIcon, MessageSquare, GitBranch } from "lucide-react";
+import { fr } from "date-fns/locale";
+import { CalendarIcon, MessageSquare, GitBranch, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TaskActionMenu } from "./task-action-menu";
 import { useModal } from "@/hooks/use-modal";
@@ -46,12 +47,16 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
       <div className="pl-2.5 space-y-2">
         {/* Title + Actions */}
         <div className="flex items-start justify-between gap-1">
-          <p className="text-sm font-medium leading-snug line-clamp-2 flex-1">
-            {task.title}
+          <p className="text-sm font-medium leading-snug line-clamp-2 flex-1 inline-flex items-start gap-1.5">
+            {task.locked && (
+              <Lock className="h-3 w-3 shrink-0 mt-0.5 text-amber-500" aria-label="Verrouillée" />
+            )}
+            <span>{task.title}</span>
           </p>
           <TaskActionMenu
             taskId={task.id}
             currentListId={task.listId}
+            locked={task.locked}
             onAction={onAction}
           />
         </div>
@@ -82,7 +87,7 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
                 )}
               >
                 <CalendarIcon className="h-3 w-3" />
-                {format(dateObj, "MMM d")}
+                {format(dateObj, "d MMM", { locale: fr })}
               </span>
             )}
             {task._count.subtasks > 0 && (

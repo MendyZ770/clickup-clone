@@ -10,6 +10,8 @@ import {
   ExternalLink,
   Loader2,
   BookmarkPlus,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
@@ -42,16 +44,40 @@ interface ListInfo {
 interface TaskActionMenuProps {
   taskId: string;
   currentListId: string;
+  locked?: boolean;
   onAction?: () => void;
 }
 
-export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMenuProps) {
+export function TaskActionMenu({ taskId, currentListId, locked = false, onAction }: TaskActionMenuProps) {
   const router = useRouter();
   const { currentWorkspace } = useWorkspace();
   const { deleteTask } = useDeleteTask();
   const { updateTask } = useUpdateTask();
   const { toast } = useToast();
   const [duplicating, setDuplicating] = useState(false);
+  const [togglingLock, setTogglingLock] = useState(false);
+
+  const handleToggleLock = async () => {
+    setTogglingLock(true);
+    try {
+      await updateTask(taskId, { locked: !locked } as Parameters<typeof updateTask>[1]);
+      toast({
+        title: locked ? "Tâche déverrouillée" : "Tâche verrouillée",
+        description: locked
+          ? "Vous pouvez à nouveau la modifier ou la supprimer."
+          : "La tâche est protégée contre les modifications et suppressions.",
+      });
+      onAction?.();
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: err instanceof Error ? err.message : "Impossible de changer l'état",
+        variant: "destructive",
+      });
+    } finally {
+      setTogglingLock(false);
+    }
+  };
 
   const { data: lists } = useSWR<ListInfo[]>(
     currentWorkspace ? `/api/workspaces/${currentWorkspace.id}/lists` : null,
@@ -161,7 +187,7 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
 
         {otherLists.length > 0 && (
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger disabled={locked}>
               <ArrowRightLeft className="mr-2 h-3.5 w-3.5" />
               Déplacer vers
             </DropdownMenuSubTrigger>
@@ -178,15 +204,27 @@ export function TaskActionMenu({ taskId, currentListId, onAction }: TaskActionMe
           </DropdownMenuSub>
         )}
 
-        <DropdownMenuItem onClick={handleSaveAsTemplate}>
+        <DropdownMenuItem onClick={handleSaveAsTemplate} disabled={locked}>
           <BookmarkPlus className="mr-2 h-3.5 w-3.5" />
           Enregistrer comme modèle
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
+        <DropdownMenuItem onClick={handleToggleLock} disabled={togglingLock}>
+          {togglingLock ? (
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          ) : locked ? (
+            <Unlock className="mr-2 h-3.5 w-3.5" />
+          ) : (
+            <Lock className="mr-2 h-3.5 w-3.5" />
+          )}
+          {locked ? "Déverrouiller" : "Verrouiller"}
+        </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={handleDelete}
+          disabled={locked}
           className="text-red-500 focus:text-red-500"
         >
           <Trash2 className="mr-2 h-3.5 w-3.5" />

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Target, Plus, Loader2, Trash2 } from "lucide-react";
+import { Target, Plus, Loader2, Trash2, Lock, Unlock } from "lucide-react";
 import useSWR from "swr";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -41,12 +42,14 @@ interface Goal {
   description: string | null;
   color: string;
   dueDate: string | null;
+  locked: boolean;
   targets: GoalTarget[];
   creator: { id: string; name: string | null; image: string | null };
 }
 
 export default function GoalsPage() {
   const { currentWorkspace } = useWorkspace();
+  const { toast } = useToast();
   const { data: goals, mutate } = useSWR<Goal[]>(
     currentWorkspace ? `/api/goals?workspaceId=${currentWorkspace.id}` : null,
     fetcher
@@ -80,27 +83,79 @@ export default function GoalsPage() {
 
   const handleAddTarget = async (goalId: string) => {
     if (!targetName.trim()) return;
-    await fetch(`/api/goals/${goalId}/targets`, {
+    const res = await fetch(`/api/goals/${goalId}/targets`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: targetName, targetValue: parseFloat(targetValue) || 100 }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast({
+        title: "Erreur",
+        description: data.error ?? "Impossible d'ajouter la cible",
+        variant: "destructive",
+      });
+      return;
+    }
     setTargetName("");
     setTargetValue("100");
     mutate();
   };
 
   const handleUpdateTarget = async (goalId: string, targetId: string, currentValue: number) => {
-    await fetch(`/api/goals/${goalId}/targets`, {
+    const res = await fetch(`/api/goals/${goalId}/targets`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: targetId, currentValue }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast({
+        title: "Erreur",
+        description: data.error ?? "Impossible de mettre à jour la cible",
+        variant: "destructive",
+      });
+      return;
+    }
     mutate();
   };
 
   const handleDeleteGoal = async (goalId: string) => {
-    await fetch(`/api/goals/${goalId}`, { method: "DELETE" });
+    const res = await fetch(`/api/goals/${goalId}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast({
+        title: "Suppression impossible",
+        description: data.error ?? "Une erreur est survenue",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: "Objectif supprimé" });
+    mutate();
+  };
+
+  const handleToggleLock = async (goalId: string, currentlyLocked: boolean) => {
+    const res = await fetch(`/api/goals/${goalId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locked: !currentlyLocked }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      toast({
+        title: "Erreur",
+        description: data.error ?? "Impossible de changer l'état",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: currentlyLocked ? "Objectif déverrouillé" : "Objectif verrouillé",
+      description: currentlyLocked
+        ? "Vous pouvez à nouveau le modifier."
+        : "Protection activée contre modifications et suppression.",
+    });
     mutate();
   };
 
@@ -163,12 +218,39 @@ export default function GoalsPage() {
                 <CardContent className="p-4 md:p-5 space-y-3">
                   <div className="flex items-start justify-between">
                     <button onClick={() => setSelectedGoal(isExpanded ? null : goal.id)} className="text-left flex-1">
-                      <h3 className="font-semibold">{goal.name}</h3>
+                      <h3 className="font-semibold inline-flex items-center gap-1.5">
+                        {goal.locked && (
+                          <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="Verrouillé" />
+                        )}
+                        {goal.name}
+                      </h3>
                       {goal.description && <p className="text-xs text-muted-foreground mt-0.5">{goal.description}</p>}
                     </button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold" style={{ color: goal.color }}>{progress}%</span>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteGoal(goal.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleToggleLock(goal.id, goal.locked)}
+                        aria-label={goal.locked ? "Déverrouiller" : "Verrouiller"}
+                        title={goal.locked ? "Déverrouiller" : "Verrouiller"}
+                      >
+                        {goal.locked ? (
+                          <Unlock className="h-3.5 w-3.5 text-amber-500" />
+                        ) : (
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleDeleteGoal(goal.id)}
+                        disabled={goal.locked}
+                        aria-label="Supprimer"
+                        title={goal.locked ? "Déverrouiller d'abord" : "Supprimer"}
+                      >
                         <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     </div>
@@ -195,32 +277,35 @@ export default function GoalsPage() {
                               <Progress value={pct} className="h-1.5 flex-1" />
                               <input
                                 type="number"
-                                className="w-16 h-6 text-xs border rounded px-1"
+                                className="w-16 h-6 text-xs border rounded px-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                 value={target.currentValue}
+                                disabled={goal.locked}
                                 onChange={(e) => handleUpdateTarget(goal.id, target.id, parseFloat(e.target.value) || 0)}
                               />
                             </div>
                           </div>
                         );
                       })}
-                      <div className="flex gap-2 pt-1">
-                        <Input
-                          placeholder="Nom de la cible"
-                          value={targetName}
-                          onChange={(e) => setTargetName(e.target.value)}
-                          className="h-7 text-xs flex-1"
-                        />
-                        <Input
-                          type="number"
-                          placeholder="Objectif"
-                          value={targetValue}
-                          onChange={(e) => setTargetValue(e.target.value)}
-                          className="h-7 text-xs w-20"
-                        />
-                        <Button size="sm" className="h-7 text-xs" onClick={() => handleAddTarget(goal.id)}>
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      {!goal.locked && (
+                        <div className="flex gap-2 pt-1">
+                          <Input
+                            placeholder="Nom de la cible"
+                            value={targetName}
+                            onChange={(e) => setTargetName(e.target.value)}
+                            className="h-7 text-xs flex-1"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Objectif"
+                            value={targetValue}
+                            onChange={(e) => setTargetValue(e.target.value)}
+                            className="h-7 text-xs w-20"
+                          />
+                          <Button size="sm" className="h-7 text-xs" onClick={() => handleAddTarget(goal.id)}>
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

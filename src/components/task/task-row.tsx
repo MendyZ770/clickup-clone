@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, GitBranch } from "lucide-react";
+import { MessageSquare, GitBranch, Lock } from "lucide-react";
 import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "./priority-badge";
@@ -74,11 +74,14 @@ export function TaskRow({
       <button
         onClick={() => openTaskModal(task.id)}
         className={cn(
-          "flex-1 truncate text-left font-medium hover:text-primary transition-colors",
+          "flex-1 truncate text-left font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5",
           isDone && "line-through text-muted-foreground"
         )}
       >
-        {task.title}
+        {task.locked && (
+          <Lock className="h-3 w-3 shrink-0 text-amber-500" aria-label="Verrouillée" />
+        )}
+        <span className="truncate">{task.title}</span>
       </button>
 
       {/* Subtask / comment counts */}
@@ -149,6 +152,7 @@ export function TaskRow({
       <TaskActionMenu
         taskId={task.id}
         currentListId={task.listId}
+        locked={task.locked}
         onAction={onUpdated}
       />
     </div>
