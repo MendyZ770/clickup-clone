@@ -18,7 +18,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Lock, Unlock } from "lucide-react";
 
 interface TaskDetailContentProps {
   taskId: string;
@@ -31,10 +33,12 @@ export function TaskDetailContent({
 }: TaskDetailContentProps) {
   const { task, isLoading, mutate } = useTask(taskId);
   const { updateTask } = useUpdateTask();
+  const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
   const [descriptionValue, setDescriptionValue] = useState("");
   const [editingDesc, setEditingDesc] = useState(false);
+  const [togglingLock, setTogglingLock] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -63,6 +67,29 @@ export function TaskDetailContent({
     const val = descriptionValue.trim();
     if (val !== (task?.description ?? "")) {
       await handleUpdate({ description: val || null });
+    }
+  };
+
+  const handleToggleLock = async () => {
+    if (!task) return;
+    setTogglingLock(true);
+    try {
+      await updateTask(taskId, { locked: !task.locked } as Parameters<typeof updateTask>[1]);
+      toast({
+        title: task.locked ? "Tâche déverrouillée" : "Tâche verrouillée",
+        description: task.locked
+          ? "Vous pouvez à nouveau la modifier."
+          : "Protection activée contre modifications et suppression.",
+      });
+      mutate();
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: err instanceof Error ? err.message : "Impossible de changer l'état",
+        variant: "destructive",
+      });
+    } finally {
+      setTogglingLock(false);
     }
   };
 
@@ -96,7 +123,7 @@ export function TaskDetailContent({
             <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
               <Lock className="h-3.5 w-3.5 shrink-0" />
               <span>
-                Cette tâche est verrouillée. Déverrouillez-la depuis le menu ⋯ pour la modifier ou la supprimer.
+                {"Cette tâche est verrouillée. Cliquez sur Déverrouiller pour la modifier ou la supprimer."}
               </span>
             </div>
           )}
@@ -139,12 +166,34 @@ export function TaskDetailContent({
                 </h1>
               )}
             </div>
-            <FavoriteButton
-              type="task"
-              targetId={task.id}
-              workspaceId={workspaceId}
-              size="md"
-            />
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                variant={task.locked ? "default" : "outline"}
+                size="sm"
+                onClick={handleToggleLock}
+                disabled={togglingLock}
+                className={`h-8 gap-1.5 ${task.locked ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
+                aria-label={task.locked ? "Déverrouiller" : "Verrouiller"}
+              >
+                {task.locked ? (
+                  <>
+                    <Unlock className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Déverrouiller</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Verrouiller</span>
+                  </>
+                )}
+              </Button>
+              <FavoriteButton
+                type="task"
+                targetId={task.id}
+                workspaceId={workspaceId}
+                size="md"
+              />
+            </div>
           </div>
 
           {/* Recurrence */}

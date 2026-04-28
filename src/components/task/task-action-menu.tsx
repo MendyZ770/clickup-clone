@@ -164,7 +164,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          className="h-6 w-6 text-muted-foreground opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
           <MoreHorizontal className="h-3.5 w-3.5" />
