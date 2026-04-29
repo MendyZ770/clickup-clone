@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   UserPlus,
   MessageSquare,
@@ -111,6 +112,7 @@ export function NotificationItem({
         <p className="mt-0.5 text-xs text-muted-foreground/70">
           {formatDistanceToNow(new Date(notification.createdAt), {
             addSuffix: true,
+            locale: fr,
           })}
         </p>
       </div>

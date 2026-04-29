@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Activity,
   Plus,
@@ -9,6 +10,7 @@ import {
   ArrowRightLeft,
   MessageSquare,
   Trash2,
+  Lock,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +28,21 @@ const ACTION_ICONS: Record<string, typeof Activity> = {
   status_changed: ArrowRightLeft,
   commented: MessageSquare,
   deleted: Trash2,
+  locked: Lock,
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  title: "titre",
+  description: "description",
+  priority: "priorité",
+  dueDate: "échéance",
+  status: "statut",
+  assignee: "assigné",
+  list: "liste",
+  startDate: "date de début",
+  timeEstimate: "estimation",
+  locked: "verrouillage",
+  duplicate: "tâche",
 };
 
 interface ActivityFeedProps {
@@ -42,18 +59,26 @@ export function ActivityFeed({ taskId }: ActivityFeedProps) {
     const name = activity.user.name ?? activity.user.email;
     switch (activity.action) {
       case "created":
-        return `${name} created this task`;
+        return `${name} a créé cette tâche`;
       case "commented":
-        return `${name} commented`;
+        return `${name} a commenté`;
+      case "deleted":
+        return `${name} a supprimé cette tâche`;
       case "updated":
         if (activity.field) {
-          return `${name} changed ${activity.field}${
-            activity.oldValue ? ` from "${activity.oldValue}"` : ""
-          }${activity.newValue ? ` to "${activity.newValue}"` : ""}`;
+          const label = FIELD_LABELS[activity.field] ?? activity.field;
+          if (activity.field === "locked") {
+            return activity.newValue === "locked"
+              ? `${name} a verrouillé la tâche`
+              : `${name} a déverrouillé la tâche`;
+          }
+          return `${name} a modifié ${label}${
+            activity.oldValue ? ` de « ${activity.oldValue} »` : ""
+          }${activity.newValue ? ` en « ${activity.newValue} »` : ""}`;
         }
-        return `${name} updated this task`;
+        return `${name} a mis à jour la tâche`;
       default:
-        return `${name} ${activity.action}`;
+        return `${name} — ${activity.action}`;
     }
   };
 
@@ -61,7 +86,7 @@ export function ActivityFeed({ taskId }: ActivityFeedProps) {
     <div className="space-y-3">
       <h3 className="text-sm font-semibold flex items-center gap-1.5">
         <Activity className="h-4 w-4" />
-        Activity
+        Activité
       </h3>
 
       {isLoading ? (
@@ -95,6 +120,7 @@ export function ActivityFeed({ taskId }: ActivityFeedProps) {
                   <span className="text-[10px] text-muted-foreground/60">
                     {formatDistanceToNow(new Date(activity.createdAt), {
                       addSuffix: true,
+                      locale: fr,
                     })}
                   </span>
                 </div>
@@ -103,7 +129,7 @@ export function ActivityFeed({ taskId }: ActivityFeedProps) {
           })}
           {activities?.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              No activity yet
+              Aucune activité pour le moment
             </p>
           )}
         </div>

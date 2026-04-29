@@ -30,7 +30,7 @@ export function TaskTimeTracking({ taskId }: TaskTimeTrackingProps) {
         await stopTimer();
         mutateTimer();
         mutateEntries();
-        toast({ title: "Timer stopped" });
+        toast({ title: "Chrono arrêté" });
       } else {
         if (runningTimer) {
           // Stop existing timer first
@@ -38,13 +38,13 @@ export function TaskTimeTracking({ taskId }: TaskTimeTrackingProps) {
         }
         await startTimer(taskId);
         mutateTimer();
-        toast({ title: "Timer started" });
+        toast({ title: "Chrono démarré" });
       }
     } catch (err) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description:
-          err instanceof Error ? err.message : "Timer action failed",
+          err instanceof Error ? err.message : "Action impossible",
         variant: "destructive",
       });
     }

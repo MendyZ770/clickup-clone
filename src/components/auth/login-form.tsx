@@ -30,7 +30,7 @@ export function LoginForm() {
 
       if (result?.error) {
         toast({
-          title: "Connexion echouee",
+          title: "Connexion échouée",
           description: "Email ou mot de passe incorrect.",
           variant: "destructive",
         });
@@ -41,7 +41,7 @@ export function LoginForm() {
     } catch {
       toast({
         title: "Erreur",
-        description: "Veuillez reessayer plus tard.",
+        description: "Veuillez réessayer plus tard.",
         variant: "destructive",
       });
     } finally {
@@ -59,7 +59,7 @@ export function LoginForm() {
         </div>
         <h1 className="text-2xl font-bold text-white">Bon retour</h1>
         <p className="text-white/40 text-sm mt-1">
-          Connectez-vous a votre espace de travail
+          {"Connectez-vous à votre espace de travail"}
         </p>
       </div>
 
@@ -102,12 +102,12 @@ export function LoginForm() {
         </Button>
 
         <p className="text-sm text-white/30 text-center">
-          Pas encore de compte ?{" "}
+          {"Pas encore de compte ? "}
           <Link
             href="/register"
             className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
           >
-            Creer un compte
+            Créer un compte
           </Link>
         </p>
       </form>

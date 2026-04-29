@@ -24,7 +24,7 @@ export function RegisterForm() {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Mots de passe differents",
+        title: "Mots de passe différents",
         description: "Les mots de passe ne correspondent pas.",
         variant: "destructive",
       });
@@ -34,7 +34,7 @@ export function RegisterForm() {
     if (password.length < 8) {
       toast({
         title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 8 caracteres.",
+        description: "Le mot de passe doit contenir au moins 8 caractères.",
         variant: "destructive",
       });
       return;
@@ -53,7 +53,7 @@ export function RegisterForm() {
 
       if (!response.ok) {
         toast({
-          title: "Inscription echouee",
+          title: "Inscription échouée",
           description: data.error || "Une erreur est survenue.",
           variant: "destructive",
         });
@@ -75,7 +75,7 @@ export function RegisterForm() {
     } catch {
       toast({
         title: "Erreur",
-        description: "Veuillez reessayer plus tard.",
+        description: "Veuillez réessayer plus tard.",
         variant: "destructive",
       });
     } finally {
@@ -91,9 +91,9 @@ export function RegisterForm() {
             <span className="text-white font-bold text-lg">D</span>
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-white">Creer un compte</h1>
+        <h1 className="text-2xl font-bold text-white">Créer un compte</h1>
         <p className="text-white/40 text-sm mt-1">
-          Commencez a gerer vos projets en quelques secondes
+          {"Commencez à gérer vos projets en quelques secondes"}
         </p>
       </div>
 
@@ -131,7 +131,7 @@ export function RegisterForm() {
             <Input
               id="password"
               type="password"
-              placeholder="8 caracteres minimum"
+              placeholder="8 caractères minimum"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
@@ -161,11 +161,11 @@ export function RegisterForm() {
           disabled={isLoading}
           className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-semibold py-5 shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5"
         >
-          {isLoading ? "Creation..." : "Creer mon compte"}
+          {isLoading ? "Création..." : "Créer mon compte"}
         </Button>
 
         <p className="text-sm text-white/30 text-center">
-          Deja un compte ?{" "}
+          {"Déjà un compte ? "}
           <Link
             href="/login"
             className="text-purple-400 hover:text-purple-300 font-medium transition-colors"

@@ -191,7 +191,7 @@ export default function TimeTrackingPage() {
                 <DollarSign className="h-3 w-3" />
                 Facturable
               </p>
-              <p className="text-2xl font-bold font-mono text-green-600">
+              <p className="text-2xl font-bold font-mono text-green-600 dark:text-green-400">
                 {formatSecondsShort(billableTotal)}
               </p>
             </CardContent>
@@ -267,7 +267,7 @@ export default function TimeTrackingPage() {
                             {entry.billable && (
                               <Badge
                                 variant="outline"
-                                className="h-4 px-1 text-[9px] text-green-600 border-green-600/30"
+                                className="h-4 px-1 text-[9px] text-green-600 dark:text-green-400 border-green-600/30"
                               >
                                 $
                               </Badge>

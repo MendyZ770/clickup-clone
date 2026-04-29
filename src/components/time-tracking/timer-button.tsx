@@ -93,7 +93,7 @@ export function TimerButton() {
       toast({
         title: "Erreur",
         description:
-          err instanceof Error ? err.message : "Failed to start timer",
+          err instanceof Error ? err.message : "Impossible de démarrer le chrono",
         variant: "destructive",
       });
     }
@@ -113,7 +113,7 @@ export function TimerButton() {
       toast({
         title: "Erreur",
         description:
-          err instanceof Error ? err.message : "Failed to stop timer",
+          err instanceof Error ? err.message : "Impossible d'arrêter le chrono",
         variant: "destructive",
       });
     } finally {

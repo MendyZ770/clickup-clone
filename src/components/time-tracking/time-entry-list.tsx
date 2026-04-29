@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Clock,
   Trash2,
@@ -38,11 +39,11 @@ export function TimeEntryList({ taskId }: TimeEntryListProps) {
     try {
       await deleteEntry(entryId);
       mutate();
-      toast({ title: "Time entry deleted" });
+      toast({ title: "Entrée supprimée" });
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to delete time entry",
+        title: "Erreur",
+        description: "Impossible de supprimer l'entrée",
         variant: "destructive",
       });
     } finally {
@@ -68,7 +69,7 @@ export function TimeEntryList({ taskId }: TimeEntryListProps) {
       <div className="text-center py-4">
         <Clock className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
         <p className="text-xs text-muted-foreground">
-          No time entries yet. Start a timer or log time manually.
+          {"Aucune entrée de temps. Démarrez un chrono ou saisissez le temps manuellement."}
         </p>
       </div>
     );
@@ -78,7 +79,7 @@ export function TimeEntryList({ taskId }: TimeEntryListProps) {
     <div className="space-y-3">
       {/* Total time */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Total tracked</span>
+        <span className="text-xs text-muted-foreground">Temps total suivi</span>
         <span className="text-sm font-semibold font-mono">
           {formatSecondsShort(totalSeconds)}
         </span>
@@ -111,14 +112,14 @@ export function TimeEntryList({ taskId }: TimeEntryListProps) {
                     className="h-4 px-1 text-[9px] text-green-600 border-green-600/30"
                   >
                     <DollarSign className="h-2.5 w-2.5 mr-0.5" />
-                    Billable
+                    Facturable
                   </Badge>
                 )}
               </div>
               <span className="text-[10px] text-muted-foreground">
-                {format(new Date(entry.startTime), "MMM d, h:mm a")}
+                {format(new Date(entry.startTime), "d MMM, HH:mm", { locale: fr })}
                 {entry.endTime &&
-                  ` - ${format(new Date(entry.endTime), "h:mm a")}`}
+                  ` — ${format(new Date(entry.endTime), "HH:mm")}`}
               </span>
             </div>
 

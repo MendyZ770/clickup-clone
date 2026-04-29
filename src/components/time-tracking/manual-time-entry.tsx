@@ -40,8 +40,8 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
 
     if (totalSeconds <= 0) {
       toast({
-        title: "Invalid duration",
-        description: "Please enter a duration greater than 0.",
+        title: "Durée invalide",
+        description: "Veuillez entrer une durée supérieure à 0.",
         variant: "destructive",
       });
       return;
@@ -49,7 +49,6 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
 
     setSaving(true);
     try {
-      // Build start and end times from the selected date
       const startTime = new Date(`${date}T09:00:00`);
       const endTime = new Date(startTime.getTime() + totalSeconds * 1000);
 
@@ -62,7 +61,7 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
         billable,
       });
 
-      toast({ title: "Time logged successfully" });
+      toast({ title: "Temps enregistré" });
       setOpen(false);
       setHours("0");
       setMinutes("30");
@@ -71,9 +70,9 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
       onCreated?.();
     } catch (err) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description:
-          err instanceof Error ? err.message : "Failed to log time",
+          err instanceof Error ? err.message : "Impossible d'enregistrer le temps",
         variant: "destructive",
       });
     } finally {
@@ -86,17 +85,17 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
           <Plus className="h-3 w-3" />
-          Log Time
+          Saisir le temps
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Log Time Manually</DialogTitle>
+          <DialogTitle>Saisie manuelle du temps</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-3">
             <div className="space-y-1.5 flex-1">
-              <Label htmlFor="hours">Hours</Label>
+              <Label htmlFor="hours">Heures</Label>
               <Input
                 id="hours"
                 type="number"
@@ -120,10 +119,10 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">Description (optionnel)</Label>
             <Input
               id="description"
-              placeholder="What did you work on?"
+              placeholder="Sur quoi avez-vous travaillé ?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -146,7 +145,7 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
               onCheckedChange={(checked) => setBillable(checked === true)}
             />
             <Label htmlFor="billable" className="text-sm font-normal">
-              Billable
+              Facturable
             </Label>
           </div>
 
@@ -156,10 +155,10 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
               variant="outline"
               onClick={() => setOpen(false)}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : "Log Time"}
+              {saving ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>
         </form>

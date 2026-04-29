@@ -121,7 +121,7 @@ export function TagSelector({
                 e.stopPropagation();
                 handleRemoveTag(tt.tag.id);
               }}
-              className="hover:bg-white/20 rounded-full"
+              className="hover:bg-black/20 dark:hover:bg-white/20 rounded-full"
             >
               <X className="h-2.5 w-2.5" />
             </button>

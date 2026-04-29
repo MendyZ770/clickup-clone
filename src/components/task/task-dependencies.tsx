@@ -130,8 +130,8 @@ export function TaskDependencies({
           setAddDialogOpen(false);
           setSearchQuery("");
         }
-      } catch (error) {
-        console.error("Failed to add dependency:", error);
+      } catch {
+        // La dépendance n'a pas pu être ajoutée (déjà existante ou erreur)
       } finally {
         setCreating(false);
       }
@@ -148,8 +148,8 @@ export function TaskDependencies({
           { method: "DELETE" }
         );
         mutate();
-      } catch (error) {
-        console.error("Failed to remove dependency:", error);
+      } catch {
+        // Erreur silencieuse — SWR re-synchro au prochain poll
       } finally {
         setRemoving(null);
       }
