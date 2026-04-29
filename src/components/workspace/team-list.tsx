@@ -295,19 +295,28 @@ export function TeamList({ workspaceId }: TeamListProps) {
                     </div>
                   ))}
 
-                  {available.length > 0 && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 gap-1 text-[11px]"
-                        >
-                          <UserPlus className="h-3 w-3" />
-                          Ajouter
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64 p-1" align="start">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 gap-1 text-[11px]"
+                      >
+                        <UserPlus className="h-3 w-3" />
+                        Ajouter
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-1" align="start">
+                      {available.length === 0 ? (
+                        <div className="px-2 py-3 text-center">
+                          <p className="text-xs text-muted-foreground">
+                            Aucun membre disponible.
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/70 mt-1">
+                            {"Invitez des membres via l'onglet Invitations."}
+                          </p>
+                        </div>
+                      ) : (
                         <div className="max-h-56 overflow-y-auto">
                           {available.map((m) => (
                             <button
@@ -336,9 +345,9 @@ export function TeamList({ workspaceId }: TeamListProps) {
                             </button>
                           ))}
                         </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
+                      )}
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             );
