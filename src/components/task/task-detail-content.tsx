@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Unlock, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { SetPinDialog } from "./set-pin-dialog";
 
 interface TaskDetailContentProps {
@@ -41,6 +41,7 @@ export function TaskDetailContent({
   const [editingDesc, setEditingDesc] = useState(false);
   const [togglingLock, setTogglingLock] = useState(false);
   const [setPinOpen, setSetPinOpen] = useState(false);
+  const [showProperties, setShowProperties] = useState(true);
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -217,6 +218,21 @@ export function TaskDetailContent({
                 workspaceId={workspaceId}
                 size="md"
               />
+              {/* Toggle panel propriétés */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground"
+                onClick={() => setShowProperties((p) => !p)}
+                aria-label={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
+                title={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
+              >
+                {showProperties ? (
+                  <PanelRightClose className="h-4 w-4" />
+                ) : (
+                  <PanelRightOpen className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
 
@@ -330,19 +346,21 @@ export function TaskDetailContent({
         </div>
       </ScrollArea>
 
-      {/* Right: Properties sidebar */}
-      <div className="w-full md:w-72 border-t md:border-t-0 md:border-l md:shrink-0">
-        <ScrollArea className="h-full">
-          <div className="p-4">
-            <TaskProperties
-              task={task}
-              workspaceId={workspaceId}
-              onUpdate={handleUpdate}
-              onTagsChanged={() => mutate()}
-            />
-          </div>
-        </ScrollArea>
-      </div>
+      {/* Right: Properties sidebar — masquable */}
+      {showProperties && (
+        <div className="w-full md:w-72 border-t md:border-t-0 md:border-l md:shrink-0">
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <TaskProperties
+                task={task}
+                workspaceId={workspaceId}
+                onUpdate={handleUpdate}
+                onTagsChanged={() => mutate()}
+              />
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       <SetPinDialog
         open={setPinOpen}

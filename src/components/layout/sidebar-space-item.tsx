@@ -56,15 +56,28 @@ interface SidebarSpaceItemProps {
 }
 
 export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSpaceItemProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const STORAGE_KEY = `sidebar-space-open-${space.id}`;
+  const [isOpen, setIsOpen] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored === null ? true : stored === "1";
+    } catch {
+      return true;
+    }
+  });
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [createListOpen, setCreateListOpen] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    try { localStorage.setItem(STORAGE_KEY, open ? "1" : "0"); } catch { /* ignore */ }
+  };
 
   const SpaceIcon = ICON_MAP[space.icon ?? "folder"] ?? Folder;
 
   return (
     <>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
             <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">

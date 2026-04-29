@@ -214,8 +214,8 @@ export default function NotesPage() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Sidebar liste de notes */}
-      <div className="w-64 md:w-72 shrink-0 border-r flex flex-col overflow-hidden">
+      {/* Sidebar liste de notes — cachée sur mobile quand une note est ouverte */}
+      <div className={`${selectedId ? "hidden md:flex" : "flex"} w-full md:w-72 md:shrink-0 border-r flex-col overflow-hidden`}>
         <div className="p-3 border-b space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold">Notes</span>
@@ -305,8 +305,15 @@ export default function NotesPage() {
           >
             {/* Toolbar */}
             <div className="flex items-center gap-2 px-4 py-2 border-b bg-background/80 backdrop-blur-sm">
+              {/* Bouton retour mobile */}
+              <button
+                onClick={() => setSelectedId(null)}
+                className="md:hidden flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mr-1"
+              >
+                ← Notes
+              </button>
               {/* Palette couleurs */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 {NOTE_COLORS.map((c) => (
                   <button
                     key={c.value}

@@ -81,7 +81,7 @@ export function TasksByStatusChart({
           </CardTitle>
         </CardHeader>
         <CardContent className="flex h-[300px] items-center justify-center">
-          <p className="text-sm text-muted-foreground">No task data yet</p>
+          <p className="text-sm text-muted-foreground">Aucune donnée pour l&apos;instant</p>
         </CardContent>
       </Card>
     );
