@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Lock, Unlock } from "lucide-react";
+import { SetPinDialog } from "./set-pin-dialog";
 
 interface TaskDetailContentProps {
   taskId: string;
@@ -39,6 +40,7 @@ export function TaskDetailContent({
   const [descriptionValue, setDescriptionValue] = useState("");
   const [editingDesc, setEditingDesc] = useState(false);
   const [togglingLock, setTogglingLock] = useState(false);
+  const [setPinOpen, setSetPinOpen] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -72,20 +74,42 @@ export function TaskDetailContent({
 
   const handleToggleLock = async () => {
     if (!task) return;
+    if (!task.locked) {
+      // Verrouiller → demander d'abord un PIN
+      setSetPinOpen(true);
+      return;
+    }
+    // Déverrouiller
     setTogglingLock(true);
     try {
-      await updateTask(taskId, { locked: !task.locked } as Parameters<typeof updateTask>[1]);
-      toast({
-        title: task.locked ? "Tâche déverrouillée" : "Tâche verrouillée",
-        description: task.locked
-          ? "Vous pouvez à nouveau la modifier."
-          : "Protection activée contre modifications et suppression.",
-      });
+      await updateTask(taskId, { locked: false } as Parameters<typeof updateTask>[1]);
+      toast({ title: "Tâche déverrouillée", description: "Vous pouvez à nouveau la modifier." });
       mutate();
     } catch (err) {
       toast({
         title: "Erreur",
         description: err instanceof Error ? err.message : "Impossible de changer l'état",
+        variant: "destructive",
+      });
+    } finally {
+      setTogglingLock(false);
+    }
+  };
+
+  const handleConfirmPin = async (pin: string) => {
+    setSetPinOpen(false);
+    setTogglingLock(true);
+    try {
+      await updateTask(taskId, { locked: true, lockedPin: pin } as Parameters<typeof updateTask>[1]);
+      toast({
+        title: "Tâche verrouillée",
+        description: "Un code à 4 chiffres est requis pour l'ouvrir.",
+      });
+      mutate();
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: err instanceof Error ? err.message : "Impossible de verrouiller",
         variant: "destructive",
       });
     } finally {
@@ -319,6 +343,12 @@ export function TaskDetailContent({
           </div>
         </ScrollArea>
       </div>
+
+      <SetPinDialog
+        open={setPinOpen}
+        onConfirm={handleConfirmPin}
+        onCancel={() => setSetPinOpen(false)}
+      />
     </div>
   );
 }

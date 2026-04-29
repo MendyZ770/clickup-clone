@@ -72,7 +72,7 @@ export function TaskRow({
 
       {/* Title */}
       <button
-        onClick={() => openTaskModal(task.id)}
+        onClick={() => openTaskModal(task.id, task.locked)}
         className={cn(
           "flex-1 truncate text-left font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5",
           isDone && "line-through text-muted-foreground"

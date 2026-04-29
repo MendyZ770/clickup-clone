@@ -30,7 +30,7 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
 
   return (
     <div
-      onClick={() => openTaskModal(task.id)}
+      onClick={() => openTaskModal(task.id, task.locked)}
       className={cn(
         "group relative cursor-pointer rounded-lg border bg-card p-3 shadow-sm transition-all hover:shadow-md",
         className

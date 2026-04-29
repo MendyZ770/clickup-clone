@@ -138,10 +138,11 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const data = parsed.data;
 
-    // Si la tâche est verrouillée, seul le champ `locked` peut être modifié (pour déverrouiller)
+    // Si la tâche est verrouillée, seuls locked + lockedPin peuvent être modifiés
     if (existingTask.locked) {
-      const onlyLockedField = Object.keys(data).length === 1 && data.locked !== undefined;
-      if (!onlyLockedField) {
+      const allowedKeys = new Set(["locked", "lockedPin"]);
+      const keys = Object.keys(data);
+      if (!keys.every((k) => allowedKeys.has(k))) {
         return NextResponse.json(
           { error: "Cette tâche est verrouillée. Déverrouillez-la avant de la modifier." },
           { status: 403 }
@@ -269,6 +270,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (data.locked !== undefined && data.locked !== existingTask.locked) {
       updateData.locked = data.locked;
+      // Quand on déverrouille, on efface le PIN
+      if (!data.locked) updateData.lockedPin = null;
       activities.push({
         field: "locked",
         oldValue: existingTask.locked ? "locked" : "unlocked",
@@ -276,8 +279,15 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
+    if (data.lockedPin !== undefined) {
+      updateData.lockedPin = data.lockedPin ?? null;
+    }
+
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(existingTask);
+      // Ne jamais renvoyer le PIN
+      const { lockedPin: _, ...rest } = existingTask;
+      void _;
+      return NextResponse.json(rest);
     }
 
     const updatedTask = await prisma.task.update({
@@ -312,7 +322,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
-    return NextResponse.json(updatedTask);
+    // Ne jamais renvoyer le PIN dans la réponse
+    const { lockedPin: _pin, ...taskWithoutPin } = updatedTask;
+    void _pin;
+    return NextResponse.json(taskWithoutPin);
   } catch (error) {
     console.error("PATCH /api/tasks/[id] error:", error);
     return NextResponse.json(

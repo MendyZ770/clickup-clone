@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { PinDialog } from "@/components/task/pin-dialog";
 
 const TaskDetailModal = dynamic(
   () =>
@@ -13,7 +14,7 @@ const TaskDetailModal = dynamic(
 
 interface ModalContextType {
   taskId: string | null;
-  openTaskModal: (id: string) => void;
+  openTaskModal: (id: string, locked?: boolean) => void;
   closeTaskModal: () => void;
   workspaceId: string | null;
   setWorkspaceId: (id: string) => void;
@@ -34,13 +35,30 @@ interface ModalProviderProps {
 export function ModalProvider({ children }: ModalProviderProps) {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  // PIN state
+  const [pinTaskId, setPinTaskId] = useState<string | null>(null);
 
-  const openTaskModal = useCallback((id: string) => {
-    setTaskId(id);
+  const openTaskModal = useCallback((id: string, locked = false) => {
+    if (locked) {
+      setPinTaskId(id);
+    } else {
+      setTaskId(id);
+    }
   }, []);
 
   const closeTaskModal = useCallback(() => {
     setTaskId(null);
+  }, []);
+
+  const handlePinSuccess = useCallback(() => {
+    if (pinTaskId) {
+      setTaskId(pinTaskId);
+      setPinTaskId(null);
+    }
+  }, [pinTaskId]);
+
+  const handlePinCancel = useCallback(() => {
+    setPinTaskId(null);
   }, []);
 
   return (
@@ -48,6 +66,17 @@ export function ModalProvider({ children }: ModalProviderProps) {
       value={{ taskId, openTaskModal, closeTaskModal, workspaceId, setWorkspaceId }}
     >
       {children}
+
+      {/* PIN dialog — affiché avant la modal quand la tâche est verrouillée */}
+      {pinTaskId && (
+        <PinDialog
+          open={!!pinTaskId}
+          taskId={pinTaskId}
+          onSuccess={handlePinSuccess}
+          onCancel={handlePinCancel}
+        />
+      )}
+
       {taskId && (
         <TaskDetailModal
           taskId={taskId}

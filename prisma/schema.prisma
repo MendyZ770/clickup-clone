@@ -232,6 +232,7 @@ model Task {
   timeEstimate Int?
   position     Float     @default(65536)
   locked       Boolean   @default(false)
+  lockedPin    String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   listId       String
