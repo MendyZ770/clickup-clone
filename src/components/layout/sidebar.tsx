@@ -20,6 +20,7 @@ import {
   BellRing,
   Star,
   ClipboardList,
+  NotebookPen,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
@@ -194,6 +195,13 @@ export function Sidebar() {
           >
             <CalendarSync className="h-4 w-4" />
             Sync calendrier
+          </button>
+          <button
+            onClick={() => router.push("/notes")}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <NotebookPen className="h-4 w-4" />
+            Notes
           </button>
         </div>
 
