@@ -11,7 +11,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "DevFlow",
+  title: "Done",
   description: "Outil de gestion de projets pour développeurs web",
   icons: {
     icon: "/favicon.svg",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 const themeInitScript = `
 (function() {
   try {
-    var t = localStorage.getItem('devflow-theme');
+    var t = localStorage.getItem('done-theme');
     if (t === 'light') {
       document.documentElement.classList.remove('dark');
     } else {

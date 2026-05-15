@@ -25,7 +25,7 @@ export default async function Home() {
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
             <span className="text-white font-bold text-sm">D</span>
           </div>
-          <span className="text-lg font-semibold tracking-tight">DevFlow</span>
+          <span className="text-lg font-semibold tracking-tight">Done</span>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -107,7 +107,7 @@ export default async function Home() {
                 </div>
                 <div className="flex-1 flex justify-center">
                   <div className="px-12 py-1 rounded-md bg-white/5 text-xs text-white/40 font-mono">
-                    devflow.app/dashboard
+                    done.app/dashboard
                   </div>
                 </div>
                 <div className="w-14" />
@@ -299,7 +299,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-indigo-600" />
-            <span className="font-medium text-white/40">DevFlow</span>
+            <span className="font-medium text-white/40">Done</span>
           </div>
           <p>Construit avec Next.js, Tailwind CSS et Prisma</p>
         </div>

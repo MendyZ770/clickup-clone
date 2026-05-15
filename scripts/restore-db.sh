@@ -31,7 +31,7 @@ BACKUP_DIR="$HOME/backups/clickup-clone"
 if [ $# -eq 0 ]; then
   echo "📋 Sauvegardes disponibles dans $BACKUP_DIR :"
   echo ""
-  ls -lht "$BACKUP_DIR"/devflow-*.dump 2>/dev/null | awk '{print "  " $9 " (" $5 ", " $6 " " $7 ")"}' || echo "  (aucune)"
+  ls -lht "$BACKUP_DIR"/done-*.dump 2>/dev/null | awk '{print "  " $9 " (" $5 ", " $6 " " $7 ")"}' || echo "  (aucune)"
   echo ""
   echo "Usage : $0 <fichier.dump> [URL-BDD-cible]"
   exit 0

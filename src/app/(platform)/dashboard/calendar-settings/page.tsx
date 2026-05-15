@@ -248,7 +248,7 @@ function CalendarSettingsContent() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "devflow-taches.ics";
+        a.download = "done-taches.ics";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

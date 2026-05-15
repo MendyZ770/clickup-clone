@@ -1,4 +1,4 @@
-# DevFlow — consignes pour Claude
+# Done — consignes pour Claude
 
 ## Stack
 

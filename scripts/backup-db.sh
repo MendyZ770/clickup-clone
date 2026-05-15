@@ -45,12 +45,12 @@ mkdir -p "$BACKUP_DIR"
 # Nom du fichier avec timestamp + label optionnel
 TS="$(date +%Y%m%d-%H%M%S)"
 LABEL="${1:+-$1}"
-BASENAME="devflow-${TS}${LABEL}"
+BASENAME="done-${TS}${LABEL}"
 
 DUMP_FILE="$BACKUP_DIR/${BASENAME}.dump"
 SQL_FILE="$BACKUP_DIR/${BASENAME}.sql"
 
-echo "🔒 Sauvegarde de la BDD DevFlow en cours..."
+echo "🔒 Sauvegarde de la BDD Done en cours..."
 echo "   Destination : $BACKUP_DIR/"
 
 # Format custom (binaire, compressé, restaurable avec pg_restore)
@@ -79,8 +79,8 @@ echo "   ${BASENAME}.sql  ($SIZE_SQL) → lisible et restaurable via psql"
 # Rotation : garde les 30 plus récents, supprime les autres
 KEEP=30
 cd "$BACKUP_DIR"
-ls -t devflow-*.dump 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -I {} rm -f {} || true
-ls -t devflow-*.sql 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -I {} rm -f {} || true
+ls -t done-*.dump 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -I {} rm -f {} || true
+ls -t done-*.sql 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -I {} rm -f {} || true
 
-TOTAL="$(ls devflow-*.dump 2>/dev/null | wc -l | tr -d ' ')"
+TOTAL="$(ls done-*.dump 2>/dev/null | wc -l | tr -d ' ')"
 echo "   $TOTAL backup(s) conservé(s) (rotation à $KEEP max)"
