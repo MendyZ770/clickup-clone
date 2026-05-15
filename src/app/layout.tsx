@@ -13,6 +13,10 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "DevFlow",
   description: "Outil de gestion de projets pour développeurs web",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 // Script exécuté avant le rendu React pour éviter le flash de couleur au chargement
