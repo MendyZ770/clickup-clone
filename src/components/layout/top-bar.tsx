@@ -44,13 +44,13 @@ export function TopBar() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <TimerButton />
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="hidden sm:inline-flex h-8 w-8 text-muted-foreground hover:text-foreground"
           onClick={toggleTheme}
           aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
           title={theme === "dark" ? "Mode clair" : "Mode sombre"}
@@ -93,7 +93,7 @@ export function TopBar() {
         </Button>
 
         <Avatar
-          className="ml-1 h-7 w-7"
+          className="ml-0.5 sm:ml-1 h-7 w-7"
           aria-label={user?.name ?? user?.email ?? "Utilisateur"}
           title={user?.name ?? user?.email ?? ""}
         >

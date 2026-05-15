@@ -159,6 +159,15 @@
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+/* Safe area utilities for mobile notch */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 /* Staggered children animations */
 .stagger-children > * {
   opacity: 0;

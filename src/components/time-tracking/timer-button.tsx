@@ -123,10 +123,10 @@ export function TimerButton() {
 
   if (runningTimer) {
     return (
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 rounded-md bg-green-500/10 px-2.5 py-1">
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 rounded-md bg-green-500/10 px-1.5 sm:px-2.5 py-1">
           <TimerDisplay startTime={runningTimer.startTime} />
-          <span className="max-w-[120px] truncate text-xs text-muted-foreground">
+          <span className="hidden sm:inline max-w-[120px] truncate text-xs text-muted-foreground">
             {runningTimer.task.title}
           </span>
         </div>

@@ -163,7 +163,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
           {WEEKDAYS.map((day) => (
             <div
               key={day}
-              className="px-2 py-2 text-center text-xs font-medium text-muted-foreground"
+              className="px-1 py-1.5 sm:px-2 sm:py-2 text-center text-[10px] sm:text-xs font-medium text-muted-foreground"
             >
               {day}
             </div>
@@ -196,7 +196,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
                   if (taskId) handleDrop(dateKey, taskId);
                 }}
                 className={cn(
-                  "group relative min-h-[70px] md:min-h-[110px] border-b border-r p-1 md:p-1.5 transition-colors",
+                  "group relative min-h-[55px] sm:min-h-[70px] md:min-h-[110px] border-b border-r p-0.5 sm:p-1 md:p-1.5 transition-colors",
                   !isCurrentMonth && "bg-muted/20",
                   today && "bg-primary/5",
                   isDragOver && "bg-primary/10 ring-2 ring-primary ring-inset"
@@ -206,7 +206,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
                 <div className="flex items-center justify-between mb-1">
                   <span
                     className={cn(
-                      "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs",
+                      "inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full text-[10px] sm:text-xs",
                       today &&
                         "bg-primary text-primary-foreground font-bold",
                       !isCurrentMonth && "text-muted-foreground/50"

@@ -172,7 +172,7 @@ export function TaskDetailContent({
                       setEditingTitle(false);
                     }
                   }}
-                  className="w-full bg-transparent text-xl md:text-2xl font-bold outline-none border-b-2 border-primary pb-1"
+                  className="w-full bg-transparent text-lg sm:text-xl md:text-2xl font-bold outline-none border-b-2 border-primary pb-1"
                   autoFocus
                 />
               ) : (
@@ -182,7 +182,7 @@ export function TaskDetailContent({
                     setEditingTitle(true);
                     setTimeout(() => titleRef.current?.focus(), 0);
                   }}
-                  className={`text-xl md:text-2xl font-bold transition-colors inline-flex items-center gap-2 ${
+                  className={`text-lg sm:text-xl md:text-2xl font-bold transition-colors inline-flex items-center gap-2 ${
                     task.locked ? "cursor-default" : "cursor-text hover:text-primary/80"
                   }`}
                 >

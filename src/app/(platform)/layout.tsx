@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth-helpers";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { SearchCommand } from "@/components/search/search-command";
 
 export default async function PlatformLayout({
@@ -17,11 +18,12 @@ export default async function PlatformLayout({
       </div>
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto bg-background">
+        <main className="flex-1 overflow-y-auto bg-background pb-14 md:pb-0">
           {children}
         </main>
       </div>
       <SearchCommand />
+      <MobileNav />
     </div>
   );
 }

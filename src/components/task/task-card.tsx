@@ -32,7 +32,7 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
     <div
       onClick={() => openTaskModal(task.id, task.locked)}
       className={cn(
-        "group relative cursor-pointer rounded-lg border bg-card p-3 shadow-sm transition-all hover:shadow-md",
+        "group relative cursor-pointer rounded-lg border bg-card p-2 sm:p-3 shadow-sm transition-all hover:shadow-md",
         className
       )}
     >
@@ -44,7 +44,7 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
         )}
       />
 
-      <div className="pl-2.5 space-y-2">
+      <div className="pl-2.5 space-y-1.5 sm:space-y-2">
         {/* Title + Actions */}
         <div className="flex items-start justify-between gap-1">
           <p className="text-sm font-medium leading-snug line-clamp-2 flex-1 inline-flex items-start gap-1.5">
