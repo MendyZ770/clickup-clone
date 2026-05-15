@@ -36,7 +36,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-3 md:px-4">
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:static md:px-4">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />

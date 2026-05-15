@@ -165,7 +165,7 @@
 }
 
 .safe-area-pt {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
 }
 
 /* Staggered children animations */

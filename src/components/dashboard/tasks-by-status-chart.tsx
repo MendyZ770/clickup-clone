@@ -17,8 +17,8 @@ const RechartsComponents = dynamic(
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={100}
-              innerRadius={50}
+              outerRadius="80%"
+              innerRadius="50%"
               paddingAngle={2}
               strokeWidth={0}
             >

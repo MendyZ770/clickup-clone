@@ -45,6 +45,14 @@ export function TaskDetailContent({
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
+  // Hide properties panel by default on mobile
+  useEffect(() => {
+    const update = () => setShowProperties(window.innerWidth >= 768);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   useEffect(() => {
     if (task) {
       setTitleValue(task.title);
@@ -187,7 +195,7 @@ export function TaskDetailContent({
                   }`}
                 >
                   {task.locked && <Lock className="h-4 w-4 text-amber-500 shrink-0" />}
-                  {task.title}
+                  <span className="truncate">{task.title}</span>
                 </h1>
               )}
             </div>

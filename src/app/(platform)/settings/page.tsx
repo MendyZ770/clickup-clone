@@ -14,8 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
+import { AvatarUpload } from "@/components/user/avatar-upload";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -32,15 +32,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (session?.user?.name) setName(session.user.name);
   }, [session?.user?.name]);
-
-  const initials = session?.user?.name
-    ? session.user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "?";
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,17 +129,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={session?.user?.image ?? undefined} />
-                <AvatarFallback className="text-lg bg-primary/20 text-primary">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-xs text-muted-foreground">
-                {"L'upload d'avatar sera bientôt disponible."}
-              </div>
-            </div>
+            <AvatarUpload />
 
             <div className="space-y-2">
               <Label htmlFor="name">Nom</Label>

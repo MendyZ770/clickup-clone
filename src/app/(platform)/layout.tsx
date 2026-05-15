@@ -16,9 +16,9 @@ export default async function PlatformLayout({
       <div className="hidden md:contents">
         <Sidebar />
       </div>
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-y-auto md:overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto bg-background pb-14 md:pb-0">
+        <main className="flex-1 bg-background pb-14 md:overflow-y-auto md:pb-0">
           {children}
         </main>
       </div>

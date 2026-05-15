@@ -132,8 +132,8 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
                   <span className="w-4" />
                   <span className="flex-1">Titre</span>
                   <span className="hidden sm:block w-16" />
-                  <span className="w-20 text-center">Statut</span>
-                  <span className="w-10 text-center">Pri</span>
+                  <span className="hidden sm:block w-20 text-center">Statut</span>
+                  <span className="hidden sm:block w-10 text-center">Pri</span>
                   <span className="hidden lg:block w-24">Échéance</span>
                   <span className="w-8" />
                 </div>

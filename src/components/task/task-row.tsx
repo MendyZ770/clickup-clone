@@ -19,6 +19,13 @@ const statusFetcher = (url: string) =>
     return r.json();
   });
 
+const PRIORITY_DOT_COLORS: Record<string, string> = {
+  urgent: "bg-red-500",
+  high: "bg-orange-500",
+  normal: "bg-blue-500",
+  low: "bg-gray-400",
+};
+
 interface TaskRowProps {
   task: TaskSummary;
   workspaceId: string;
@@ -121,18 +128,35 @@ export function TaskRow({
         </div>
       )}
 
-      {/* Status */}
-      <StatusBadge
-        status={task.status}
-        listId={task.listId}
-        onChange={(statusId) => handleUpdate({ statusId })}
-      />
+      {/* Mobile mini dots */}
+      <div className="flex items-center gap-1.5 sm:hidden shrink-0">
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ backgroundColor: task.status.color }}
+          title={task.status.name}
+        />
+        <span
+          className={cn("h-2 w-2 rounded-full", PRIORITY_DOT_COLORS[task.priority] ?? "bg-gray-400")}
+          title={task.priority}
+        />
+      </div>
 
-      {/* Priority */}
-      <PriorityBadge
-        priority={task.priority}
-        onChange={(priority) => handleUpdate({ priority })}
-      />
+      {/* Status — hidden on mobile */}
+      <div className="hidden sm:block">
+        <StatusBadge
+          status={task.status}
+          listId={task.listId}
+          onChange={(statusId) => handleUpdate({ statusId })}
+        />
+      </div>
+
+      {/* Priority — hidden on mobile */}
+      <div className="hidden sm:block">
+        <PriorityBadge
+          priority={task.priority}
+          onChange={(priority) => handleUpdate({ priority })}
+        />
+      </div>
 
       {/* Due Date */}
       <DueDatePicker
@@ -141,12 +165,14 @@ export function TaskRow({
         className="hidden lg:flex"
       />
 
-      {/* Assignee */}
-      <AssigneeSelector
-        assignee={task.assignee}
-        workspaceId={workspaceId}
-        onChange={(assigneeId) => handleUpdate({ assigneeId })}
-      />
+      {/* Assignee — hidden on mobile */}
+      <div className="hidden sm:block">
+        <AssigneeSelector
+          assignee={task.assignee}
+          workspaceId={workspaceId}
+          onChange={(assigneeId) => handleUpdate({ assigneeId })}
+        />
+      </div>
 
       {/* Action menu */}
       <TaskActionMenu
