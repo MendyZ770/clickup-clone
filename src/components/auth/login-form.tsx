@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+import { useAccounts } from "@/hooks/use-accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { QuickAccounts } from "./quick-accounts";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { data: session } = useSession();
+  const { addAccount } = useAccounts();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
@@ -35,6 +40,14 @@ export function LoginForm() {
           variant: "destructive",
         });
       } else {
+        if (session?.user) {
+          addAccount({
+            id: session.user.id ?? email,
+            email: session.user.email ?? email,
+            name: session.user.name ?? null,
+            image: session.user.image ?? null,
+          });
+        }
         router.push("/dashboard");
         router.refresh();
       }
@@ -62,6 +75,8 @@ export function LoginForm() {
           {"Connectez-vous à votre espace de travail"}
         </p>
       </div>
+
+      <QuickAccounts />
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm space-y-4">

@@ -1,31 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Search, Bell, Sun, Moon } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTheme } from "@/providers/theme-provider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "./breadcrumbs";
 import { TimerButton } from "@/components/time-tracking/timer-button";
 import { MobileSidebar } from "./mobile-sidebar";
+import { AccountSwitcher } from "./account-switcher";
 
 export function TopBar() {
   const router = useRouter();
-  const { data: session } = useSession();
   const { unreadCount } = useNotifications();
   const { theme, toggleTheme } = useTheme();
-  const user = session?.user;
-
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "?";
 
   const openSearch = () => {
     const event = new KeyboardEvent("keydown", {
@@ -92,16 +80,7 @@ export function TopBar() {
           )}
         </Button>
 
-        <Avatar
-          className="ml-0.5 sm:ml-1 h-7 w-7"
-          aria-label={user?.name ?? user?.email ?? "Utilisateur"}
-          title={user?.name ?? user?.email ?? ""}
-        >
-          <AvatarImage src={user?.image ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-[10px] text-primary">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <AccountSwitcher />
       </div>
     </header>
   );
