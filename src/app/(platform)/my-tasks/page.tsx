@@ -1,28 +1,17 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ClipboardList, Calendar, AlertTriangle, CheckCircle2, Plus, X } from "lucide-react";
+import { ClipboardList, Calendar, AlertTriangle, CheckCircle2 } from "lucide-react";
 import useSWR, { useSWRConfig } from "swr";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useModal } from "@/hooks/use-modal";
-import { useSpaces } from "@/hooks/use-spaces";
-import { useCreateTask } from "@/hooks/use-tasks";
 import { PageHeader } from "@/components/shared/page-header";
+import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -59,10 +48,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 export default function MyTasksPage() {
   const { currentWorkspace } = useWorkspace();
   const { openTaskModal } = useModal();
-  const { toast } = useToast();
-  const { createTask } = useCreateTask();
   const { mutate: globalMutate } = useSWRConfig();
-  const { spaces } = useSpaces(currentWorkspace?.id ?? null);
 
   const { data: tasks } = useSWR<MyTask[]>(
     currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}` : null,
@@ -70,55 +56,9 @@ export default function MyTasksPage() {
     { refreshInterval: 30000 }
   );
 
-  const [showForm, setShowForm] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newListId, setNewListId] = useState("");
-  const [newPriority, setNewPriority] = useState("normal");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Build flat list of all lists across spaces
-  const allLists = useMemo(() => {
-    const lists: { id: string; name: string; spaceName: string }[] = [];
-    for (const space of spaces) {
-      for (const list of space.lists ?? []) {
-        lists.push({ id: list.id, name: list.name, spaceName: space.name });
-      }
-    }
-    return lists;
-  }, [spaces]);
-
-  useEffect(() => {
-    if (allLists.length > 0 && !newListId) {
-      setNewListId(allLists[0].id);
-    }
-  }, [allLists, newListId]);
-
-  const handleCreate = async () => {
-    const trimmed = newTitle.trim();
-    if (!trimmed || !newListId) return;
-
-    setIsSubmitting(true);
-    try {
-      await createTask({
-        title: trimmed,
-        listId: newListId,
-        priority: newPriority,
-      });
-      toast({ title: "Tâche créée" });
-      setNewTitle("");
-      setShowForm(false);
-      // Refresh my-tasks
-      globalMutate(
-        currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}` : null
-      );
-    } catch (err) {
-      toast({
-        title: "Erreur",
-        description: err instanceof Error ? err.message : "Impossible de créer la tâche",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+  const handleTaskCreated = () => {
+    if (currentWorkspace) {
+      globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}`);
     }
   };
 
@@ -168,70 +108,14 @@ export default function MyTasksPage() {
               : "Chargement..."
           }
           actions={
-            <Button size="sm" onClick={() => setShowForm((s) => !s)}>
-              {showForm ? <X className="h-4 w-4 mr-1.5" /> : <Plus className="h-4 w-4 mr-1.5" />}
-              {showForm ? "Annuler" : "Nouvelle tâche"}
-            </Button>
+            currentWorkspace ? (
+              <QuickCreateTask
+                workspaceId={currentWorkspace.id}
+                onCreated={handleTaskCreated}
+              />
+            ) : undefined
           }
         />
-
-        {/* Quick create form */}
-        {showForm && (
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                placeholder="Titre de la tâche..."
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleCreate();
-                  }
-                }}
-                className="flex-1"
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <Select value={newListId} onValueChange={setNewListId}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Liste" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLists.map((list) => (
-                      <SelectItem key={list.id} value={list.id}>
-                        {list.spaceName} / {list.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={newPriority} onValueChange={setNewPriority}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Priorité" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="high">Haute</SelectItem>
-                    <SelectItem value="normal">Normale</SelectItem>
-                    <SelectItem value="low">Basse</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleCreate}
-                  disabled={isSubmitting || !newTitle.trim() || !newListId}
-                  size="sm"
-                >
-                  {isSubmitting ? "Création..." : "Créer"}
-                </Button>
-              </div>
-            </div>
-            {allLists.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Aucune liste disponible. Créez d&apos;abord une liste dans un espace.
-              </p>
-            )}
-          </div>
-        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

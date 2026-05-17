@@ -1,9 +1,10 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { LayoutDashboard } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { PageHeader } from "@/components/shared/page-header";
+import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart";
 import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
@@ -56,6 +57,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace();
+  const { mutate: globalMutate } = useSWRConfig();
 
   const { data, isLoading: dataLoading } = useSWR<DashboardData>(
     currentWorkspace
@@ -67,6 +69,12 @@ export default function DashboardPage() {
 
   const isLoading = workspaceLoading || dataLoading;
 
+  const handleTaskCreated = () => {
+    if (currentWorkspace) {
+      globalMutate(`/api/dashboard/stats?workspaceId=${currentWorkspace.id}`);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-4 md:space-y-6">
       <PageHeader
@@ -76,6 +84,14 @@ export default function DashboardPage() {
           currentWorkspace
             ? `Vue d'ensemble de ${currentWorkspace.name}`
             : "Sélectionnez un espace de travail pour commencer"
+        }
+        actions={
+          currentWorkspace ? (
+            <QuickCreateTask
+              workspaceId={currentWorkspace.id}
+              onCreated={handleTaskCreated}
+            />
+          ) : undefined
         }
       />
 
