@@ -11,6 +11,7 @@ import {
   Bell,
   LogOut,
   Settings,
+  Building2,
   ChevronsUpDown,
   Check,
   CalendarSync,
@@ -312,6 +313,14 @@ export function Sidebar() {
                 <Settings className="mr-2 h-4 w-4" />
                 Paramètres
               </DropdownMenuItem>
+              {currentWorkspace && (
+                <DropdownMenuItem
+                  onClick={() => router.push(`/workspace/${currentWorkspace.id}/settings`)}
+                >
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Paramètres de l&apos;espace
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => signOut({ callbackUrl: "/login" })}
