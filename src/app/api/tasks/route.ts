@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { createTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
+import { triggerCalendarSync } from "@/lib/calendar-sync";
 import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
@@ -195,6 +196,11 @@ export async function POST(request: Request) {
       taskId: task.id,
       userId: user.id,
     });
+
+    // Trigger calendar sync if task has a due date
+    if (task.dueDate) {
+      triggerCalendarSync();
+    }
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

@@ -458,7 +458,7 @@ function CalendarSettingsContent() {
             {"Synchronisation Google Calendar"}
           </CardTitle>
           <CardDescription>
-            {"Connectez Google Calendar pour synchroniser vos tâches en tant qu'événements. Fonctionne aussi avec Samsung Calendar lié à un compte Google."}
+            {"Connectez Google Calendar pour synchroniser vos tâches en tant qu'événements. La synchronisation est automatique : elle se déclenche toutes les 5 minutes et à chaque modification d'une tâche avec échéance."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

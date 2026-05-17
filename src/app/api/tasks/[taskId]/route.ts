@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { updateTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
+import { triggerCalendarSync } from "@/lib/calendar-sync";
 
 interface RouteContext {
   params: Promise<{ taskId: string }>;
@@ -310,6 +311,11 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     });
 
+    // Trigger calendar sync if dueDate was modified
+    if (updateData.dueDate !== undefined) {
+      triggerCalendarSync();
+    }
+
     // Log all field changes
     for (const activity of activities) {
       await logActivity({
@@ -383,6 +389,11 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
 
     await prisma.task.delete({ where: { id: taskId } });
+
+    // Trigger calendar sync if deleted task had a due date
+    if (task.dueDate) {
+      triggerCalendarSync();
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
