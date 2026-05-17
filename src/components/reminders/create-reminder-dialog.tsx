@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 interface CreateReminderDialogProps {
   open: boolean;
@@ -121,28 +116,20 @@ export function CreateReminderDialog({
 
           <div className="space-y-2">
             <Label>Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Choisir une date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <span className={cn(!date && "text-muted-foreground")}>
+                {date ? format(date, "PPP") : "Choisir une date ci-dessous"}
+              </span>
+            </div>
+            <div className="rounded-md border p-2">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="mx-auto"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
