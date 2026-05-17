@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { sendInvitationEmail } from "@/lib/email";
 
 interface RouteContext {
   params: Promise<{ workspaceId: string }>;
@@ -107,6 +108,20 @@ export async function POST(request: Request, context: RouteContext) {
 
     const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
     const inviteUrl = `${baseUrl}/invite/${invite.token}`;
+
+    // Fetch workspace name for email
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { name: true },
+    });
+
+    // Send invitation email (non-blocking)
+    sendInvitationEmail({
+      to: emailRaw,
+      workspaceName: workspace?.name ?? "workspace",
+      inviterName: user.name,
+      token: invite.token,
+    }).catch((err) => console.error("[INVITE] Email send failed:", err));
 
     return NextResponse.json({ ...invite, inviteUrl }, { status: 201 });
   } catch (error) {

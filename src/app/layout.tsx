@@ -50,6 +50,23 @@ const themeInitScript = `
 })();
 `;
 
+// Enregistre le Service Worker PWA
+const swRegisterScript = `
+(function() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function(reg) {
+          console.log('[PWA] Service Worker enregistré', reg.scope);
+        })
+        .catch(function(err) {
+          console.log('[PWA] Échec enregistrement SW', err);
+        });
+    });
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,6 +76,7 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: swRegisterScript }} />
       </head>
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased`}>
         <ThemeProvider>
