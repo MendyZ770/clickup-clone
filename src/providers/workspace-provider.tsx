@@ -70,6 +70,11 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
   useEffect(() => {
     if (workspaces.length === 0) return;
 
+    // Si un workspace valide est déjà sélectionné, ne pas override
+    if (currentWorkspace && workspaces.some((w) => w.id === currentWorkspace.id)) {
+      return;
+    }
+
     let savedId: string | null = null;
     try {
       savedId = localStorage.getItem(WORKSPACE_STORAGE_KEY);
@@ -86,7 +91,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
     } else {
       setCurrentWorkspaceState(workspaces[0]);
     }
-  }, [workspaces]);
+  }, [workspaces, currentWorkspace]);
 
   return (
     <WorkspaceContext.Provider

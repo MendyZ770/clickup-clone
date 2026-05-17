@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Users, X } from "lucide-react";
 
 import { useAccounts } from "@/hooks/use-accounts";
@@ -18,7 +17,6 @@ function getInitials(name: string | null): string {
 }
 
 export function QuickAccounts() {
-  const router = useRouter();
   const { accounts, mounted, removeAccount } = useAccounts();
 
   if (!mounted || accounts.length === 0) return null;
@@ -41,7 +39,7 @@ export function QuickAccounts() {
               onClick={() => {
                 const url = new URL("/login", window.location.origin);
                 url.searchParams.set("email", account.email);
-                router.push(url.toString());
+                window.location.href = url.toString();
               }}
             >
               <Avatar className="h-7 w-7 mr-2">

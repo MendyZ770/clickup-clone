@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -16,7 +16,6 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { data: session } = useSession();
   const { addAccount } = useAccounts();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
@@ -40,12 +39,25 @@ export function LoginForm() {
           variant: "destructive",
         });
       } else {
-        if (session?.user) {
+        // Récupérer le profil pour avoir l'id, name, image à jour
+        try {
+          const meRes = await fetch("/api/me");
+          if (meRes.ok) {
+            const me = await meRes.json();
+            addAccount({
+              id: me.id ?? email,
+              email: me.email ?? email,
+              name: me.name ?? null,
+              image: me.image ?? null,
+            });
+          }
+        } catch {
+          // Fallback : sauvegarder avec l'email uniquement
           addAccount({
-            id: session.user.id ?? email,
-            email: session.user.email ?? email,
-            name: session.user.name ?? null,
-            image: session.user.image ?? null,
+            id: email,
+            email,
+            name: null,
+            image: null,
           });
         }
         router.push("/dashboard");

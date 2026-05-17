@@ -94,7 +94,7 @@ export function MemberList({
 
     try {
       const res = await fetch(
-        `/api/workspaces/${workspaceId}/members`,
+        `/api/workspaces/${workspaceId}/invites`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -104,12 +104,22 @@ export function MemberList({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to add member");
+        throw new Error(data.error || "Failed to invite");
       }
+
+      const data = await res.json();
 
       setEmail("");
       setRole("member");
       onMemberAdded();
+
+      // Copier le lien d'invitation automatiquement
+      try {
+        await navigator.clipboard.writeText(data.inviteUrl);
+        setError("Lien d'invitation copié !");
+      } catch {
+        // ignore
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
