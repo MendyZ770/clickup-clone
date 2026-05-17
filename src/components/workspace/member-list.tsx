@@ -8,6 +8,8 @@ import {
   Shield,
   ShieldCheck,
   Crown,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
 interface Member {
@@ -78,10 +81,13 @@ export function MemberList({
   onMemberAdded,
   onMemberRemoved,
 }: MemberListProps) {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
   const [inviting, setInviting] = useState(false);
   const [error, setError] = useState("");
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<Member | null>(null);
 
@@ -91,6 +97,7 @@ export function MemberList({
 
     setInviting(true);
     setError("");
+    setLastInviteUrl(null);
 
     try {
       const res = await fetch(
@@ -111,19 +118,29 @@ export function MemberList({
 
       setEmail("");
       setRole("member");
+      setLastInviteUrl(data.inviteUrl);
       onMemberAdded();
 
-      // Copier le lien d'invitation automatiquement
-      try {
-        await navigator.clipboard.writeText(data.inviteUrl);
-        setError("Lien d'invitation copié !");
-      } catch {
-        // ignore
-      }
+      toast({
+        title: "Invitation créée",
+        description: "Le lien est affiché ci-dessous. Partagez-le !",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!lastInviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(lastInviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({ title: "Lien copié !" });
+    } catch {
+      toast({ title: "Erreur", description: "Impossible de copier", variant: "destructive" });
     }
   };
 
@@ -187,6 +204,38 @@ export function MemberList({
             )}
           </Button>
         </form>
+
+        {/* Lien d'invitation nouvellement créé */}
+        {lastInviteUrl && (
+          <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 space-y-2">
+            <p className="text-sm font-medium text-green-600 dark:text-green-400">
+              Invitation créée — partagez ce lien
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={lastInviteUrl}
+                className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-muted-foreground"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopyLink}
+                className="shrink-0"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                <span className="ml-2 hidden sm:inline">
+                  {copied ? "Copié" : "Copier"}
+                </span>
+              </Button>
+            </div>
+          </div>
+        )}
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
