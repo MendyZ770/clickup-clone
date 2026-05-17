@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { addMinutes } from "date-fns";
 import { sendReminderEmail } from "@/lib/email";
+import { sendPushNotification, initWebPush } from "@/lib/push";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -78,6 +79,38 @@ export async function GET(request: Request) {
           taskTitle: reminder.task?.title,
           taskId: reminder.task?.id,
         }).catch((err) => console.error("[CRON] Email send failed:", err));
+      }
+
+      // Send push notification to subscribed devices
+      try {
+        const subs = await prisma.pushSubscription.findMany({
+          where: { userId: reminder.userId },
+        });
+        if (subs.length > 0 && initWebPush()) {
+          const pushBody = reminder.description
+            ? `${reminder.title} — ${reminder.description}`
+            : reminder.title;
+          const pushUrl = reminder.taskId ? `/task/${reminder.taskId}` : "/reminders";
+
+          for (const sub of subs) {
+            sendPushNotification({
+              subscription: {
+                endpoint: sub.endpoint,
+                p256dh: sub.p256dh,
+                auth: sub.auth,
+              },
+              title: reminder.title,
+              body: pushBody,
+              url: pushUrl,
+            }).catch(async (err) => {
+              if (err.message === "GONE") {
+                await prisma.pushSubscription.delete({ where: { id: sub.id } });
+              }
+            });
+          }
+        }
+      } catch {
+        // ignore push errors
       }
 
       // Mark reminder as completed (since we notified)
