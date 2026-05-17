@@ -9,14 +9,14 @@ const BarChartComponent = dynamic(
     const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } = mod;
     return {
       default: ({ data }: { data: { name: string; count: number; fill: string }[] }) => (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={240}>
           <BarChart data={data} layout="vertical" barCategoryGap="20%">
-            <XAxis type="number" allowDecimals={false} fontSize={12} />
+            <XAxis type="number" allowDecimals={false} fontSize={11} />
             <YAxis
               type="category"
               dataKey="name"
-              width={70}
-              fontSize={12}
+              width={60}
+              fontSize={11}
               tickLine={false}
               axisLine={false}
             />
@@ -38,7 +38,7 @@ const BarChartComponent = dynamic(
       ),
     };
   }),
-  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> }
+  { ssr: false, loading: () => <Skeleton className="h-[240px] w-full" /> }
 );
 
 interface TasksByPriorityChartProps {

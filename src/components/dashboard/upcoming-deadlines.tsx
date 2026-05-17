@@ -59,18 +59,18 @@ export function UpcomingDeadlines({
   if (isLoading) {
     return (
       <Card className="border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
+        <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
+          <CardTitle className="text-sm md:text-base font-semibold">
             Échéances à venir
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2 md:space-y-3 px-4 md:px-6 pb-4 md:pb-6">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="space-y-2 rounded-lg border p-3">
-              <Skeleton className="h-4 w-3/4" />
+            <div key={i} className="space-y-1.5 md:space-y-2 rounded-lg border p-2.5 md:p-3">
+              <Skeleton className="h-3.5 md:h-4 w-3/4" />
               <div className="flex gap-2">
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-4 md:h-5 w-14 md:w-16" />
+                <Skeleton className="h-4 md:h-5 w-14 md:w-16" />
               </div>
             </div>
           ))}
@@ -81,28 +81,28 @@ export function UpcomingDeadlines({
 
   return (
     <Card className="border-border/50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">
+      <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
+        <CardTitle className="text-sm md:text-base font-semibold">
           Échéances à venir
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
         {tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <CalendarDays className="mb-2 h-8 w-8 text-muted-foreground/50" />
+          <div className="flex flex-col items-center justify-center py-6 md:py-8">
+            <CalendarDays className="mb-2 h-7 w-7 md:h-8 md:w-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
               Aucune échéance à venir
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5 md:space-y-2">
             {tasks.map((task) => (
               <button
                 key={task.id}
                 onClick={() => onTaskClick?.(task.id)}
-                className="w-full rounded-lg border border-border/50 p-3 text-left transition-colors hover:bg-muted/50"
+                className="w-full rounded-lg border border-border/50 p-2.5 md:p-3 text-left transition-colors hover:bg-muted/50"
               >
-                <p className="mb-2 truncate text-sm font-medium">
+                <p className="mb-1.5 md:mb-2 truncate text-[13px] md:text-sm font-medium">
                   {task.title}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">

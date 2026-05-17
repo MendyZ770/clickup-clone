@@ -97,18 +97,18 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
   if (isLoading) {
     return (
       <Card className="border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
+        <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
+          <CardTitle className="text-sm md:text-base font-semibold">
             Activité récente
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 md:space-y-4 px-4 md:px-6 pb-4 md:pb-6">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-start gap-3">
-              <Skeleton className="h-8 w-8 rounded-full" />
+            <div key={i} className="flex items-start gap-2.5 md:gap-3">
+              <Skeleton className="h-7 w-7 md:h-8 md:w-8 rounded-full" />
               <div className="flex-1 space-y-1">
                 <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-2.5 md:h-3 w-16" />
               </div>
             </div>
           ))}
@@ -119,39 +119,39 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
 
   return (
     <Card className="border-border/50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">
+      <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
+        <CardTitle className="text-sm md:text-base font-semibold">
           Activité récente
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
         {activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <Activity className="mb-2 h-8 w-8 text-muted-foreground/50" />
+          <div className="flex flex-col items-center justify-center py-6 md:py-8">
+            <Activity className="mb-2 h-7 w-7 md:h-8 md:w-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">Aucune activité récente</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {activities.map((activity) => {
               const ActionIcon = getActionIcon(activity.action);
               return (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8 shrink-0">
+                <div key={activity.id} className="flex items-start gap-2.5 md:gap-3">
+                  <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0">
                     <AvatarImage src={activity.user.image ?? undefined} />
-                    <AvatarFallback className="bg-primary/10 text-[10px] text-primary">
+                    <AvatarFallback className="bg-primary/10 text-[9px] md:text-[10px] text-primary">
                       {getInitials(activity.user.name, activity.user.email)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm leading-snug">
-                      <span className="font-medium">
+                      <span className="font-medium text-[13px] md:text-sm">
                         {activity.user.name ?? activity.user.email}
                       </span>{" "}
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground text-[13px] md:text-sm">
                         {getActivityDescription(activity)}
                       </span>
                     </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground/70">
+                    <p className="mt-0.5 text-[11px] md:text-xs text-muted-foreground/70">
                       {formatDistanceToNow(new Date(activity.createdAt), {
                         addSuffix: true,
                       })}

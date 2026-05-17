@@ -9,16 +9,16 @@ const RechartsComponents = dynamic(
     const { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } = mod;
     return {
       default: ({ data }: { data: { name: string; color: string; count: number }[] }) => (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={260}>
           <PieChart>
             <Pie
               data={data}
               dataKey="count"
               nameKey="name"
               cx="50%"
-              cy="50%"
-              outerRadius="80%"
-              innerRadius="50%"
+              cy="45%"
+              outerRadius="75%"
+              innerRadius="45%"
               paddingAngle={2}
               strokeWidth={0}
             >
@@ -36,16 +36,17 @@ const RechartsComponents = dynamic(
             />
             <Legend
               verticalAlign="bottom"
-              height={36}
+              height={40}
               iconType="circle"
               iconSize={8}
+              wrapperStyle={{ fontSize: "12px" }}
             />
           </PieChart>
         </ResponsiveContainer>
       ),
     };
   }),
-  { ssr: false, loading: () => <Skeleton className="h-[300px] w-full" /> }
+  { ssr: false, loading: () => <Skeleton className="h-[260px] w-full" /> }
 );
 
 interface TasksByStatusChartProps {

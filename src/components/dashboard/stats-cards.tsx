@@ -63,15 +63,15 @@ export function StatsCards({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.key} className="border-border/50">
-            <CardContent className="p-4 md:p-5">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-lg" />
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-7 w-12" />
+            <CardContent className="p-3 md:p-5">
+              <div className="flex items-center gap-3 md:gap-4">
+                <Skeleton className="h-10 w-10 md:h-12 md:w-12 rounded-lg" />
+                <div className="space-y-1.5 md:space-y-2">
+                  <Skeleton className="h-3 w-16 md:w-20" />
+                  <Skeleton className="h-6 md:h-7 w-10 md:w-12" />
                 </div>
               </div>
             </CardContent>
@@ -82,7 +82,7 @@ export function StatsCards({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((s) => {
         const Icon = s.icon;
         const value = values[s.key];
@@ -91,16 +91,16 @@ export function StatsCards({
             key={s.key}
             className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all"
           >
-            <CardContent className="p-4 md:p-5">
-              <div className="flex items-center gap-4">
+            <CardContent className="p-3 md:p-5">
+              <div className="flex items-center gap-3 md:gap-4">
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${s.bgColor}`}
+                  className={`flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg ${s.bgColor}`}
                 >
-                  <Icon className={`h-6 w-6 ${s.color}`} />
+                  <Icon className={`h-5 w-5 md:h-6 md:w-6 ${s.color}`} />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{s.label}</p>
-                  <p className="text-2xl font-bold">{value}</p>
+                <div className="min-w-0">
+                  <p className="text-[11px] md:text-sm text-muted-foreground truncate">{s.label}</p>
+                  <p className="text-xl md:text-2xl font-bold">{value}</p>
                 </div>
               </div>
             </CardContent>

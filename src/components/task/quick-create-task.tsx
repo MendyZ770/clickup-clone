@@ -81,7 +81,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
           Nouvelle tâche
         </Button>
       ) : (
-        <div className="rounded-xl border bg-card p-4 space-y-3 w-full max-w-2xl">
+        <div className="rounded-xl border bg-card p-3 md:p-4 space-y-2 md:space-y-3 w-full max-w-2xl">
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Titre de la tâche..."
@@ -96,9 +96,9 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
               className="flex-1"
               autoFocus
             />
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <Select value={newListId} onValueChange={setNewListId}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[140px] sm:w-[180px]">
                   <SelectValue placeholder="Liste" />
                 </SelectTrigger>
                 <SelectContent>
@@ -110,7 +110,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
                 </SelectContent>
               </Select>
               <Select value={newPriority} onValueChange={setNewPriority}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[100px] sm:w-[120px]">
                   <SelectValue placeholder="Priorité" />
                 </SelectTrigger>
                 <SelectContent>
@@ -131,7 +131,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowForm(false)}
-                className="shrink-0"
+                className="shrink-0 h-8 w-8"
               >
                 <X className="h-4 w-4" />
               </Button>
