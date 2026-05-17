@@ -4,13 +4,31 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { createGoogleCalendarEvent } from "@/lib/calendar-helpers";
 
-async function getAuthenticatedCalendar(userId: string) {
+interface AuthSuccess {
+  ok: true;
+  calendar: ReturnType<typeof google.calendar>;
+  syncRecord: NonNullable<Awaited<ReturnType<typeof prisma.googleCalendarSync.findUnique>>>;
+}
+
+interface AuthExpired {
+  ok: false;
+  reason: "expired";
+}
+
+interface AuthMissing {
+  ok: false;
+  reason: "missing";
+}
+
+type AuthResult = AuthSuccess | AuthExpired | AuthMissing;
+
+async function getAuthenticatedCalendar(userId: string): Promise<AuthResult> {
   const syncRecord = await prisma.googleCalendarSync.findUnique({
     where: { userId },
   });
 
   if (!syncRecord) {
-    return null;
+    return { ok: false, reason: "missing" } as AuthMissing;
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -18,7 +36,7 @@ async function getAuthenticatedCalendar(userId: string) {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
   if (!clientId || !clientSecret) {
-    return null;
+    return { ok: false, reason: "missing" } as AuthMissing;
   }
 
   const oauth2Client = new google.auth.OAuth2(
@@ -49,12 +67,18 @@ async function getAuthenticatedCalendar(userId: string) {
       });
     } catch (refreshError) {
       console.error("Failed to refresh Google token:", refreshError);
-      return null;
+      // Si le refresh token est invalide/révoqué, on supprime le record
+      const msg = refreshError instanceof Error ? refreshError.message : String(refreshError);
+      if (msg.includes("invalid_grant")) {
+        await prisma.googleCalendarSync.delete({ where: { userId } });
+        return { ok: false, reason: "expired" } as AuthExpired;
+      }
+      return { ok: false, reason: "missing" } as AuthMissing;
     }
   }
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-  return { calendar, syncRecord };
+  return { ok: true, calendar, syncRecord };
 }
 
 export async function POST() {
@@ -65,7 +89,13 @@ export async function POST() {
     }
 
     const result = await getAuthenticatedCalendar(user.id);
-    if (!result) {
+    if (!result.ok) {
+      if (result.reason === "expired") {
+        return NextResponse.json(
+          { error: "Google Calendar token expired", reconnect: true },
+          { status: 401 }
+        );
+      }
       return NextResponse.json(
         { error: "Google Calendar is not connected or configuration is missing" },
         { status: 400 }
