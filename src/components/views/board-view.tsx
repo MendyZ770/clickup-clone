@@ -179,7 +179,7 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <ScrollArea className="w-full">
-        <div className="flex gap-4 p-4 min-h-[calc(100vh-200px)]">
+        <div className="flex gap-4 p-4 min-h-[calc(100vh-200px)] stagger-children">
           {statuses.map((status) => (
             <BoardColumn
               key={status.id}

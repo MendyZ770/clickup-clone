@@ -121,7 +121,7 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
               onToggle={() => toggleGroup(status.id)}
             />
             {!isCollapsed && (
-              <div>
+              <div className="stagger-children">
                 {/* Column headers */}
                 <div className="flex items-center gap-2 border-b px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   <span className="w-4" />
