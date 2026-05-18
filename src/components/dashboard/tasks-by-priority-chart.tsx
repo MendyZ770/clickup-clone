@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const BarChartComponent = dynamic(
@@ -72,46 +71,33 @@ export function TasksByPriorityChart({
 
   if (isLoading) {
     return (
-      <Card className="border-border/50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
-            Tâches par priorité
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 pb-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-8 w-full" />
-          ))}
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border bg-card p-5 space-y-4">
+        <Skeleton className="h-5 w-32" />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="space-y-1.5">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+        ))}
+      </div>
     );
   }
 
   if (chartData.every((d) => d.count === 0)) {
     return (
-      <Card className="border-border/50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
-            Tâches par priorité
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex h-[300px] items-center justify-center">
-          <p className="text-sm text-muted-foreground">Aucune donnée pour l&apos;instant</p>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]">
+        <p className="text-sm text-muted-foreground">Aucune donnée</p>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/50">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">
-          Tasks by Priority
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <BarChartComponent data={chartData} />
-      </CardContent>
-    </Card>
+    <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
+      <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+        <span className="h-2 w-2 rounded-full bg-primary" />
+        Tâches par priorité
+      </h3>
+      <BarChartComponent data={chartData} />
+    </div>
   );
 }

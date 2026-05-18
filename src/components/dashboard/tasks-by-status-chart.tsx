@@ -2,6 +2,7 @@
 
 import { memo, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+
 interface StatusData {
   name: string;
   color: string;
@@ -23,7 +24,6 @@ function DonutSegment({
   dash: number;
   color: string;
   total: number;
-  index: number;
 }) {
   const circumference = 2 * Math.PI * 40; // r=40
   return (
@@ -106,14 +106,13 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
             stroke="hsl(var(--muted))"
             strokeWidth="10"
           />
-          {segments.map((seg, i) => (
+          {segments.map((seg) => (
             <DonutSegment
               key={seg.name}
               offset={seg.offset}
               dash={seg.count}
               color={seg.color}
               total={total}
-              index={i}
             />
           ))}
         </svg>
