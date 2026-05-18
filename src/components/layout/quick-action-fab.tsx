@@ -25,15 +25,15 @@ export function QuickActionFab() {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "md:hidden fixed right-4 bottom-20 z-40",
-          "flex h-12 w-12 items-center justify-center",
+          "fixed right-4 bottom-20 md:right-6 md:bottom-6 z-40",
+          "flex h-12 w-12 md:h-14 md:w-14 items-center justify-center",
           "rounded-full bg-primary text-primary-foreground shadow-lg",
           "transition-transform duration-200 hover:scale-105 active:scale-95",
           "ring-2 ring-primary/20"
         )}
         aria-label="Nouvelle action rapide"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-6 w-6 md:h-7 md:w-7" />
       </button>
 
       {/* Quick Action Menu Dialog */}
