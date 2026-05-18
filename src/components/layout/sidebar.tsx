@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   ChevronDown,
@@ -22,14 +22,23 @@ import {
   Star,
   ClipboardList,
   NotebookPen,
+  PanelLeft,
+  PanelLeftClose,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useFavorites, type FavoriteItem } from "@/hooks/use-favorites";
+import { useSidebar } from "@/hooks/use-sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +53,7 @@ import { CreateWorkspaceDialog } from "@/components/workspace/create-workspace-d
 
 export function Sidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = useSession();
   const { currentWorkspace, workspaces, setCurrentWorkspace, isLoading } =
     useWorkspace();
@@ -51,6 +61,7 @@ export function Sidebar() {
     useSpaces(currentWorkspace?.id);
   const { favorites } = useFavorites(currentWorkspace?.id);
   const { unreadCount } = useNotifications();
+  const { collapsed, toggle } = useSidebar();
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
 
@@ -64,26 +75,50 @@ export function Sidebar() {
         .slice(0, 2)
     : "?";
 
+  const navItems = [
+    { icon: LayoutDashboard, label: "Tableau de bord", href: "/dashboard" },
+    { icon: ClipboardList, label: "Mes tâches", href: "/my-tasks" },
+    { icon: Calendar, label: "Calendrier", href: "/calendar" },
+    { icon: Timer, label: "Suivi du temps", href: "/time-tracking" },
+    { icon: Target, label: "Objectifs", href: "/goals" },
+    { icon: BellRing, label: "Rappels", href: "/reminders" },
+    { icon: Bell, label: "Notifications", href: "/notifications", badge: unreadCount },
+    { icon: CalendarSync, label: "Sync calendrier", href: "/dashboard/calendar-settings" },
+    { icon: NotebookPen, label: "Notes", href: "/notes" },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname?.startsWith(href);
+  };
+
   return (
-    <>
-      <aside className="flex h-screen w-[260px] min-w-[260px] flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border">
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className="group/sidebar flex h-screen flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border transition-[width] duration-300 ease-in-out relative"
+        style={{ width: collapsed ? 64 : 260, minWidth: collapsed ? 64 : 260 }}
+      >
         {/* Workspace Switcher */}
-        <div className="flex items-center px-3 pt-3 pb-2">
+        <div className="flex items-center px-2 pt-3 pb-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent">
                 <div
-                  className="flex h-6 w-6 items-center justify-center rounded text-[11px] font-bold text-white"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-xs font-bold text-white"
                   style={{
                     backgroundColor: currentWorkspace?.color ?? "#7C3AED",
                   }}
                 >
                   {currentWorkspace?.name?.[0]?.toUpperCase() ?? "W"}
                 </div>
-                <span className="flex-1 truncate text-left">
-                  {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
-                </span>
-                <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate text-left">
+                      {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
+                    </span>
+                    <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </>
+                )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
@@ -119,104 +154,98 @@ export function Sidebar() {
         <Separator className="bg-sidebar-border" />
 
         {/* Quick Actions */}
-        <div className="space-y-0.5 px-3 pt-3 pb-2">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Tableau de bord
-          </button>
-          <button
-            onClick={() => router.push("/my-tasks")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <ClipboardList className="h-4 w-4" />
-            Mes tâches
-          </button>
-          <button
-            onClick={() => {
-              const event = new KeyboardEvent("keydown", {
-                key: "k",
-                metaKey: true,
-              });
-              document.dispatchEvent(event);
-            }}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Search className="h-4 w-4" />
-            <span className="flex-1 text-left">Rechercher</span>
-            <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] text-muted-foreground">
-              ⌘K
-            </kbd>
-          </button>
-          <button
-            onClick={() => router.push("/notifications")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="flex-1 text-left">Notifications</span>
-            {unreadCount > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-white">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => router.push("/calendar")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Calendar className="h-4 w-4" />
-            Calendrier
-          </button>
-          <button
-            onClick={() => router.push("/time-tracking")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Timer className="h-4 w-4" />
-            Suivi du temps
-          </button>
-          <button
-            onClick={() => router.push("/goals")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Target className="h-4 w-4" />
-            Objectifs
-          </button>
-          <button
-            onClick={() => router.push("/reminders")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <BellRing className="h-4 w-4" />
-            Rappels
-          </button>
-          <button
-            onClick={() => router.push("/dashboard/calendar-settings")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <CalendarSync className="h-4 w-4" />
-            Sync calendrier
-          </button>
-          <button
-            onClick={() => router.push("/notes")}
-            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <NotebookPen className="h-4 w-4" />
-            Notes
-          </button>
+        <div className="space-y-0.5 px-2 pt-3 pb-2">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            const content = (
+              <button
+                onClick={() => {
+                  if (item.label === "Rechercher") {
+                    const event = new KeyboardEvent("keydown", {
+                      key: "k",
+                      metaKey: true,
+                    });
+                    document.dispatchEvent(event);
+                    return;
+                  }
+                  router.push(item.href);
+                }}
+                className={
+                  "relative flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-all duration-200 " +
+                  (active
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground")
+                }
+              >
+                {active && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
+                )}
+                <span className="relative flex items-center justify-center shrink-0" style={{ width: 20, height: 20 }}>
+                  <item.icon className="h-[18px] w-[18px]" />
+                  {item.badge !== undefined && item.badge > 0 && collapsed && (
+                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-sidebar" />
+                  )}
+                </span>
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-white">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+            );
+            if (collapsed) {
+              return (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>{content}</TooltipTrigger>
+                  <TooltipContent side="right" className="flex items-center gap-2">
+                    {item.label}
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-medium text-white">
+                        {item.badge}
+                      </span>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+            return <div key={item.href}>{content}</div>;
+          })}
+          {!collapsed && (
+            <button
+              onClick={() => {
+                const event = new KeyboardEvent("keydown", {
+                  key: "k",
+                  metaKey: true,
+                });
+                document.dispatchEvent(event);
+              }}
+              className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
+            >
+              <Search className="h-[18px] w-[18px]" />
+              <span className="flex-1 text-left">Rechercher</span>
+              <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                ⌘K
+              </kbd>
+            </button>
+          )}
         </div>
 
         <Separator className="bg-sidebar-border" />
 
         {/* Favorites */}
-        {favorites.length > 0 && (
+        {favorites.length > 0 && !collapsed && (
           <>
             <div className="px-5 pt-3 pb-1">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Favoris
               </span>
             </div>
-            <div className="space-y-0.5 px-3 pb-2">
+            <div className="space-y-0.5 px-2 pb-2">
               {favorites.map((fav: FavoriteItem) => (
                 <button
                   key={fav.id}
@@ -241,10 +270,12 @@ export function Sidebar() {
         )}
 
         {/* Spaces Header */}
-        <div className="flex items-center justify-between px-5 pt-3 pb-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Espaces
-          </span>
+        <div className="flex items-center justify-between px-3 pt-3 pb-1">
+          {!collapsed && (
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Espaces
+            </span>
+          )}
           <button
             onClick={() => setCreateSpaceOpen(true)}
             className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -255,10 +286,10 @@ export function Sidebar() {
         </div>
 
         {/* Scrollable Navigation Tree */}
-        <ScrollArea className="flex-1 px-2">
+        <ScrollArea className="flex-1 px-1">
           <div className="py-1">
             {spacesLoading ? (
-              <div className="space-y-2 px-3 py-2">
+              <div className="space-y-2 px-2 py-2">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
@@ -267,40 +298,66 @@ export function Sidebar() {
                 ))}
               </div>
             ) : spaces.length === 0 ? (
-              <div className="px-3 py-4 text-center">
-                <p className="text-xs text-muted-foreground">Aucun espace</p>
-                <button
-                  onClick={() => setCreateSpaceOpen(true)}
-                  className="mt-1 text-xs text-primary hover:underline"
-                >
-                  Créer votre premier espace
-                </button>
-              </div>
+              !collapsed && (
+                <div className="px-2 py-4 text-center">
+                  <p className="text-xs text-muted-foreground">Aucun espace</p>
+                  <button
+                    onClick={() => setCreateSpaceOpen(true)}
+                    className="mt-1 text-xs text-primary hover:underline"
+                  >
+                    Créer votre premier espace
+                  </button>
+                </div>
+              )
             ) : (
-              <SidebarNav spaces={spaces} workspaceId={currentWorkspace!.id} mutateSpaces={mutateSpaces} />
+              <SidebarNav spaces={spaces} workspaceId={currentWorkspace!.id} mutateSpaces={mutateSpaces} collapsed={collapsed} />
             )}
           </div>
         </ScrollArea>
 
         <Separator className="bg-sidebar-border" />
 
+        {/* Collapse Toggle */}
+        <div className="px-2 py-1.5">
+          <button
+            onClick={toggle}
+            className="flex w-full items-center justify-center rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            title={collapsed ? "Développer" : "Réduire"}
+          >
+            {collapsed ? (
+              <PanelLeft className="h-4 w-4" />
+            ) : (
+              <>
+                <PanelLeftClose className="h-4 w-4 mr-2" />
+                <span className="text-xs">Réduire</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        <Separator className="bg-sidebar-border" />
+
         {/* User Section */}
-        <div className="p-3">
+        <div className="p-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-sidebar-accent">
-                <Avatar className="h-7 w-7">
+                <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={user?.image ?? undefined} />
                   <AvatarFallback className="bg-primary/20 text-[11px] text-primary">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 text-left">
-                  <p className="truncate text-sm font-medium text-sidebar-foreground">
-                    {user?.name ?? "User"}
-                  </p>
-                </div>
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                {!collapsed && (
+                  <>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="truncate text-sm font-medium text-sidebar-foreground">
+                        {user?.name ?? "User"}
+                      </p>
+                    </div>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  </>
+                )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="top" className="w-56">
@@ -347,6 +404,6 @@ export function Sidebar() {
         open={createWorkspaceOpen}
         onOpenChange={setCreateWorkspaceOpen}
       />
-    </>
+    </TooltipProvider>
   );
 }

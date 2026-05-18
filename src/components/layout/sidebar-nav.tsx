@@ -8,9 +8,10 @@ interface SidebarNavProps {
   spaces: SpaceWithContents[];
   workspaceId: string;
   mutateSpaces: KeyedMutator<SpaceWithContents[]>;
+  collapsed?: boolean;
 }
 
-export function SidebarNav({ spaces, workspaceId, mutateSpaces }: SidebarNavProps) {
+export function SidebarNav({ spaces, workspaceId, mutateSpaces, collapsed }: SidebarNavProps) {
   return (
     <div className="space-y-0.5">
       {spaces.map((space) => (
@@ -19,6 +20,7 @@ export function SidebarNav({ spaces, workspaceId, mutateSpaces }: SidebarNavProp
           space={space}
           workspaceId={workspaceId}
           mutateSpaces={mutateSpaces}
+          collapsed={collapsed}
         />
       ))}
     </div>

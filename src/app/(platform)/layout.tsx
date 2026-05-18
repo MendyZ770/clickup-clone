@@ -1,7 +1,9 @@
 import { requireAuth } from "@/lib/auth-helpers";
+import { SidebarProvider } from "@/hooks/use-sidebar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { QuickActionFab } from "@/components/layout/quick-action-fab";
 import { SearchCommand } from "@/components/search/search-command";
 
 export default async function PlatformLayout({
@@ -12,18 +14,21 @@ export default async function PlatformLayout({
   await requireAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <div className="hidden md:contents">
-        <Sidebar />
+    <SidebarProvider>
+      <div className="flex h-screen overflow-hidden">
+        <div className="hidden md:contents">
+          <Sidebar />
+        </div>
+        <div className="flex flex-1 flex-col overflow-y-auto md:overflow-hidden">
+          <TopBar />
+          <main className="flex-1 bg-background pb-14 md:overflow-y-auto md:pb-0 page-content">
+            {children}
+          </main>
+        </div>
+        <SearchCommand />
+        <MobileNav />
+        <QuickActionFab />
       </div>
-      <div className="flex flex-1 flex-col overflow-y-auto md:overflow-hidden">
-        <TopBar />
-        <main className="flex-1 bg-background pb-14 md:overflow-y-auto md:pb-0">
-          {children}
-        </main>
-      </div>
-      <SearchCommand />
-      <MobileNav />
-    </div>
+    </SidebarProvider>
   );
 }

@@ -21,6 +21,11 @@ import { cn } from "@/lib/utils";
 import type { SpaceWithContents } from "@/types";
 import type { KeyedMutator } from "swr";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -53,9 +58,10 @@ interface SidebarSpaceItemProps {
   space: SpaceWithContents;
   workspaceId: string;
   mutateSpaces: KeyedMutator<SpaceWithContents[]>;
+  collapsed?: boolean;
 }
 
-export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSpaceItemProps) {
+export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }: SidebarSpaceItemProps) {
   const STORAGE_KEY = `sidebar-space-open-${space.id}`;
   const [isOpen, setIsOpen] = useState(() => {
     try {
@@ -74,6 +80,27 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces }: SidebarSp
   };
 
   const SpaceIcon = ICON_MAP[space.icon ?? "folder"] ?? Folder;
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            className="flex w-full items-center justify-center rounded-md py-1.5 transition-colors hover:bg-sidebar-accent"
+            title={space.name}
+          >
+            <div
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+              style={{ backgroundColor: space.color ?? "#3B82F6" }}
+            >
+              <SpaceIcon className="h-3.5 w-3.5 text-white" />
+            </div>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{space.name}</TooltipContent>
+      </Tooltip>
+    );
+  }
 
   return (
     <>
