@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { LayoutDashboard } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -64,7 +65,11 @@ export default function DashboardPage() {
       ? `/api/dashboard/stats?workspaceId=${currentWorkspace.id}`
       : null,
     fetcher,
-    { refreshInterval: 60000 }
+    {
+      refreshInterval: 300000, // 5 minutes
+      dedupingInterval: 10000, // 10 seconds dedupe
+      keepPreviousData: true,
+    }
   );
 
   const isLoading = workspaceLoading || dataLoading;
@@ -74,6 +79,37 @@ export default function DashboardPage() {
       globalMutate(`/api/dashboard/stats?workspaceId=${currentWorkspace.id}`);
     }
   };
+
+  // Memoize derived data to prevent child re-renders
+  const statsData = useMemo(
+    () => ({
+      totalTasks: data?.totalTasks ?? 0,
+      completedTasks: data?.completedTasks ?? 0,
+      overdueTasks: data?.overdueTasks ?? 0,
+      tasksDueThisWeek: data?.tasksDueThisWeek ?? 0,
+    }),
+    [data?.totalTasks, data?.completedTasks, data?.overdueTasks, data?.tasksDueThisWeek]
+  );
+
+  const tasksByStatus = useMemo(
+    () => (Array.isArray(data?.tasksByStatus) ? data.tasksByStatus : []),
+    [data?.tasksByStatus]
+  );
+
+  const tasksByPriority = useMemo(
+    () => (Array.isArray(data?.tasksByPriority) ? data.tasksByPriority : []),
+    [data?.tasksByPriority]
+  );
+
+  const recentActivities = useMemo(
+    () => (Array.isArray(data?.recentActivities) ? data.recentActivities : []),
+    [data?.recentActivities]
+  );
+
+  const upcomingDeadlines = useMemo(
+    () => (Array.isArray(data?.upcomingDeadlines) ? data.upcomingDeadlines : []),
+    [data?.upcomingDeadlines]
+  );
 
   return (
     <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-3 md:space-y-6">
@@ -96,36 +132,18 @@ export default function DashboardPage() {
       />
 
       {/* Stats Cards */}
-      <StatsCards
-        totalTasks={data?.totalTasks ?? 0}
-        completedTasks={data?.completedTasks ?? 0}
-        overdueTasks={data?.overdueTasks ?? 0}
-        tasksDueThisWeek={data?.tasksDueThisWeek ?? 0}
-        isLoading={isLoading}
-      />
+      <StatsCards {...statsData} isLoading={isLoading} />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-2">
-        <TasksByStatusChart
-          data={Array.isArray(data?.tasksByStatus) ? data.tasksByStatus : []}
-          isLoading={isLoading}
-        />
-        <TasksByPriorityChart
-          data={Array.isArray(data?.tasksByPriority) ? data.tasksByPriority : []}
-          isLoading={isLoading}
-        />
+        <TasksByStatusChart data={tasksByStatus} isLoading={isLoading} />
+        <TasksByPriorityChart data={tasksByPriority} isLoading={isLoading} />
       </div>
 
       {/* Activity & Deadlines */}
       <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-2">
-        <RecentActivity
-          activities={Array.isArray(data?.recentActivities) ? data.recentActivities : []}
-          isLoading={isLoading}
-        />
-        <UpcomingDeadlines
-          tasks={Array.isArray(data?.upcomingDeadlines) ? data.upcomingDeadlines : []}
-          isLoading={isLoading}
-        />
+        <RecentActivity activities={recentActivities} isLoading={isLoading} />
+        <UpcomingDeadlines tasks={upcomingDeadlines} isLoading={isLoading} />
       </div>
     </div>
   );

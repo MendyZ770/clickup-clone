@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   CheckSquare,
   CircleCheckBig,
@@ -52,7 +53,7 @@ const stats = [
   },
 ];
 
-export function StatsCards({
+export const StatsCards = memo(function StatsCards({
   totalTasks,
   completedTasks,
   overdueTasks,
@@ -109,4 +110,4 @@ export function StatsCards({
       })}
     </div>
   );
-}
+});

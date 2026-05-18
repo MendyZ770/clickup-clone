@@ -43,127 +43,146 @@ export async function GET(request: Request) {
       list: { space: { workspaceId } },
     };
 
-    // Total tasks
-    const totalTasks = await prisma.task.count({
-      where: workspaceTaskFilter,
-    });
-
-    // Completed tasks (status type = "done" or "closed")
-    const completedTasks = await prisma.task.count({
-      where: {
-        ...workspaceTaskFilter,
-        status: { type: { in: ["done", "closed"] } },
-      },
-    });
-
-    // Overdue tasks
-    const overdueTasks = await prisma.task.count({
-      where: {
-        ...workspaceTaskFilter,
-        dueDate: { lt: now },
-        status: { type: { notIn: ["done", "closed"] } },
-      },
-    });
-
-    // Tasks due this week
-    const tasksDueThisWeek = await prisma.task.count({
-      where: {
-        ...workspaceTaskFilter,
-        dueDate: { gte: now, lte: endOfWeek },
-        status: { type: { notIn: ["done", "closed"] } },
-      },
-    });
-
-    // Tasks grouped by status (for pie chart)
-    const allStatuses = await prisma.status.findMany({
-      where: {
-        list: { space: { workspaceId } },
-      },
-      include: {
-        _count: { select: { tasks: true } },
-      },
-    });
-
-    // Aggregate by status name/type
-    const statusMap = new Map<string, { name: string; color: string; count: number }>();
-    for (const status of allStatuses) {
-      const key = status.name;
-      const existing = statusMap.get(key);
-      if (existing) {
-        existing.count += status._count.tasks;
-      } else {
-        statusMap.set(key, {
-          name: status.name,
-          color: status.color,
-          count: status._count.tasks,
-        });
-      }
-    }
-    const tasksByStatus = Array.from(statusMap.values()).filter(
-      (s) => s.count > 0
-    );
-
-    // Tasks grouped by priority (for bar chart)
-    const priorities = ["urgent", "high", "normal", "low"];
-    const tasksByPriority = await Promise.all(
-      priorities.map(async (priority) => {
-        const count = await prisma.task.count({
-          where: {
-            ...workspaceTaskFilter,
-            priority,
-          },
-        });
-        return { priority, count };
-      })
-    );
-
-    // Recent activities (last 10)
-    const recentActivities = await prisma.activity.findMany({
-      where: {
-        task: { list: { space: { workspaceId } } },
-      },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        task: {
-          select: { id: true, title: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
-
-    // Upcoming deadlines (next 5 tasks with due dates)
-    const upcomingDeadlines = await prisma.task.findMany({
-      where: {
-        ...workspaceTaskFilter,
-        dueDate: { gte: now },
-        status: { type: { notIn: ["done", "closed"] } },
-      },
-      include: {
-        status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        list: {
-          select: { id: true, name: true },
-        },
-      },
-      orderBy: { dueDate: "asc" },
-      take: 5,
-    });
-
-    return NextResponse.json({
+    // ─── Fire all independent queries in parallel ──────────────────
+    const [
       totalTasks,
       completedTasks,
       overdueTasks,
       tasksDueThisWeek,
-      tasksByStatus,
-      tasksByPriority,
+      tasksByStatusRaw,
+      tasksByPriorityRaw,
       recentActivities,
       upcomingDeadlines,
+    ] = await Promise.all([
+      // 1. Total tasks
+      prisma.task.count({ where: workspaceTaskFilter }),
+
+      // 2. Completed tasks
+      prisma.task.count({
+        where: {
+          ...workspaceTaskFilter,
+          status: { type: { in: ["done", "closed"] } },
+        },
+      }),
+
+      // 3. Overdue tasks
+      prisma.task.count({
+        where: {
+          ...workspaceTaskFilter,
+          dueDate: { lt: now },
+          status: { type: { notIn: ["done", "closed"] } },
+        },
+      }),
+
+      // 4. Tasks due this week
+      prisma.task.count({
+        where: {
+          ...workspaceTaskFilter,
+          dueDate: { gte: now, lte: endOfWeek },
+          status: { type: { notIn: ["done", "closed"] } },
+        },
+      }),
+
+      // 5. Tasks grouped by status — single groupBy query
+      prisma.task.groupBy({
+        by: ["statusId"],
+        where: workspaceTaskFilter,
+        _count: { id: true },
+      }),
+
+      // 6. Tasks grouped by priority — single groupBy query
+      prisma.task.groupBy({
+        by: ["priority"],
+        where: workspaceTaskFilter,
+        _count: { id: true },
+      }),
+
+      // 7. Recent activities
+      prisma.activity.findMany({
+        where: {
+          task: { list: { space: { workspaceId } } },
+        },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+          task: {
+            select: { id: true, title: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+
+      // 8. Upcoming deadlines
+      prisma.task.findMany({
+        where: {
+          ...workspaceTaskFilter,
+          dueDate: { gte: now },
+          status: { type: { notIn: ["done", "closed"] } },
+        },
+        include: {
+          status: true,
+          assignee: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+          list: {
+            select: { id: true, name: true },
+          },
+        },
+        orderBy: { dueDate: "asc" },
+        take: 5,
+      }),
+    ]);
+
+    // ─── Post-process groupBy results ──────────────────────────────
+
+    // Resolve status names/colors for the groupBy result
+    const statusIds = tasksByStatusRaw.map((s) => s.statusId);
+    const statuses = await prisma.status.findMany({
+      where: { id: { in: statusIds } },
+      select: { id: true, name: true, color: true },
     });
+    const statusMap = new Map(statuses.map((s) => [s.id, s]));
+
+    const statusAgg = new Map<string, { name: string; color: string; count: number }>();
+    for (const row of tasksByStatusRaw) {
+      const s = statusMap.get(row.statusId);
+      if (!s) continue;
+      const existing = statusAgg.get(s.name);
+      if (existing) {
+        existing.count += row._count.id;
+      } else {
+        statusAgg.set(s.name, { name: s.name, color: s.color, count: row._count.id });
+      }
+    }
+    const tasksByStatus = Array.from(statusAgg.values()).filter((s) => s.count > 0);
+
+    // Priority aggregation
+    const priorityOrder = ["urgent", "high", "normal", "low"];
+    const priorityMap = new Map(tasksByPriorityRaw.map((r) => [r.priority, r._count.id]));
+    const tasksByPriority = priorityOrder.map((priority) => ({
+      priority,
+      count: priorityMap.get(priority) ?? 0,
+    }));
+
+    return NextResponse.json(
+      {
+        totalTasks,
+        completedTasks,
+        overdueTasks,
+        tasksDueThisWeek,
+        tasksByStatus,
+        tasksByPriority,
+        recentActivities,
+        upcomingDeadlines,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error) {
     console.error("GET /api/dashboard/stats error:", error);
     return NextResponse.json(
