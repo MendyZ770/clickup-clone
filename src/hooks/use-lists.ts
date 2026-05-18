@@ -3,12 +3,6 @@
 import useSWR from "swr";
 import type { ListWithStatuses } from "@/types";
 
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to fetch");
-    return res.json();
-  });
-
 export function useLists(params: { spaceId?: string; folderId?: string }) {
   const { spaceId, folderId } = params;
 
@@ -21,7 +15,7 @@ export function useLists(params: { spaceId?: string; folderId?: string }) {
 
   const { data, error, isLoading, mutate } = useSWR<
     (ListWithStatuses & { _count: { tasks: number } })[]
-  >(key, fetcher);
+  >(key);
 
   return {
     lists: data ?? [],

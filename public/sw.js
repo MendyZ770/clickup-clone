@@ -1,4 +1,4 @@
-const CACHE_NAME = "done-v1";
+const CACHE_NAME = "done-v2";
 const STATIC_ASSETS = [
   "/",
   "/dashboard",
@@ -10,7 +10,7 @@ const STATIC_ASSETS = [
 ];
 
 const API_ROUTES = ["/api/"];
-const PAGE_ROUTES = ["/dashboard", "/my-tasks", "/settings", "/goals", "/notes", "/reminders", "/time-tracking", "/calendar", "/notifications", "/search"];
+const NEXT_STATIC = "/_next/";
 
 // Install: pre-cache static shell
 self.addEventListener("install", (event) => {
@@ -48,19 +48,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Stale-while-revalidate for page navigations (HTML)
+  // Stale-while-revalidate for page navigations (HTML) — fast offline, fresh in background
   if (request.mode === "navigate") {
     event.respondWith(staleWhileRevalidate(request, "/dashboard"));
     return;
   }
 
-  // Cache-first for static assets (JS, CSS, images, fonts)
+  // Stale-while-revalidate for Next.js static assets (JS, CSS chunks) — critical for speed
+  if (url.pathname.startsWith(NEXT_STATIC)) {
+    event.respondWith(staleWhileRevalidate(request));
+    return;
+  }
+
+  // Cache-first for static assets (images, fonts)
   if (
-    request.destination === "script" ||
-    request.destination === "style" ||
     request.destination === "image" ||
-    request.destination === "font" ||
-    url.pathname.startsWith("/_next/")
+    request.destination === "font"
   ) {
     event.respondWith(cacheFirst(request));
     return;

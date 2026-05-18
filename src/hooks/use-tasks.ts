@@ -4,12 +4,6 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import type { TaskSummary, TaskWithDetails } from "@/types";
 
-const fetcher = (url: string) =>
-  fetch(url).then((res) => {
-    if (!res.ok) throw new Error("Failed to fetch");
-    return res.json();
-  });
-
 interface TaskFilters {
   statusId?: string;
   priority?: string;
@@ -30,8 +24,7 @@ export function useTasks(listId: string | null | undefined, filters?: TaskFilter
   if (filters?.sortOrder) params.set("sortOrder", filters.sortOrder);
 
   const { data, error, isLoading, mutate } = useSWR<TaskSummary[]>(
-    listId ? `/api/tasks?${params.toString()}` : null,
-    fetcher
+    listId ? `/api/tasks?${params.toString()}` : null
   );
 
   return {
@@ -44,8 +37,7 @@ export function useTasks(listId: string | null | undefined, filters?: TaskFilter
 
 export function useTask(taskId: string | null | undefined) {
   const { data, error, isLoading, mutate } = useSWR<TaskWithDetails>(
-    taskId ? `/api/tasks/${taskId}` : null,
-    fetcher
+    taskId ? `/api/tasks/${taskId}` : null
   );
 
   return {

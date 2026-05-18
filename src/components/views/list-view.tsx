@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import useSWR from "swr";
 import { ChevronDown, ChevronRight, ListTodo } from "lucide-react";
 import { useTasks } from "@/hooks/use-tasks";
@@ -10,12 +10,6 @@ import { TaskRow } from "@/components/task/task-row";
 import { TaskForm } from "@/components/task/task-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-
-const fetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error("Failed to fetch");
-    return r.json();
-  });
 
 interface StatusGroup {
   id: string;
@@ -42,8 +36,7 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
   }, [workspaceId, setWorkspaceId]);
 
   const { data: statuses } = useSWR<StatusGroup[]>(
-    `/api/lists/${listId}/statuses`,
-    fetcher
+    `/api/lists/${listId}/statuses`
   );
 
   const { tasks, isLoading, mutate } = useTasks(listId, {
@@ -55,7 +48,7 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
     sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
   });
 
-  const toggleGroup = (statusId: string) => {
+  const toggleGroup = useCallback((statusId: string) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(statusId)) {
@@ -65,13 +58,15 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
       }
       return next;
     });
-  };
+  }, []);
 
-  // Group tasks by status
-  const grouped = (statuses ?? []).map((status) => ({
-    status,
-    tasks: tasks.filter((t) => t.status.id === status.id),
-  }));
+  // Group tasks by status — memoized to avoid re-computing on every render
+  const grouped = useMemo(() => {
+    return (statuses ?? []).map((status) => ({
+      status,
+      tasks: tasks.filter((t) => t.status.id === status.id),
+    }));
+  }, [statuses, tasks]);
 
   if (isLoading) {
     return (

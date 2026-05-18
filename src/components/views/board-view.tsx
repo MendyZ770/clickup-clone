@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { LayoutGrid } from "lucide-react";
@@ -12,12 +12,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { TaskSummary } from "@/types";
-
-const fetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error("Failed to fetch");
-    return r.json();
-  });
 
 interface StatusGroup {
   id: string;
@@ -41,8 +35,7 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
   }, [workspaceId, setWorkspaceId]);
 
   const { data: statuses } = useSWR<StatusGroup[]>(
-    `/api/lists/${listId}/statuses`,
-    fetcher
+    `/api/lists/${listId}/statuses`
   );
 
   const { tasks, isLoading, mutate } = useTasks(listId, {
@@ -151,6 +144,20 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
     [tasks, statuses, mutate]
   );
 
+  // Pre-compute tasks per column — memoized to avoid re-filtering on every render
+  const tasksByColumn = useMemo(() => {
+    const map = new Map<string, TaskSummary[]>();
+    for (const status of statuses ?? []) {
+      map.set(
+        status.id,
+        tasks
+          .filter((t) => t.status.id === status.id)
+          .sort((a, b) => a.position - b.position)
+      );
+    }
+    return map;
+  }, [statuses, tasks]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -177,9 +184,7 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
             <BoardColumn
               key={status.id}
               status={status}
-              tasks={tasks
-                .filter((t) => t.status.id === status.id)
-                .sort((a, b) => a.position - b.position)}
+              tasks={tasksByColumn.get(status.id) ?? []}
               listId={listId}
               onTaskCreated={() => mutate()}
               onTaskAction={() => mutate()}

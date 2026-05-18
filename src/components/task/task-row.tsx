@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useCallback, useMemo } from "react";
 import { MessageSquare, GitBranch, Lock } from "lucide-react";
 import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,12 +13,6 @@ import { useUpdateTask } from "@/hooks/use-tasks";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import type { TaskSummary } from "@/types";
-
-const statusFetcher = (url: string) =>
-  fetch(url).then((r) => {
-    if (!r.ok) throw new Error("Failed to fetch");
-    return r.json();
-  });
 
 const PRIORITY_DOT_COLORS: Record<string, string> = {
   urgent: "bg-red-500",
@@ -33,7 +28,7 @@ interface TaskRowProps {
   className?: string;
 }
 
-export function TaskRow({
+function TaskRowComponent({
   task,
   workspaceId,
   onUpdated,
@@ -44,15 +39,20 @@ export function TaskRow({
 
   const { data: statuses } = useSWR<
     { id: string; name: string; color: string; type: string; order: number }[]
-  >(`/api/lists/${task.listId}/statuses`, statusFetcher);
+  >(`/api/lists/${task.listId}/statuses`);
 
-  const isDone =
-    task.status.type === "done" || task.status.type === "closed";
+  const isDone = useMemo(
+    () => task.status.type === "done" || task.status.type === "closed",
+    [task.status.type]
+  );
 
-  const handleUpdate = async (data: Record<string, unknown>) => {
-    await updateTask(task.id, data as Parameters<typeof updateTask>[1]);
-    onUpdated?.();
-  };
+  const handleUpdate = useCallback(
+    async (data: Record<string, unknown>) => {
+      await updateTask(task.id, data as Parameters<typeof updateTask>[1]);
+      onUpdated?.();
+    },
+    [task.id, updateTask, onUpdated]
+  );
 
   return (
     <div
@@ -184,3 +184,5 @@ export function TaskRow({
     </div>
   );
 }
+
+export const TaskRow = memo(TaskRowComponent);
