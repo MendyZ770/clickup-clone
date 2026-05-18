@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Smartphone,
   Monitor,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +58,8 @@ function CalendarSettingsContent() {
   const [disconnecting, setDisconnecting] = useState(false);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   // Export state
   const [exporting, setExporting] = useState(false);
@@ -193,7 +196,7 @@ function CalendarSettingsContent() {
         const data = await res.json();
         toast({
           title: "Synchronisation terminée",
-          description: `${data.synced} tâche${data.synced !== 1 ? "s" : ""} synchronisée${data.synced !== 1 ? "s" : ""} vers Google Calendar${data.errors > 0 ? ` (${data.errors} en échec)` : ""}`,
+          description: `${data.synced} tâche${data.synced !== 1 ? "s" : ""} synchronisée${data.synced !== 1 ? "s" : ""}${data.removed > 0 ? `, ${data.removed} événement${data.removed !== 1 ? "s" : ""} supprimé${data.removed !== 1 ? "s" : ""}` : ""}${data.errors > 0 ? ` (${data.errors} en échec)` : ""}`,
         });
         fetchGoogleStatus();
       } else {
@@ -209,6 +212,31 @@ function CalendarSettingsContent() {
       });
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleClear = async () => {
+    try {
+      setClearing(true);
+      const res = await fetch("/api/calendar/google/clear", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setShowClearConfirm(false);
+        toast({
+          title: "Google Calendar nettoyé",
+          description: `${data.deleted} événement${data.deleted !== 1 ? "s" : ""} supprimé${data.deleted !== 1 ? "s" : ""}${data.errors > 0 ? ` (${data.errors} en échec)` : ""}`,
+        });
+      } else {
+        throw new Error("Clear failed");
+      }
+    } catch {
+      toast({
+        title: "Erreur",
+        description: "Impossible de nettoyer Google Calendar",
+        variant: "destructive",
+      });
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -500,6 +528,38 @@ function CalendarSettingsContent() {
                   )}
                   {"Synchroniser maintenant"}
                 </Button>
+
+                {showClearConfirm ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleClear}
+                      disabled={clearing}
+                    >
+                      {clearing && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {"Confirmer suppression"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowClearConfirm(false)}
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowClearConfirm(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {"Nettoyer"}
+                  </Button>
+                )}
 
                 {showDisconnectConfirm ? (
                   <div className="flex items-center gap-2">

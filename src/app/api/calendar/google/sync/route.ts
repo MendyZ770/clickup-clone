@@ -188,6 +188,38 @@ export async function POST() {
       }
     }
 
+    // Cleanup: remove Google Calendar events that no longer have a matching task
+    let removed = 0;
+    const taskIds = new Set(tasksWithDueDate.map((t) => t.id));
+    let pageToken: string | undefined;
+
+    do {
+      const orphanEventsRes = await calendar.events.list({
+        calendarId: syncRecord.calendarId,
+        privateExtendedProperty: ["clickupCloneTaskId=*"],
+        maxResults: 250,
+        pageToken,
+      });
+
+      const items = orphanEventsRes.data.items || [];
+      for (const event of items) {
+        const taskId = event.extendedProperties?.private?.clickupCloneTaskId;
+        if (taskId && !taskIds.has(taskId)) {
+          try {
+            await calendar.events.delete({
+              calendarId: syncRecord.calendarId,
+              eventId: event.id!,
+            });
+            removed++;
+          } catch {
+            // ignore cleanup errors
+          }
+        }
+      }
+
+      pageToken = orphanEventsRes.data.nextPageToken || undefined;
+    } while (pageToken);
+
     // Update lastSyncAt
     await prisma.googleCalendarSync.update({
       where: { userId: user.id },
@@ -197,6 +229,7 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       synced,
+      removed,
       errors,
       total: tasksWithDueDate.length,
     });
