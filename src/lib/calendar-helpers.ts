@@ -1,4 +1,4 @@
-import ical, { ICalCalendarMethod, ICalEventStatus, ICalAlarmType } from "ical-generator";
+import ical, { ICalCalendarMethod, ICalEventStatus } from "ical-generator";
 
 interface CalendarTask {
   id: string;
@@ -108,7 +108,7 @@ export function createICSFromTasks(
       `View task: ${baseUrl}/task/${task.id}`,
     ].join("\n");
 
-    const event = calendar.createEvent({
+    calendar.createEvent({
       id: `task-${task.id}@clickup-clone`,
       summary: task.title,
       description,
@@ -120,15 +120,6 @@ export function createICSFromTasks(
       url: `${baseUrl}/task/${task.id}`,
       priority: mapPriorityToICal(task.priority),
     });
-
-    // Add alarm for urgent and high priority tasks (1 hour before)
-    if (task.priority === "urgent" || task.priority === "high") {
-      event.createAlarm({
-        type: ICalAlarmType.display,
-        trigger: -3600, // 1 hour before in seconds
-        description: `Reminder: ${task.title} is due soon`,
-      });
-    }
   }
 
   return calendar;
@@ -172,13 +163,7 @@ export function createGoogleCalendarEvent(task: CalendarTask, baseUrl: string = 
         title: "ClickUp Clone",
         url: `${baseUrl}/task/${task.id}`,
       },
-      reminders:
-        task.priority === "urgent" || task.priority === "high"
-          ? {
-              useDefault: false,
-              overrides: [{ method: "popup" as const, minutes: 60 }],
-            }
-          : { useDefault: true },
+      reminders: { useDefault: false },
       extendedProperties: {
         private: {
           clickupCloneTaskId: task.id,
@@ -200,13 +185,7 @@ export function createGoogleCalendarEvent(task: CalendarTask, baseUrl: string = 
       title: "ClickUp Clone",
       url: `${baseUrl}/task/${task.id}`,
     },
-    reminders:
-      task.priority === "urgent" || task.priority === "high"
-        ? {
-            useDefault: false,
-            overrides: [{ method: "popup" as const, minutes: 60 }],
-          }
-        : { useDefault: true },
+    reminders: { useDefault: false },
     extendedProperties: {
       private: {
         clickupCloneTaskId: task.id,

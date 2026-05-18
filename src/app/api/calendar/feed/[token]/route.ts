@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { subDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { createICSFromTasks } from "@/lib/calendar-helpers";
 
@@ -26,9 +27,11 @@ export async function GET(
 
     // Fetch all tasks for this user across all workspaces they're a member of
     // that have a dueDate set
+    const cutoff = subDays(new Date(), 7);
+
     const tasks = await prisma.task.findMany({
       where: {
-        dueDate: { not: null },
+        dueDate: { gte: cutoff },
         list: {
           space: {
             workspace: {
@@ -70,7 +73,7 @@ export async function GET(
       headers: {
         "Content-Type": "text/calendar; charset=utf-8",
         "Content-Disposition": 'inline; filename="clickup-clone-tasks.ics"',
-        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Cache-Control": "public, max-age=3600",
       },
     });
   } catch (error) {

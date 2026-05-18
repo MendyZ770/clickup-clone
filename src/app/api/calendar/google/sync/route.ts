@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { subDays } from "date-fns";
 import { google } from "googleapis";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
@@ -111,10 +112,12 @@ export async function POST() {
       );
     }
 
-    // Fetch all tasks with due dates for this user
+    const cutoff = subDays(new Date(), 7);
+
+    // Fetch tasks with due dates for this user (recent + future only)
     const tasks = await prisma.task.findMany({
       where: {
-        dueDate: { not: null },
+        dueDate: { gte: cutoff },
         list: {
           space: {
             workspace: {
