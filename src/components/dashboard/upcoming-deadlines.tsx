@@ -1,12 +1,11 @@
 "use client";
 
 import { memo } from "react";
-import { format, isToday, isTomorrow, addDays } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Clock, ArrowRight, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface DeadlineTask {

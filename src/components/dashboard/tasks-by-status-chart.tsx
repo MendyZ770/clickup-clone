@@ -2,8 +2,6 @@
 
 import { memo, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-
 interface StatusData {
   name: string;
   color: string;
@@ -20,7 +18,6 @@ function DonutSegment({
   dash,
   color,
   total,
-  index,
 }: {
   offset: number;
   dash: number;

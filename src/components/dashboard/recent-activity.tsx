@@ -4,7 +4,6 @@ import { memo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-  Activity,
   ArrowRight,
   Edit3,
   Plus,
@@ -14,7 +13,6 @@ import {
   AlertCircle,
   MessageSquare,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
