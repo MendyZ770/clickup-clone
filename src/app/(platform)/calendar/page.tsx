@@ -24,10 +24,13 @@ import {
   Clock,
   Plus,
   Loader2,
+  Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +48,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useModal } from "@/hooks/use-modal";
 import { useCreateTask, useUpdateTask } from "@/hooks/use-tasks";
@@ -93,6 +102,7 @@ export default function GlobalCalendarPage() {
   const { openTaskModal, setWorkspaceId } = useModal();
   const { createTask } = useCreateTask();
   const { updateTask } = useUpdateTask();
+  const { toast } = useToast();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
@@ -412,22 +422,63 @@ export default function GlobalCalendarPage() {
               )}
 
               {selectedDayTasks.map((task) => (
-                <button
+                <div
                   key={task.id}
-                  onClick={() => openTaskModal(task.id)}
-                  className="w-full text-left rounded-lg border p-3 space-y-2 hover:bg-muted/50 transition-colors"
+                  className="group relative w-full text-left rounded-lg border p-3 space-y-2 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start gap-2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full shrink-0 mt-1"
-                      style={{ backgroundColor: task.status.color }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{task.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{task.list.name}</p>
-                    </div>
+                    <button
+                      onClick={() => openTaskModal(task.id)}
+                      className="flex items-start gap-2 flex-1 min-w-0"
+                    >
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0 mt-1"
+                        style={{ backgroundColor: task.status.color }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{task.title}</p>
+                        <p className="text-[10px] text-muted-foreground">{task.list.name}</p>
+                      </div>
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 -mt-1 -mr-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={async () => {
+                            if (!confirm("Supprimer cette tâche ?")) return;
+                            try {
+                              const res = await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
+                              if (res.ok) {
+                                mutate();
+                                toast({ title: "Tâche supprimée" });
+                              } else {
+                                throw new Error("Failed");
+                              }
+                            } catch {
+                              toast({ title: "Erreur", description: "Impossible de supprimer", variant: "destructive" });
+                            }
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => openTaskModal(task.id)}
+                    className="flex items-center gap-2 flex-wrap w-full"
+                  >
                     <Badge variant="outline" className="text-[9px] capitalize h-4">
                       {task.status.name}
                     </Badge>
@@ -441,8 +492,8 @@ export default function GlobalCalendarPage() {
                         {format(new Date(task.dueDate), "HH:mm")}
                       </span>
                     )}
-                  </div>
-                </button>
+                  </button>
+                </div>
               ))}
             </div>
           </div>
