@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { addMinutes } from "date-fns";
+import { addMinutes, subMinutes } from "date-fns";
 import { sendReminderEmail } from "@/lib/email";
 import { sendPushNotification, initWebPush } from "@/lib/push";
 
@@ -16,14 +16,16 @@ export async function GET(request: Request) {
   }
 
   const now = new Date();
+  const windowStart = subMinutes(now, 2); // allow small delay tolerance
   const windowEnd = addMinutes(now, 5);
 
   try {
-    // Find reminders due within next 5 minutes that are not completed
+    // Find reminders due within [now-2min, now+5min] that are not completed
     const reminders = await prisma.reminder.findMany({
       where: {
         completed: false,
         remindAt: {
+          gte: windowStart,
           lte: windowEnd,
         },
       },
@@ -122,11 +124,22 @@ export async function GET(request: Request) {
       created++;
     }
 
+    // Auto-cleanup: mark very old uncompleted reminders as done (older than 1 hour)
+    // so they don't sit in the DB forever
+    const { count: cleanedUp } = await prisma.reminder.updateMany({
+      where: {
+        completed: false,
+        remindAt: { lt: subMinutes(now, 60) },
+      },
+      data: { completed: true },
+    });
+
     return NextResponse.json({
       ok: true,
       processed: reminders.length,
       notificationsCreated: created,
       skipped,
+      cleanedUp,
       checkedAt: now.toISOString(),
     });
   } catch (error) {
