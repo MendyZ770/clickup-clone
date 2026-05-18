@@ -67,7 +67,7 @@ export default function WorkspaceListPage() {
         <div className="space-y-3">
           {(workspaces ?? []).map((ws) => (
             <Link key={ws.id} href={`/workspace/${ws.id}`} className="block group">
-              <Card className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer">
+              <Card className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer hover-lift press-effect">
                 <CardContent className="flex items-center gap-3 md:gap-4 p-3 md:p-4">
                   <div
                     className="h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0"

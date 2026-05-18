@@ -12,6 +12,7 @@ import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -50,17 +51,11 @@ export default function MyTasksPage() {
   const { openTaskModal } = useModal();
   const { mutate: globalMutate } = useSWRConfig();
 
-  const { data: tasks } = useSWR<MyTask[]>(
+  const { data: tasks, isLoading } = useSWR<MyTask[]>(
     currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}` : null,
     fetcher,
     { refreshInterval: 30000 }
   );
-
-  const handleTaskCreated = () => {
-    if (currentWorkspace) {
-      globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}`);
-    }
-  };
 
   const grouped = useMemo(() => {
     if (!tasks) return { overdue: [], today: [], upcoming: [], noDue: [], done: [] };
@@ -87,6 +82,51 @@ export default function MyTasksPage() {
     }
     return { overdue, today, upcoming, noDue, done };
   }, [tasks]);
+
+  const handleTaskCreated = () => {
+    if (currentWorkspace) {
+      globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}`);
+    }
+  };
+
+  if (isLoading || !tasks) {
+    return (
+      <div className="h-full overflow-y-auto">
+        <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-4 md:space-y-6">
+          <PageHeader icon={ClipboardList} title="Mes tâches" description="Chargement..." />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="border-border/50">
+                <CardContent className="p-4 space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-8 w-8" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <div className="rounded-lg border divide-y space-y-0">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div key={j} className="flex items-center gap-3 px-3 py-2.5">
+                      <Skeleton className="h-2.5 w-2.5 rounded-full" />
+                      <div className="flex-1 space-y-1.5">
+                        <Skeleton className="h-3.5 w-3/4" />
+                        <Skeleton className="h-2.5 w-1/3" />
+                      </div>
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const sections = [
     { key: "overdue", label: "En retard", icon: AlertTriangle, tasks: grouped.overdue, color: "text-red-500" },

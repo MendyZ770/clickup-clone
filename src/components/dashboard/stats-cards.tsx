@@ -89,7 +89,7 @@ export function StatsCards({
         return (
           <Card
             key={s.key}
-            className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all"
+            className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all hover-lift"
           >
             <CardContent className="p-3 md:p-5">
               <div className="flex items-center gap-3 md:gap-4">

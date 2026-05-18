@@ -21,19 +21,30 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
     <button
       onClick={() => router.push(listPath)}
       className={cn(
-        "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors",
+        "group relative flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-all duration-150",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
       )}
     >
+      {isActive && (
+        <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-accent-foreground" />
+      )}
       <div
-        className="h-2 w-2 shrink-0 rounded-full"
+        className={cn(
+          "h-2 w-2 shrink-0 rounded-full transition-transform duration-150",
+          isActive && "scale-125"
+        )}
         style={{ backgroundColor: list.color ?? "#6B7280" }}
       />
       <span className="flex-1 truncate text-left">{list.name}</span>
       {taskCount !== undefined && taskCount > 0 && (
-        <span className="shrink-0 text-[10px] text-muted-foreground/70">
+        <span
+          className={cn(
+            "shrink-0 text-[10px] transition-colors",
+            isActive ? "text-sidebar-accent-foreground/70" : "text-muted-foreground/70"
+          )}
+        >
           {taskCount}
         </span>
       )}
