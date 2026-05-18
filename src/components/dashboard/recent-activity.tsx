@@ -1,16 +1,22 @@
 "use client";
 
+import { memo } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Activity,
   ArrowRight,
   Edit3,
   Plus,
   Trash2,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  MessageSquare,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface ActivityItem {
   id: string;
@@ -36,20 +42,27 @@ interface RecentActivityProps {
   isLoading: boolean;
 }
 
-function getActionIcon(action: string) {
-  switch (action) {
-    case "created":
-      return Plus;
-    case "updated":
-      return Edit3;
-    case "deleted":
-      return Trash2;
-    case "moved":
-      return ArrowRight;
-    default:
-      return Activity;
-  }
-}
+const ACTION_ICONS: Record<string, React.ReactNode> = {
+  created: <Plus className="h-3.5 w-3.5" />,
+  updated: <Edit3 className="h-3.5 w-3.5" />,
+  deleted: <Trash2 className="h-3.5 w-3.5" />,
+  moved: <ArrowRight className="h-3.5 w-3.5" />,
+  completed: <CheckCircle2 className="h-3.5 w-3.5" />,
+  due_soon: <Clock className="h-3.5 w-3.5" />,
+  overdue: <AlertCircle className="h-3.5 w-3.5" />,
+  comment: <MessageSquare className="h-3.5 w-3.5" />,
+};
+
+const ACTION_COLORS: Record<string, string> = {
+  created: "bg-blue-500/10 text-blue-600 ring-blue-500/20",
+  updated: "bg-amber-500/10 text-amber-600 ring-amber-500/20",
+  deleted: "bg-red-500/10 text-red-600 ring-red-500/20",
+  moved: "bg-purple-500/10 text-purple-600 ring-purple-500/20",
+  completed: "bg-green-500/10 text-green-600 ring-green-500/20",
+  due_soon: "bg-orange-500/10 text-orange-600 ring-orange-500/20",
+  overdue: "bg-red-500/10 text-red-600 ring-red-500/20",
+  comment: "bg-indigo-500/10 text-indigo-600 ring-indigo-500/20",
+};
 
 function getActivityDescription(activity: ActivityItem): string {
   const taskTitle =
@@ -93,79 +106,92 @@ function getInitials(name: string | null, email: string): string {
   return email[0].toUpperCase();
 }
 
-export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
+export const RecentActivity = memo(function RecentActivity({ activities, isLoading }: RecentActivityProps) {
   if (isLoading) {
     return (
-      <Card className="border-border/50">
-        <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
-          <CardTitle className="text-sm md:text-base font-semibold">
-            Activité récente
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 md:space-y-4 px-4 md:px-6 pb-4 md:pb-6">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-start gap-2.5 md:gap-3">
-              <Skeleton className="h-7 w-7 md:h-8 md:w-8 rounded-full" />
-              <div className="flex-1 space-y-1">
-                <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-2.5 md:h-3 w-16" />
-              </div>
+      <div className="rounded-2xl border bg-card p-5 space-y-4">
+        <Skeleton className="h-5 w-32" />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-20" />
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]">
+        <Clock className="h-8 w-8 text-muted-foreground/40 mb-3" />
+        <p className="text-sm text-muted-foreground">Aucune activité récente</p>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/50">
-      <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
-        <CardTitle className="text-sm md:text-base font-semibold">
-          Activité récente
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
-        {activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 md:py-8">
-            <Activity className="mb-2 h-7 w-7 md:h-8 md:w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">Aucune activité récente</p>
-          </div>
-        ) : (
-          <div className="space-y-3 md:space-y-4">
-            {activities.map((activity) => {
-              const ActionIcon = getActionIcon(activity.action);
-              return (
-                <div key={activity.id} className="flex items-start gap-2.5 md:gap-3">
-                  <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0">
-                    <AvatarImage src={activity.user.image ?? undefined} />
-                    <AvatarFallback className="bg-primary/10 text-[9px] md:text-[10px] text-primary">
-                      {getInitials(activity.user.name, activity.user.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-snug">
-                      <span className="font-medium text-[13px] md:text-sm">
-                        {activity.user.name ?? activity.user.email}
-                      </span>{" "}
-                      <span className="text-muted-foreground text-[13px] md:text-sm">
-                        {getActivityDescription(activity)}
-                      </span>
-                    </p>
-                    <p className="mt-0.5 text-[11px] md:text-xs text-muted-foreground/70">
-                      {formatDistanceToNow(new Date(activity.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                  <div className="mt-0.5 shrink-0 rounded bg-muted p-1">
-                    <ActionIcon className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
+      <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+        <span className="h-2 w-2 rounded-full bg-primary" />
+        Activité récente
+      </h3>
+
+      <div className="relative space-y-0">
+        {/* Timeline line */}
+        <div className="absolute left-4 top-2 bottom-2 w-px bg-border" />
+
+        {activities.map((activity, index) => {
+          const icon = ACTION_ICONS[activity.action] ?? ACTION_ICONS.updated;
+          const color = ACTION_COLORS[activity.action] ?? ACTION_COLORS.updated;
+          const timeAgo = formatDistanceToNow(new Date(activity.createdAt), {
+            addSuffix: true,
+            locale: fr,
+          });
+
+          return (
+            <div
+              key={activity.id}
+              className={cn(
+                "relative flex gap-3 pl-1 pr-1 py-2.5 rounded-lg",
+                "hover:bg-muted/40 transition-colors cursor-default",
+                index !== activities.length - 1 && "border-b border-border/50"
+              )}
+            >
+              <div
+                className={cn(
+                  "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-2",
+                  color
+                )}
+              >
+                {icon}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm leading-snug">
+                  <span className="font-medium text-foreground">
+                    {activity.user?.name ?? activity.user?.email ?? "Quelqu'un"}
+                  </span>{" "}
+                  <span className="text-muted-foreground">
+                    {getActivityDescription(activity)}
+                  </span>
+                </p>
+                {activity.task && (
+                  <p className="text-xs text-primary mt-0.5 truncate">
+                    {activity.task.title}
+                  </p>
+                )}
+                <p className="text-[11px] text-muted-foreground/60 mt-1">
+                  {timeAgo}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
-}
+});

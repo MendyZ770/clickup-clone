@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Zap, Calendar, ListTodo } from "lucide-react";
+import Link from "next/link";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { PageHeader } from "@/components/shared/page-header";
 import { QuickCreateTask } from "@/components/task/quick-create-task";
@@ -11,6 +12,7 @@ import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart
 import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
+import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -111,8 +113,17 @@ export default function DashboardPage() {
     [data?.upcomingDeadlines]
   );
 
+  // Productivity score
+  const productivityScore = useMemo(() => {
+    const total = data?.totalTasks ?? 0;
+    const completed = data?.completedTasks ?? 0;
+    if (total === 0) return 0;
+    return Math.round((completed / total) * 100);
+  }, [data?.totalTasks, data?.completedTasks]);
+
   return (
-    <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-3 md:space-y-6">
+    <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-4 md:space-y-6">
+      {/* Header */}
       <PageHeader
         icon={LayoutDashboard}
         title="Tableau de bord"
@@ -131,17 +142,94 @@ export default function DashboardPage() {
         }
       />
 
+      {/* Quick Actions + Productivity Score */}
+      {currentWorkspace && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          {/* Productivity Score Card */}
+          <div className="md:col-span-1 rounded-2xl border bg-gradient-to-br from-primary/5 via-primary/2 to-transparent p-4 md:p-5 flex items-center gap-4 hover:shadow-sm transition-shadow">
+            <div className="relative h-14 w-14 shrink-0">
+              <svg viewBox="0 0 36 36" className="h-14 w-14 -rotate-90">
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="3"
+                  strokeDasharray={`${productivityScore}, 100`}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm font-bold">{productivityScore}%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Productivité</p>
+              <p className="text-xs text-muted-foreground">
+                {data?.completedTasks ?? 0} sur {data?.totalTasks ?? 0} tâches terminées
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="md:col-span-2 grid grid-cols-3 gap-3">
+            <Link
+              href="/my-tasks"
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
+                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+              )}
+            >
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ListTodo className="h-5 w-5 text-blue-600" />
+              </div>
+              <span className="text-xs font-medium">Mes tâches</span>
+            </Link>
+            <Link
+              href="/calendar"
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
+                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+              )}
+            >
+              <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="h-5 w-5 text-amber-600" />
+              </div>
+              <span className="text-xs font-medium">Calendrier</span>
+            </Link>
+            <Link
+              href="/reminders"
+              className={cn(
+                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
+                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+              )}
+            >
+              <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Zap className="h-5 w-5 text-purple-600" />
+              </div>
+              <span className="text-xs font-medium">Rappels</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <StatsCards {...statsData} isLoading={isLoading} />
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
         <TasksByStatusChart data={tasksByStatus} isLoading={isLoading} />
         <TasksByPriorityChart data={tasksByPriority} isLoading={isLoading} />
       </div>
 
       {/* Activity & Deadlines */}
-      <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
         <RecentActivity activities={recentActivities} isLoading={isLoading} />
         <UpcomingDeadlines tasks={upcomingDeadlines} isLoading={isLoading} />
       </div>
