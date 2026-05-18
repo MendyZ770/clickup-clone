@@ -1,149 +1,157 @@
 "use client";
 
-import { format, differenceInDays, isPast } from "date-fns";
-import { CalendarDays, Clock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { memo } from "react";
+import { format, isToday, isTomorrow, addDays } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Clock, ArrowRight, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface DeadlineTask {
   id: string;
   title: string;
-  priority: string;
   dueDate: string;
-  status: {
-    id: string;
-    name: string;
-    color: string;
-  };
-  assignee: {
+  priority: string;
+  status: { id: string; name: string; color: string };
+  assignee?: {
     id: string;
     name: string | null;
     email: string;
-    image: string | null;
+    image?: string | null;
   } | null;
-  list: {
-    id: string;
-    name: string;
-  };
+  list?: { id: string; name: string } | null;
+}
+
+const PRIORITY_DOT: Record<string, string> = {
+  urgent: "bg-red-500",
+  high: "bg-orange-500",
+  normal: "bg-blue-400",
+  low: "bg-gray-400",
+};
+
+function dueLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  if (isToday(d)) return "Aujourd'hui";
+  if (isTomorrow(d)) return "Demain";
+  const days = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (days <= 7) return `Dans ${days} jours`;
+  return format(d, "d MMM", { locale: fr });
 }
 
 interface UpcomingDeadlinesProps {
   tasks: DeadlineTask[];
   isLoading: boolean;
-  onTaskClick?: (taskId: string) => void;
 }
 
-const PRIORITY_STYLES: Record<string, string> = {
-  urgent: "bg-red-500/10 text-red-500 border-red-500/20",
-  high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-  normal: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  low: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-};
-
-function getUrgencyColor(dueDate: string): string {
-  const due = new Date(dueDate);
-  if (isPast(due)) return "text-red-500";
-  const daysUntil = differenceInDays(due, new Date());
-  if (daysUntil <= 1) return "text-red-400";
-  if (daysUntil <= 3) return "text-orange-400";
-  return "text-muted-foreground";
-}
-
-export function UpcomingDeadlines({
+export const UpcomingDeadlines = memo(function UpcomingDeadlines({
   tasks,
   isLoading,
-  onTaskClick,
 }: UpcomingDeadlinesProps) {
   if (isLoading) {
     return (
-      <Card className="border-border/50">
-        <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
-          <CardTitle className="text-sm md:text-base font-semibold">
-            Échéances à venir
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 md:space-y-3 px-4 md:px-6 pb-4 md:pb-6">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="space-y-1.5 md:space-y-2 rounded-lg border p-2.5 md:p-3">
-              <Skeleton className="h-3.5 md:h-4 w-3/4" />
-              <div className="flex gap-2">
-                <Skeleton className="h-4 md:h-5 w-14 md:w-16" />
-                <Skeleton className="h-4 md:h-5 w-14 md:w-16" />
-              </div>
+      <div className="rounded-2xl border bg-card p-5 space-y-4">
+        <Skeleton className="h-5 w-40" />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center gap-3 p-2">
+            <Skeleton className="h-9 w-9 rounded-lg" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-24" />
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]">
+        <Calendar className="h-8 w-8 text-muted-foreground/40 mb-3" />
+        <p className="text-sm text-muted-foreground">Aucune échéance prochaine</p>
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/50">
-      <CardHeader className="pb-2 md:pb-3 px-4 py-3 md:px-6 md:py-4">
-        <CardTitle className="text-sm md:text-base font-semibold">
-          Échéances à venir
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
-        {tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-6 md:py-8">
-            <CalendarDays className="mb-2 h-7 w-7 md:h-8 md:w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
-              Aucune échéance à venir
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-1.5 md:space-y-2">
-            {tasks.map((task) => (
-              <button
-                key={task.id}
-                onClick={() => onTaskClick?.(task.id)}
-                className="w-full rounded-lg border border-border/50 p-2.5 md:p-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <p className="mb-1.5 md:mb-2 truncate text-[13px] md:text-sm font-medium">
-                  {task.title}
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Status badge */}
-                  <div className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: task.status.color }}
-                    />
-                    <span className="text-muted-foreground">
-                      {task.status.name}
-                    </span>
-                  </div>
+    <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-primary" />
+          Échéances prochaines
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          {tasks.length} tâche{tasks.length > 1 ? "s" : ""}
+        </span>
+      </div>
 
-                  {/* Priority badge */}
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] capitalize",
-                      PRIORITY_STYLES[task.priority]
-                    )}
-                  >
-                    {task.priority}
-                  </Badge>
+      <div className="space-y-1">
+        {tasks.map((task) => {
+          const isUrgent =
+            task.priority === "urgent" ||
+            (new Date(task.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 1;
 
-                  {/* Due date */}
+          return (
+            <div
+              key={task.id}
+              className={cn(
+                "group flex items-center gap-3 p-2.5 -mx-1 rounded-xl",
+                "hover:bg-muted/50 transition-colors cursor-pointer"
+              )}
+            >
+              {/* Status color indicator */}
+              <div
+                className="h-9 w-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: task.status.color }}
+              />
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium truncate">{task.title}</p>
                   <div
+                    className={cn("h-1.5 w-1.5 rounded-full shrink-0", PRIORITY_DOT[task.priority])}
+                  />
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span
                     className={cn(
-                      "ml-auto flex items-center gap-1 text-xs",
-                      getUrgencyColor(task.dueDate)
+                      "text-xs font-medium",
+                      isUrgent ? "text-red-500" : "text-muted-foreground"
                     )}
                   >
-                    <Clock className="h-3 w-3" />
-                    <span>{format(new Date(task.dueDate), "MMM d")}</span>
-                  </div>
+                    {dueLabel(task.dueDate)}
+                  </span>
+                  <span className="text-xs text-muted-foreground/50">·</span>
+                  <span className="text-xs text-muted-foreground/60 truncate max-w-[100px]">
+                    {task.list?.name}
+                  </span>
                 </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              </div>
+
+              {/* Assignee */}
+              {task.assignee ? (
+                <Avatar className="h-7 w-7 border-2 border-background shrink-0">
+                  {task.assignee.image ? (
+                    <AvatarImage src={task.assignee.image} alt={task.assignee.name ?? ""} />
+                  ) : null}
+                  <AvatarFallback className="text-[9px] bg-muted">
+                    {task.assignee.name?.charAt(0).toUpperCase() ??
+                      task.assignee.email.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
+                  <Clock className="h-3 w-3 text-muted-foreground/40" />
+                </div>
+              )}
+
+              <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0" />
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
-}
+});
