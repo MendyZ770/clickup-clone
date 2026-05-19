@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ─── Auth Models ────────────────────────────────────────────────────────────
@@ -41,6 +42,8 @@ model User {
   taskTemplates      TaskTemplate[]
   notes              Note[]
   pushSubscriptions  PushSubscription[]
+  budgets            Budget[]
+  budgetTransactions BudgetTransaction[]
 }
 
 model Account {
@@ -99,6 +102,8 @@ model Workspace {
   invites        WorkspaceInvite[]
   teams          Team[]
   notes          Note[]
+  budgets        Budget[]
+  budgetCategories BudgetCategory[]
 }
 
 model WorkspaceMember {
@@ -605,4 +610,58 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ─── Budget ─────────────────────────────────────────────────────────────────
+
+model Budget {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  amount      Float
+  currency    String   @default("EUR")
+  color       String   @default("#10B981")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id])
+
+  transactions BudgetTransaction[]
+
+  @@index([workspaceId])
+}
+
+model BudgetTransaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  type        String   // "income" | "expense"
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  budgetId   String
+  budget     Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  creatorId  String
+  creator    User     @relation(fields: [creatorId], references: [id])
+  categoryId String?
+  category   BudgetCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([budgetId])
+  @@index([categoryId])
+}
+
+model BudgetCategory {
+  id          String @id @default(cuid())
+  name        String
+  color       String @default("#6B7280")
+  icon        String @default("tag")
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  transactions BudgetTransaction[]
+
+  @@unique([workspaceId, name])
 }

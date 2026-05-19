@@ -5,6 +5,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { LayoutDashboard, Zap, Calendar, ListTodo } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useBudgets } from "@/hooks/use-budgets";
 import { PageHeader } from "@/components/shared/page-header";
 import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -12,6 +13,7 @@ import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart
 import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
+import { BudgetWidget } from "@/components/dashboard/budget-widget";
 import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) =>
@@ -61,6 +63,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace();
   const { mutate: globalMutate } = useSWRConfig();
+  const { budgets: workspaceBudgets, isLoading: budgetsLoading } = useBudgets(currentWorkspace?.id);
 
   const { data, isLoading: dataLoading } = useSWR<DashboardData>(
     currentWorkspace
@@ -228,8 +231,9 @@ export default function DashboardPage() {
         <TasksByPriorityChart data={tasksByPriority} isLoading={isLoading} />
       </div>
 
-      {/* Activity & Deadlines */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+      {/* Budget, Activity & Deadlines */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+        <BudgetWidget budgets={workspaceBudgets} isLoading={budgetsLoading} />
         <RecentActivity activities={recentActivities} isLoading={isLoading} />
         <UpcomingDeadlines tasks={upcomingDeadlines} isLoading={isLoading} />
       </div>

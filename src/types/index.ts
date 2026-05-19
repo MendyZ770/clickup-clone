@@ -20,6 +20,9 @@ import type {
   TaskRecurrence,
   TaskAssignee,
   Favorite,
+  Budget,
+  BudgetTransaction,
+  BudgetCategory,
 } from "@prisma/client";
 
 // ─── Extended Task Types ────────────────────────────────────────────────────
@@ -173,3 +176,34 @@ declare module "next-auth/jwt" {
     id: string;
   }
 }
+
+// ─── Budget Types ───────────────────────────────────────────────────────────
+
+export type BudgetWithTransactions = Budget & {
+  transactions: BudgetTransactionWithCategory[];
+  creator: Pick<User, "id" | "name" | "image">;
+};
+
+export type BudgetTransactionWithCategory = BudgetTransaction & {
+  creator: Pick<User, "id" | "name" | "image">;
+  category: BudgetCategory | null;
+};
+
+export type BudgetStats = {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  remaining: number;
+  spentPercent: number;
+  budgetAmount: number;
+  monthlyEvolution: {
+    month: string;
+    income: number;
+    expense: number;
+  }[];
+  categoryBreakdown: {
+    name: string;
+    color: string;
+    amount: number;
+  }[];
+};
