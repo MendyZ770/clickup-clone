@@ -36,9 +36,9 @@ export function useFinanceGoals(workspaceId?: string) {
 }
 
 export function useFinanceStats(workspaceId?: string) {
-  const { data, error } = useSWR(
+  const { data, error, mutate } = useSWR(
     workspaceId ? `/api/finance/stats?workspaceId=${workspaceId}` : null,
     fetcher
   );
-  return { stats: data, isLoading: !error && !data, error };
+  return { stats: data, isLoading: !error && !data, error, mutate };
 }

@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   useFinanceAccounts,
   useFinanceTransactions,
   useFinanceGoals,
   useFinanceStats,
+  useFinanceCategories,
 } from "@/hooks/use-finance";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FinanceAccountList } from "@/components/finance/account-list";
@@ -18,23 +21,56 @@ import { AddTransactionDialog } from "@/components/finance/add-transaction-dialo
 import { AddAccountDialog } from "@/components/finance/add-account-dialog";
 import { AddGoalDialog } from "@/components/finance/add-goal-dialog";
 import { CategoryManager } from "@/components/finance/category-manager";
+import { ExpenseChart } from "@/components/finance/expense-chart";
+import { IncomeExpenseChart } from "@/components/finance/income-expense-chart";
+import { PeriodFilter, type PeriodFilter as PeriodFilterType } from "@/components/finance/period-filter";
 import {
   TrendingUp,
   CreditCard,
   Target,
   Settings,
   ArrowLeftRight,
+  Landmark,
+  Sparkles,
 } from "lucide-react";
+
+function getPeriodDates(period: PeriodFilterType) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  switch (period) {
+    case "this-month":
+      return { start: new Date(year, month, 1), end: new Date(year, month + 1, 0) };
+    case "last-month":
+      return { start: new Date(year, month - 1, 1), end: new Date(year, month, 0) };
+    case "this-year":
+      return { start: new Date(year, 0, 1), end: new Date(year, 11, 31) };
+    default:
+      return { start: null, end: null };
+  }
+}
+
+function filterByPeriod(data: any[], period: PeriodFilterType, dateField = "date") {
+  if (period === "all") return data;
+  const { start, end } = getPeriodDates(period);
+  if (!start || !end) return data;
+  return data.filter((item) => {
+    const d = new Date(item[dateField]);
+    return d >= start && d <= end;
+  });
+}
 
 export default function FinancePage() {
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id;
 
   const { accounts } = useFinanceAccounts(workspaceId);
-  const { transactions } = useFinanceTransactions(workspaceId);
-  const { goals } = useFinanceGoals(workspaceId);
-  const { stats } = useFinanceStats(workspaceId);
+  const { transactions, mutate: mutateTransactions } = useFinanceTransactions(workspaceId);
+  const { goals, mutate: mutateGoals } = useFinanceGoals(workspaceId);
+  const { stats, mutate: mutateStats } = useFinanceStats(workspaceId);
+  useFinanceCategories(workspaceId);
 
+  const [period, setPeriod] = useState<PeriodFilterType>("this-month");
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -42,110 +78,143 @@ export default function FinancePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const totalBalance = accounts.reduce((sum: number, a: any) => sum + a.balance, 0);
 
+  const filteredTransactions = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
+
+  const expenseByCategory = useMemo(() => {
+    const map = new Map();
+    filteredTransactions
+      .filter((t: any) => t.type === "expense")
+      .forEach((t: any) => {
+        const catId = t.categoryId || "none";
+        const existing = map.get(catId) || { amount: 0, category: t.category };
+        existing.amount += t.amount;
+        map.set(catId, existing);
+      });
+    return Array.from(map.values());
+  }, [filteredTransactions]);
+
+  const handleMutate = () => {
+    mutateTransactions();
+    mutateGoals();
+    mutateStats();
+  };
+
+  const statCards = [
+    {
+      label: "Solde total",
+      value: totalBalance.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      sub: `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`,
+      color: "from-violet-500/10 to-indigo-500/5",
+      iconColor: "text-violet-500",
+      bgIcon: "bg-violet-500/10",
+      icon: Landmark,
+    },
+    {
+      label: "Revenus",
+      value: (stats?.monthlyIncome || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      sub: "Ce mois",
+      color: "from-emerald-500/10 to-teal-500/5",
+      iconColor: "text-emerald-500",
+      bgIcon: "bg-emerald-500/10",
+      icon: TrendingUp,
+    },
+    {
+      label: "Dépenses",
+      value: (stats?.monthlyExpense || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      sub: "Ce mois",
+      color: "from-rose-500/10 to-pink-500/5",
+      iconColor: "text-rose-500",
+      bgIcon: "bg-rose-500/10",
+      icon: ArrowLeftRight,
+    },
+    {
+      label: "Objectifs",
+      value: `${goals.length}`,
+      sub: `${stats?.totalSaved?.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} épargnés`,
+      color: "from-amber-500/10 to-orange-500/5",
+      iconColor: "text-amber-500",
+      bgIcon: "bg-amber-500/10",
+      icon: Target,
+    },
+  ];
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Ma Finance</h1>
-          <p className="text-sm text-muted-foreground">
-            Gérez vos comptes, transactions et objectifs d&apos;épargne
-          </p>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+            <Sparkles className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Ma Finance</h1>
+            <p className="text-sm text-muted-foreground">
+              Visuel en temps réel de vos comptes et objectifs
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setShowAddTransaction(true)}>
+        <div className="flex items-center gap-3">
+          <PeriodFilter value={period} onChange={setPeriod} />
+          <Button onClick={() => setShowAddTransaction(true)} className="shadow-md shadow-violet-500/10">
             <TrendingUp className="h-4 w-4 mr-2" />
-            Nouvelle transaction
+            Transaction
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Solde total
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalBalance.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {accounts.length} compte{accounts.length > 1 ? "s" : ""}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.4 }}
+          >
+            <Card className={`border-border/50 bg-gradient-to-br ${card.color} overflow-hidden hover:shadow-lg transition-all`}>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                    {card.label}
+                  </span>
+                  <div className={`h-7 w-7 rounded-md ${card.bgIcon} flex items-center justify-center`}>
+                    <card.icon className={`h-3.5 w-3.5 ${card.iconColor}`} />
+                  </div>
+                </div>
+                <p className="text-xl font-bold tracking-tight">{card.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1">{card.sub}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenus ce mois
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
-              {(stats?.monthlyIncome || 0).toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Dépenses ce mois
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-rose-600">
-              {(stats?.monthlyExpense || 0).toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Objectifs d&apos;épargne
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {goals.length} objectif{goals.length > 1 ? "s" : ""}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.totalSaved?.toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              })}{" "}
-              épargnés
-            </p>
-          </CardContent>
-        </Card>
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ExpenseChart data={expenseByCategory} />
+        <IncomeExpenseChart transactions={filteredTransactions} />
       </div>
 
       <Tabs defaultValue="accounts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-flex">
-          <TabsTrigger value="accounts">
-            <CreditCard className="h-4 w-4 mr-2" />
+        <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-flex bg-muted/40 border border-border/30 p-1 rounded-lg">
+          <TabsTrigger value="accounts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <CreditCard className="h-4 w-4" />
             Comptes
           </TabsTrigger>
-          <TabsTrigger value="transactions">
-            <ArrowLeftRight className="h-4 w-4 mr-2" />
+          <TabsTrigger value="transactions" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <ArrowLeftRight className="h-4 w-4" />
             Transactions
           </TabsTrigger>
-          <TabsTrigger value="goals">
-            <Target className="h-4 w-4 mr-2" />
+          <TabsTrigger value="goals" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <Target className="h-4 w-4" />
             Objectifs
           </TabsTrigger>
-          <TabsTrigger value="categories">
-            <Settings className="h-4 w-4 mr-2" />
+          <TabsTrigger value="categories" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <Settings className="h-4 w-4" />
             Catégories
           </TabsTrigger>
         </TabsList>
@@ -160,7 +229,7 @@ export default function FinancePage() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
-          <FinanceTransactionList transactions={transactions} accounts={accounts} />
+          <FinanceTransactionList transactions={filteredTransactions} accounts={accounts} />
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">
@@ -169,7 +238,7 @@ export default function FinancePage() {
               + Nouvel objectif
             </Button>
           </div>
-          <FinanceGoalList goals={goals} />
+          <FinanceGoalList goals={goals} onMutate={handleMutate} />
         </TabsContent>
 
         <TabsContent value="categories">

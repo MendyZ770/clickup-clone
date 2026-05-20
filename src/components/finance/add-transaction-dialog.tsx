@@ -33,6 +33,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
   const [targetAccountId, setTargetAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [recurringFrequency, setRecurringFrequency] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reset = () => {
@@ -43,6 +44,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
     setTargetAccountId("");
     setCategoryId("");
     setDate(new Date().toISOString().slice(0, 10));
+    setRecurringFrequency("");
   };
 
   const filteredCategories = categories.filter((c: any) => {
@@ -68,6 +70,8 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
           date,
           isTransfer: type === "transfer",
           targetAccountId: type === "transfer" ? targetAccountId : undefined,
+          isRecurring: !!recurringFrequency,
+          recurringFrequency: recurringFrequency || undefined,
         }),
       });
       mutate();
@@ -161,6 +165,23 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
             <Label>Description</Label>
             <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Courses hebdomadaires" />
           </div>
+
+          {type !== "transfer" && (
+            <div className="space-y-2">
+              <Label>Récurrence</Label>
+              <Select value={recurringFrequency} onValueChange={setRecurringFrequency}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pas récurrente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Pas récurrente</SelectItem>
+                  <SelectItem value="weekly">Hebdomadaire</SelectItem>
+                  <SelectItem value="monthly">Mensuelle</SelectItem>
+                  <SelectItem value="yearly">Annuelle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || !amount || !accountId}>

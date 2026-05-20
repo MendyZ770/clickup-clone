@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { amount, type, description, date, accountId, categoryId, isTransfer, targetAccountId } = body;
+    const { amount, type, description, date, accountId, categoryId, isTransfer, targetAccountId, isRecurring, recurringFrequency } = body;
 
     if (!amount || !type || !accountId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -71,6 +71,8 @@ export async function POST(request: Request) {
           categoryId,
           isTransfer: isTransfer || false,
           targetAccountId,
+          isRecurring: isRecurring || false,
+          recurringFrequency,
         },
       });
 

@@ -802,6 +802,10 @@ model FinanceTransaction {
   isTransfer     Boolean @default(false)
   targetAccountId String?
 
+  // Récurrence
+  isRecurring        Boolean @default(false)
+  recurringFrequency String? // "weekly" | "monthly" | "yearly"
+
   accountId   String
   account     FinanceAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   userId      String

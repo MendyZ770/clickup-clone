@@ -14,6 +14,7 @@ import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-c
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
 import { BudgetWidget } from "@/components/dashboard/budget-widget";
+import { FinanceWidget } from "@/components/dashboard/finance-widget";
 import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) =>
@@ -231,9 +232,12 @@ export default function DashboardPage() {
         <TasksByPriorityChart data={tasksByPriority} isLoading={isLoading} />
       </div>
 
-      {/* Budget, Activity & Deadlines */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+      {/* Budget, Finance, Activity & Deadlines */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        <FinanceWidget workspaceId={currentWorkspace?.id} />
         <BudgetWidget budgets={workspaceBudgets} isLoading={budgetsLoading} />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
         <RecentActivity activities={recentActivities} isLoading={isLoading} />
         <UpcomingDeadlines tasks={upcomingDeadlines} isLoading={isLoading} />
       </div>
