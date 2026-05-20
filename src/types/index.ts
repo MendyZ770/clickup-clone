@@ -23,6 +23,9 @@ import type {
   Budget,
   BudgetTransaction,
   BudgetCategory,
+  BudgetTransactionTag,
+  BudgetTemplate,
+  BudgetAlert,
 } from "@prisma/client";
 
 // ─── Extended Task Types ────────────────────────────────────────────────────
@@ -187,6 +190,7 @@ export type BudgetWithTransactions = Budget & {
 export type BudgetTransactionWithCategory = BudgetTransaction & {
   creator: Pick<User, "id" | "name" | "image">;
   category: BudgetCategory | null;
+  tags: BudgetTransactionTag[];
 };
 
 export type BudgetStats = {
@@ -206,4 +210,22 @@ export type BudgetStats = {
     color: string;
     amount: number;
   }[];
+  subTypeBreakdown: {
+    name: string;
+    amount: number;
+    type: "income" | "expense";
+  }[];
+};
+
+export type BudgetCategoryWithChildren = BudgetCategory & {
+  children: BudgetCategory[];
+  parent: BudgetCategory | null;
+};
+
+export type BudgetTemplateWithCreator = BudgetTemplate & {
+  creator: Pick<User, "id" | "name" | "image">;
+};
+
+export type BudgetAlertWithBudget = BudgetAlert & {
+  budget: Pick<Budget, "id" | "name" | "color">;
 };

@@ -45,6 +45,8 @@ model User {
   pushSubscriptions  PushSubscription[]
   budgets            Budget[]
   budgetTransactions BudgetTransaction[]
+  budgetTemplates    BudgetTemplate[]
+  budgetAlerts       BudgetAlert[]
 }
 
 model Account {
@@ -105,6 +107,7 @@ model Workspace {
   notes          Note[]
   budgets        Budget[]
   budgetCategories BudgetCategory[]
+  budgetTemplates  BudgetTemplate[]
 }
 
 model WorkspaceMember {
@@ -631,6 +634,7 @@ model Budget {
   creator     User      @relation(fields: [creatorId], references: [id])
 
   transactions BudgetTransaction[]
+  alerts       BudgetAlert[]
 
   @@index([workspaceId])
 }
@@ -639,9 +643,20 @@ model BudgetTransaction {
   id          String   @id @default(cuid())
   amount      Float
   type        String   // "income" | "expense"
+  subType     String?  // "salary", "freelance", "rent", "food", "transport", "health", "leisure", "shopping", "bills", "other"
   description String?
   date        DateTime @default(now())
   createdAt   DateTime @default(now())
+
+  // Récurrent
+  isRecurring Boolean  @default(false)
+  recurrenceRule String? // "daily", "weekly", "biweekly", "monthly", "quarterly", "yearly"
+  recurrenceEnd  DateTime?
+
+  // Transfert
+  isTransfer   Boolean @default(false)
+  sourceBudgetId String?
+  targetBudgetId String?
 
   budgetId   String
   budget     Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
@@ -650,8 +665,12 @@ model BudgetTransaction {
   categoryId String?
   category   BudgetCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  tags BudgetTransactionTag[]
+
   @@index([budgetId])
   @@index([categoryId])
+  @@index([date])
+  @@index([type])
 }
 
 model BudgetCategory {
@@ -659,10 +678,63 @@ model BudgetCategory {
   name        String
   color       String @default("#6B7280")
   icon        String @default("tag")
+  type        String @default("both") // "income" | "expense" | "both"
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   BudgetCategory? @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children BudgetCategory[] @relation("CategoryChildren")
 
   transactions BudgetTransaction[]
 
   @@unique([workspaceId, name])
+}
+
+model BudgetTransactionTag {
+  id   String @id @default(cuid())
+  name String
+
+  transactionId String
+  transaction   BudgetTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionId, name])
+  @@index([transactionId])
+}
+
+model BudgetTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  amount      Float
+  type        String   // "income" | "expense"
+  subType     String?
+  description String?
+  categoryId  String?
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+}
+
+model BudgetAlert {
+  id        String   @id @default(cuid())
+  type      String   // "threshold", "recurring_missing", "overspend"
+  threshold Float?   // pourcentage ou montant
+  isActive  Boolean  @default(true)
+
+  budgetId String
+  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([budgetId])
+  @@index([userId])
 }

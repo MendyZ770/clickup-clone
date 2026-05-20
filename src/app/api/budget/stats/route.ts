@@ -67,27 +67,50 @@ export async function GET(req: Request) {
     }
 
     // Répartition par catégorie (dépenses uniquement)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const categoryMap = new Map<string, { name: string; color: string; amount: number }>();
-    const expenseTransactions = budget.transactions.filter((t) => t.type === "expense");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const expenseTransactions = (budget.transactions as any[]).filter((t) => t.type === "expense");
 
     // Récupérer les noms de catégories
-    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id): id is string => !!id)));
-    const categories = await prisma.budgetCategory.findMany({
-      where: { id: { in: categoryIds as string[] } },
+    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id: unknown) => !!id)));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const categories = await (prisma as any).budgetCategory.findMany({
+      where: { id: { in: categoryIds } },
     });
-    const categoryById = new Map(categories.map((c) => [c.id, c]));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const categoryById = new Map(categories.map((c: any) => [c.id, c]));
 
     for (const t of expenseTransactions) {
       const cat = t.categoryId ? categoryById.get(t.categoryId) : null;
-      const key = cat?.name ?? "Sans catégorie";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const key = (cat as any)?.name ?? "Sans catégorie";
       const existing = categoryMap.get(key);
       if (existing) {
         existing.amount += t.amount;
       } else {
         categoryMap.set(key, {
           name: key,
-          color: cat?.color ?? "#9CA3AF",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          color: (cat as any)?.color ?? "#9CA3AF",
           amount: t.amount,
+        });
+      }
+    }
+
+    // Répartition par subType
+    const subTypeMap = new Map<string, { name: string; amount: number; type: string }>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const t of budget.transactions as any[]) {
+      if (!t.subType) continue;
+      const existing = subTypeMap.get(t.subType);
+      if (existing) {
+        existing.amount += t.amount;
+      } else {
+        subTypeMap.set(t.subType, {
+          name: t.subType,
+          amount: t.amount,
+          type: t.type,
         });
       }
     }
@@ -101,6 +124,7 @@ export async function GET(req: Request) {
       budgetAmount: budget.amount,
       monthlyEvolution,
       categoryBreakdown: Array.from(categoryMap.values()),
+      subTypeBreakdown: Array.from(subTypeMap.values()),
     });
   } catch (error) {
     console.error("[BUDGET_STATS]", error);

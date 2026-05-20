@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, FileText, Bell, NotebookPen } from "lucide-react";
+import { Plus, X, FileText, Bell, NotebookPen, Wallet } from "lucide-react";
+import { QuickAddTransaction } from "@/components/budget/quick-add-transaction";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { QuickCreateTask } from "@/components/task/quick-create-task";
@@ -16,6 +17,7 @@ import { useRouter } from "next/navigation";
 export function QuickActionFab() {
   const [open, setOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
   const { currentWorkspace } = useWorkspace();
   const router = useRouter();
 
@@ -93,6 +95,23 @@ export function QuickActionFab() {
                     </p>
                   </div>
                 </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setShowTransactionForm(true);
+                  }}
+                  className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500/10">
+                    <Wallet className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Ajouter une dépense</p>
+                    <p className="text-xs text-muted-foreground">
+                      Ajouter une transaction à un budget
+                    </p>
+                  </div>
+                </button>
               </>
             ) : (
               <div className="space-y-3">
@@ -117,6 +136,12 @@ export function QuickActionFab() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Add Transaction Dialog */}
+      <QuickAddTransaction
+        open={showTransactionForm}
+        onOpenChange={setShowTransactionForm}
+      />
     </>
   );
 }

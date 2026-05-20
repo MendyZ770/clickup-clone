@@ -6,9 +6,15 @@ import { z } from "zod";
 const transactionSchema = z.object({
   amount: z.number().positive(),
   type: z.enum(["income", "expense"]),
+  subType: z.string().optional(),
   description: z.string().max(500).optional(),
   date: z.string().datetime().optional(),
   categoryId: z.string().optional().nullable(),
+  isRecurring: z.boolean().optional(),
+  recurrenceRule: z.string().optional(),
+  recurrenceEnd: z.string().datetime().optional(),
+  isTransfer: z.boolean().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 async function checkBudgetAccess(userId: string, budgetId: string) {
@@ -42,26 +48,57 @@ export async function GET(request: Request, context: RouteContext) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    const transactions = await prisma.budgetTransaction.findMany({
-      where: {
-        budgetId,
-        ...(type ? { type } : {}),
-        ...(categoryId ? { categoryId } : {}),
-        ...(from || to
-          ? {
-              date: {
-                ...(from ? { gte: new Date(from) } : {}),
-                ...(to ? { lte: new Date(to) } : {}),
-              },
-            }
-          : {}),
-      },
+    const subType = searchParams.get("subType");
+    const isRecurring = searchParams.get("isRecurring");
+    const search = searchParams.get("search");
+    const minAmount = searchParams.get("minAmount");
+    const maxAmount = searchParams.get("maxAmount");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
+      budgetId,
+      ...(type ? { type } : {}),
+      ...(subType ? { subType } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(isRecurring ? { isRecurring: isRecurring === "true" } : {}),
+      ...(search
+        ? {
+            OR: [
+              { description: { contains: search, mode: "insensitive" } },
+              { subType: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(from || to
+        ? {
+            date: {
+              ...(from ? { gte: new Date(from) } : {}),
+              ...(to ? { lte: new Date(to) } : {}),
+            },
+          }
+        : {}),
+      ...(minAmount || maxAmount
+        ? {
+            amount: {
+              ...(minAmount ? { gte: parseFloat(minAmount) } : {}),
+              ...(maxAmount ? { lte: parseFloat(maxAmount) } : {}),
+            },
+          }
+        : {}),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const queryArgs: any = {
+      where,
       include: {
         creator: { select: { id: true, name: true, image: true } },
         category: true,
+        tags: true,
       },
       orderBy: { date: "desc" },
-    });
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transactions = await (prisma.budgetTransaction.findMany as any)(queryArgs);
 
     return NextResponse.json(transactions);
   } catch (error) {
@@ -89,16 +126,24 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const transaction = await prisma.budgetTransaction.create({
+    const { tags, recurrenceEnd, ...data } = parsed.data;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transaction = await (prisma.budgetTransaction.create as any)({
       data: {
-        ...parsed.data,
+        ...data,
         budgetId,
         creatorId: user.id,
-        date: parsed.data.date ? new Date(parsed.data.date) : new Date(),
+        date: data.date ? new Date(data.date) : new Date(),
+        recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
+        tags: tags && tags.length > 0
+          ? { create: tags.map((name) => ({ name })) }
+          : undefined,
       },
       include: {
         creator: { select: { id: true, name: true, image: true } },
         category: true,
+        tags: true,
       },
     });
 
