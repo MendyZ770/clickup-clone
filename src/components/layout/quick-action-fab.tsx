@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, FileText, Bell, NotebookPen, Wallet } from "lucide-react";
+import { Plus, X, FileText, Bell, NotebookPen, Wallet, TrendingUp } from "lucide-react";
 import { QuickAddTransaction } from "@/components/budget/quick-add-transaction";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -18,6 +18,7 @@ export function QuickActionFab() {
   const [open, setOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [transactionType, setTransactionType] = useState<"income" | "expense">("expense");
   const { currentWorkspace } = useWorkspace();
   const router = useRouter();
 
@@ -98,6 +99,25 @@ export function QuickActionFab() {
                 <button
                   onClick={() => {
                     setOpen(false);
+                    setTransactionType("income");
+                    setShowTransactionForm(true);
+                  }}
+                  className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Nouvelle entrée</p>
+                    <p className="text-xs text-muted-foreground">
+                      Ajouter un revenu à un budget
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setTransactionType("expense");
                     setShowTransactionForm(true);
                   }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
@@ -108,7 +128,7 @@ export function QuickActionFab() {
                   <div>
                     <p className="font-medium">Ajouter une dépense</p>
                     <p className="text-xs text-muted-foreground">
-                      Ajouter une transaction à un budget
+                      Ajouter une dépense à un budget
                     </p>
                   </div>
                 </button>
@@ -141,6 +161,7 @@ export function QuickActionFab() {
       <QuickAddTransaction
         open={showTransactionForm}
         onOpenChange={setShowTransactionForm}
+        defaultType={transactionType}
       />
     </>
   );

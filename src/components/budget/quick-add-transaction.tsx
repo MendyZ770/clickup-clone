@@ -26,9 +26,33 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useSWRConfig } from "swr";
 import { ArrowLeft, Wallet } from "lucide-react";
 
+const INCOME_SUBTYPES = [
+  { value: "salary", label: "Salaire" },
+  { value: "freelance", label: "Freelance" },
+  { value: "investment", label: "Investissements" },
+  { value: "refund", label: "Remboursement" },
+  { value: "gift", label: "Cadeau / Don" },
+  { value: "other_income", label: "Autre revenu" },
+];
+
+const EXPENSE_SUBTYPES = [
+  { value: "rent", label: "Loyer / Charges" },
+  { value: "food", label: "Nourriture / Courses" },
+  { value: "transport", label: "Transport" },
+  { value: "health", label: "Santé" },
+  { value: "leisure", label: "Loisirs / Sorties" },
+  { value: "shopping", label: "Shopping" },
+  { value: "bills", label: "Factures" },
+  { value: "education", label: "Éducation / Formation" },
+  { value: "travel", label: "Voyage" },
+  { value: "subscription", label: "Abonnements" },
+  { value: "other_expense", label: "Autre dépense" },
+];
+
 const transactionSchema = z.object({
   amount: z.number().positive("Le montant doit être positif"),
   type: z.enum(["income", "expense"]),
+  subType: z.string().optional(),
   description: z.string().optional(),
   date: z.string().min(1, "La date est requise"),
   categoryId: z.string().optional(),
@@ -37,9 +61,10 @@ const transactionSchema = z.object({
 interface QuickAddTransactionProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultType?: "income" | "expense";
 }
 
-export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionProps) {
+export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense" }: QuickAddTransactionProps) {
   const { currentWorkspace } = useWorkspace();
   const { budgets } = useBudgets(currentWorkspace?.id);
   const { mutate } = useSWRConfig();
@@ -48,7 +73,8 @@ export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionP
   const [selectedBudgetId, setSelectedBudgetId] = useState<string>("");
 
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"income" | "expense">("expense");
+  const [type, setType] = useState<"income" | "expense">(defaultType);
+  const [subType, setSubType] = useState<string>("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [categoryId, setCategoryId] = useState<string>("");
@@ -59,7 +85,8 @@ export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionP
     setStep("select");
     setSelectedBudgetId("");
     setAmount("");
-    setType("expense");
+    setType(defaultType);
+    setSubType("");
     setDescription("");
     setDate(new Date().toISOString().slice(0, 10));
     setCategoryId("");
@@ -79,6 +106,7 @@ export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionP
     const parsed = transactionSchema.safeParse({
       amount: parseFloat(amount),
       type,
+      subType: subType || undefined,
       description: description || undefined,
       date: new Date(date).toISOString(),
       categoryId: categoryId && categoryId !== "__none__" ? categoryId : undefined,
@@ -122,7 +150,9 @@ export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionP
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {step === "select" ? "Choisir un budget" : "Nouvelle transaction"}
+            {step === "select"
+              ? defaultType === "income" ? "Choisir un budget pour le revenu" : "Choisir un budget"
+              : defaultType === "income" ? "Nouveau revenu" : "Nouvelle transaction"}
           </DialogTitle>
         </DialogHeader>
 
@@ -174,13 +204,27 @@ export function QuickAddTransaction({ open, onOpenChange }: QuickAddTransactionP
 
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={type} onValueChange={(v) => setType(v as "income" | "expense")}>
+              <Select value={type} onValueChange={(v) => { setType(v as "income" | "expense"); setSubType(""); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="income">Revenu</SelectItem>
                   <SelectItem value="expense">Dépense</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Catégorie détaillée</Label>
+              <Select value={subType} onValueChange={(v) => setSubType(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(type === "income" ? INCOME_SUBTYPES : EXPENSE_SUBTYPES).map((st) => (
+                    <SelectItem key={st.value} value={st.value}>{st.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
