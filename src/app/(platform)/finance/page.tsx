@@ -225,11 +225,11 @@ export default function FinancePage() {
               + Ajouter un compte
             </Button>
           </div>
-          <FinanceAccountList accounts={accounts} />
+          <FinanceAccountList accounts={accounts} onMutate={handleMutate} />
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
-          <FinanceTransactionList transactions={filteredTransactions} accounts={accounts} />
+          <FinanceTransactionList transactions={filteredTransactions} accounts={accounts} onMutate={handleMutate} />
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">

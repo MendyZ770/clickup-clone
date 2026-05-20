@@ -12,14 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useFinanceCategories } from "@/hooks/use-finance";
-import { Trash2, Tag } from "lucide-react";
+import { Trash2, Tag, MoreHorizontal, Pencil } from "lucide-react";
 
 export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
   const { categories, mutate } = useFinanceCategories(workspaceId);
   const [name, setName] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [editName, setEditName] = useState("");
 
   const incomeCategories = categories.filter((c: any) => c.type === "income");
   const expenseCategories = categories.filter((c: any) => c.type === "expense");
@@ -53,6 +61,65 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
       console.error(error);
     }
   };
+
+  const handleEdit = async (id: string) => {
+    if (!editName) return;
+    try {
+      await fetch(`/api/finance/categories/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName }),
+      });
+      mutate();
+      setEditing(null);
+      setEditName("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const CategoryRow = ({ c }: { c: any }) => (
+    <div className="flex items-center justify-between p-2 rounded-lg border group">
+      {editing === c.id ? (
+        <div className="flex items-center gap-2 flex-1">
+          <Input
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            className="h-8 text-sm"
+            onKeyDown={(e) => { if (e.key === "Enter") handleEdit(c.id); }}
+            autoFocus
+          />
+          <Button size="sm" className="h-8 text-xs" onClick={() => handleEdit(c.id)}>
+            OK
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setEditing(null); setEditName(""); }}>
+            ✕
+          </Button>
+        </div>
+      ) : (
+        <>
+          <span className="text-sm">{c.name}</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => { setEditing(c.id); setEditName(c.name); }}>
+                <Pencil className="h-3.5 w-3.5 mr-2" />
+                Modifier
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(c.id)} className="text-red-500 focus:text-red-500">
+                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -90,15 +157,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
           </h3>
           <div className="space-y-2">
             {incomeCategories.map((c: any) => (
-              <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border">
-                <span>{c.name}</span>
-                <button
-                  onClick={() => handleDelete(c.id)}
-                  className="text-muted-foreground hover:text-red-500"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+              <CategoryRow key={c.id} c={c} />
             ))}
             {incomeCategories.length === 0 && (
               <p className="text-sm text-muted-foreground">Aucune catégorie de revenu</p>
@@ -113,15 +172,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
           </h3>
           <div className="space-y-2">
             {expenseCategories.map((c: any) => (
-              <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border">
-                <span>{c.name}</span>
-                <button
-                  onClick={() => handleDelete(c.id)}
-                  className="text-muted-foreground hover:text-red-500"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+              <CategoryRow key={c.id} c={c} />
             ))}
             {expenseCategories.length === 0 && (
               <p className="text-sm text-muted-foreground">Aucune catégorie de dépense</p>
