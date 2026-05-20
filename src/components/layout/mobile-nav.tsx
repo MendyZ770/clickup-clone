@@ -8,7 +8,7 @@ import {
   Timer,
   Bell,
   Settings,
-  Wallet,
+  Landmark,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: ClipboardList, label: "Tâches", href: "/my-tasks" },
   { icon: Calendar, label: "Calendrier", href: "/calendar" },
-  { icon: Wallet, label: "Budget", href: "/budget" },
+  { icon: Landmark, label: "Finance", href: "/finance" },
   { icon: Timer, label: "Timer", href: "/time-tracking" },
   { icon: Bell, label: "Notifs", href: "/notifications" },
   { icon: Settings, label: "Réglages", href: "/settings" },

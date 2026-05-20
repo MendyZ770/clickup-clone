@@ -24,7 +24,7 @@ import {
   NotebookPen,
   PanelLeft,
   PanelLeftClose,
-  Wallet,
+  Landmark,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
@@ -81,7 +81,7 @@ export function Sidebar() {
     { icon: ClipboardList, label: "Mes tâches", href: "/my-tasks" },
     { icon: Calendar, label: "Calendrier", href: "/calendar" },
     { icon: Timer, label: "Suivi du temps", href: "/time-tracking" },
-    { icon: Wallet, label: "Budget", href: "/budget" },
+    { icon: Landmark, label: "Finance", href: "/finance" },
     { icon: Target, label: "Objectifs", href: "/goals" },
     { icon: BellRing, label: "Rappels", href: "/reminders" },
     { icon: Bell, label: "Notifications", href: "/notifications", badge: unreadCount },

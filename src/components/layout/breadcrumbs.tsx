@@ -16,6 +16,7 @@ function getSegmentsFromPath(pathname: string): BreadcrumbSegment[] {
   // Map known route segments to friendly names
   const routeLabels: Record<string, string> = {
     dashboard: "Tableau de bord",
+    finance: "Finance",
     budget: "Budget",
     notifications: "Notifications",
     settings: "Paramètres",

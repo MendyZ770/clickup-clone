@@ -47,6 +47,10 @@ model User {
   budgetTransactions BudgetTransaction[]
   budgetTemplates    BudgetTemplate[]
   budgetAlerts       BudgetAlert[]
+  financeAccounts    FinanceAccount[]
+  financeTransactions FinanceTransaction[]
+  financeGoals       FinanceGoal[]
+  financeGoalContributions FinanceGoalContribution[]
 }
 
 model Account {
@@ -108,6 +112,9 @@ model Workspace {
   budgets        Budget[]
   budgetCategories BudgetCategory[]
   budgetTemplates  BudgetTemplate[]
+  financeAccounts  FinanceAccount[]
+  financeCategories FinanceCategory[]
+  financeGoals     FinanceGoal[]
 }
 
 model WorkspaceMember {
@@ -736,5 +743,118 @@ model BudgetAlert {
   createdAt DateTime @default(now())
 
   @@index([budgetId])
+  @@index([userId])
+}
+
+// ─── Finance / Personal Budgeting Models ──────────────────────────────────
+
+model FinanceAccount {
+  id          String   @id @default(cuid())
+  name        String   // "Compte Courant BNP", "Espèces", "Binance BTC", etc.
+  type        String   // "bank", "cash", "crypto", "savings", "investment", "other"
+  bankName    String?  // nom de la banque si type="bank"
+  currency    String   @default("EUR")
+  balance     Float    @default(0)
+  color       String   @default("#3B82F6")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions FinanceTransaction[]
+  goals        FinanceGoal[]
+
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model FinanceCategory {
+  id          String   @id @default(cuid())
+  name        String   // "Salaire", "Courses", "Bébé", "Kasher", etc.
+  type        String   // "income" | "expense"
+  color       String   @default("#6B7280")
+  icon        String   @default("tag")
+  isDefault   Boolean  @default(false) // catégories système non supprimables
+  createdAt   DateTime @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  transactions FinanceTransaction[]
+
+  @@unique([workspaceId, name, type])
+  @@index([workspaceId])
+}
+
+model FinanceTransaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  type        String   // "income" | "expense" | "transfer"
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  // Transfert entre comptes
+  isTransfer     Boolean @default(false)
+  targetAccountId String?
+
+  accountId   String
+  account     FinanceAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([userId])
+  @@index([categoryId])
+  @@index([date])
+  @@index([type])
+}
+
+model FinanceGoal {
+  id            String   @id @default(cuid())
+  name          String   // "Voiture", "Apport maison", "Vacances"
+  description   String?
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  currency      String   @default("EUR")
+  color         String   @default("#10B981")
+  deadline      DateTime?
+  isCompleted   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId   String?
+  account     FinanceAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  contributions FinanceGoalContribution[]
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([accountId])
+}
+
+model FinanceGoalContribution {
+  id        String   @id @default(cuid())
+  amount    Float
+  date      DateTime @default(now())
+  note      String?
+  createdAt DateTime @default(now())
+
+  goalId    String
+  goal      FinanceGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
   @@index([userId])
 }
