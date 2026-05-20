@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { useCallback } from "react";
-import type { BudgetCategory } from "@/types";
+import type { BudgetCategory } from "@prisma/client";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 

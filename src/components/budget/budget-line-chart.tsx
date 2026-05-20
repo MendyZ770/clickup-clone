@@ -46,8 +46,10 @@ export function BudgetLineChart({ data }: BudgetLineChartProps) {
         <XAxis dataKey="label" tick={{ fontSize: 12 }} />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number) =>
-            value.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
+          formatter={(value: unknown) =>
+            typeof value === "number"
+              ? value.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
+              : String(value)
           }
           contentStyle={{ borderRadius: 8, border: "1px solid #E5E7EB" }}
         />

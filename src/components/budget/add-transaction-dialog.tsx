@@ -47,7 +47,6 @@ interface AddTransactionDialogProps {
 export function AddTransactionDialog({
   open,
   onOpenChange,
-  budgetId,
   workspaceId,
   onSubmit,
 }: AddTransactionDialogProps) {

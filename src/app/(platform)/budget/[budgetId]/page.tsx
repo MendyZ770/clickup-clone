@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useBudget } from "@/hooks/use-budgets";
 import { useBudgetStats } from "@/hooks/use-budget-stats";

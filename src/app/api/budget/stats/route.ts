@@ -71,7 +71,7 @@ export async function GET(req: Request) {
     const expenseTransactions = budget.transactions.filter((t) => t.type === "expense");
 
     // Récupérer les noms de catégories
-    const categoryIds = [...new Set(expenseTransactions.map((t) => t.categoryId).filter(Boolean))];
+    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id): id is string => !!id)));
     const categories = await prisma.budgetCategory.findMany({
       where: { id: { in: categoryIds as string[] } },
     });
