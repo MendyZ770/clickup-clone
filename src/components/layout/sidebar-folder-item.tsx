@@ -53,11 +53,11 @@ export function SidebarFolderItem({
             <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">
               <ChevronRight
                 className={cn(
-                  "h-3 w-3 shrink-0 text-muted-foreground transition-transform duration-200",
+                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
                   isOpen && "rotate-90"
                 )}
               />
-              <Folder className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <Folder className="h-5 w-5 shrink-0 text-muted-foreground" />
               <span className="flex-1 truncate text-sidebar-foreground/80">
                 {folder.name}
               </span>
@@ -72,7 +72,7 @@ export function SidebarFolderItem({
             className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
             title="Ajouter une liste"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-4 w-4" />
           </button>
         </div>
 
@@ -83,7 +83,7 @@ export function SidebarFolderItem({
             ))}
             {folder.lists.length === 0 && (
               <div className="px-2 py-1.5">
-                <p className="text-[11px] text-muted-foreground/60">Aucune liste</p>
+                <p className="text-[13px] text-muted-foreground/60">Aucune liste</p>
               </div>
             )}
           </div>

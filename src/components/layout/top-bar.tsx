@@ -24,7 +24,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:static md:px-4">
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:static md:px-4">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />
@@ -38,29 +38,29 @@ export function TopBar() {
         <Button
           variant="ghost"
           size="icon"
-          className="hidden sm:inline-flex h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="hidden sm:inline-flex h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={toggleTheme}
           aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
           title={theme === "dark" ? "Mode clair" : "Mode sombre"}
         >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={openSearch}
           aria-label="Rechercher (⌘K)"
           title="Rechercher (⌘K)"
         >
-          <Search className="h-4 w-4" />
+          <Search className="h-5 w-5" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={() => router.push("/notifications")}
           aria-label={
             unreadCount > 0
@@ -69,10 +69,10 @@ export function TopBar() {
           }
           title="Notifications"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span
-              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white"
+              className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
               aria-hidden="true"
             >
               {unreadCount > 9 ? "9+" : unreadCount}

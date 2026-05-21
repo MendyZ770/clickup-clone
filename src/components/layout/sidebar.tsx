@@ -98,7 +98,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <aside
         className="group/sidebar flex h-screen flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border transition-[width] duration-300 ease-in-out relative"
-        style={{ width: collapsed ? 64 : 260, minWidth: collapsed ? 64 : 260 }}
+        style={{ width: collapsed ? 72 : 300, minWidth: collapsed ? 72 : 300 }}
       >
         {/* Workspace Switcher */}
         <div className="flex items-center px-2 pt-3 pb-2">
@@ -106,7 +106,7 @@ export function Sidebar() {
             <DropdownMenuTrigger asChild>
               <button className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent">
                 <div
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-xs font-bold text-white"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-sm font-bold text-white"
                   style={{
                     backgroundColor: currentWorkspace?.color ?? "#7C3AED",
                   }}
@@ -118,7 +118,7 @@ export function Sidebar() {
                     <span className="flex-1 truncate text-left">
                       {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
                     </span>
-                    <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <ChevronsUpDown className="h-5 w-5 shrink-0 text-muted-foreground" />
                   </>
                 )}
               </button>
@@ -133,20 +133,20 @@ export function Sidebar() {
                   className="flex items-center gap-2"
                 >
                   <div
-                    className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white"
+                    className="flex h-6 w-6 items-center justify-center rounded text-[11px] font-bold text-white"
                     style={{ backgroundColor: ws.color ?? "#7C3AED" }}
                   >
                     {ws.name[0]?.toUpperCase()}
                   </div>
                   <span className="flex-1 truncate">{ws.name}</span>
                   {ws.id === currentWorkspace?.id && (
-                    <Check className="h-4 w-4 text-primary" />
+                    <Check className="h-5 w-5 text-primary" />
                   )}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setCreateWorkspaceOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-5 w-5" />
                 Créer un espace de travail
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -180,19 +180,19 @@ export function Sidebar() {
                 }
               >
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full bg-primary" />
                 )}
-                <span className="relative flex items-center justify-center shrink-0" style={{ width: 20, height: 20 }}>
-                  <item.icon className="h-[18px] w-[18px]" />
+                <span className="relative flex items-center justify-center shrink-0" style={{ width: 24, height: 24 }}>
+                  <item.icon className="h-[22px] w-[22px]" />
                   {item.badge !== undefined && item.badge > 0 && collapsed && (
-                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-sidebar" />
+                    <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-primary ring-2 ring-sidebar" />
                   )}
                 </span>
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left truncate">{item.label}</span>
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-white">
+                      <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-medium text-white">
                         {item.badge > 99 ? "99+" : item.badge}
                       </span>
                     )}
@@ -207,7 +207,7 @@ export function Sidebar() {
                   <TooltipContent side="right" className="flex items-center gap-2">
                     {item.label}
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-medium text-white">
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-white">
                         {item.badge}
                       </span>
                     )}
@@ -228,9 +228,9 @@ export function Sidebar() {
               }}
               className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
             >
-              <Search className="h-[18px] w-[18px]" />
+              <Search className="h-[22px] w-[22px]" />
               <span className="flex-1 text-left">Rechercher</span>
-              <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[11px] text-muted-foreground">
                 ⌘K
               </kbd>
             </button>
@@ -243,7 +243,7 @@ export function Sidebar() {
         {favorites.length > 0 && !collapsed && (
           <>
             <div className="px-5 pt-3 pb-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Favoris
               </span>
             </div>
@@ -262,7 +262,7 @@ export function Sidebar() {
                   }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
                 >
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 shrink-0" />
                   <span className="truncate">{fav.name}</span>
                 </button>
               ))}
@@ -274,7 +274,7 @@ export function Sidebar() {
         {/* Spaces Header */}
         <div className="flex items-center justify-between px-3 pt-3 pb-1">
           {!collapsed && (
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
               Espaces
             </span>
           )}
@@ -283,7 +283,7 @@ export function Sidebar() {
             className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
             title="Ajouter un espace"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
           </button>
         </div>
 
@@ -327,10 +327,10 @@ export function Sidebar() {
             title={collapsed ? "Développer" : "Réduire"}
           >
             {collapsed ? (
-              <PanelLeft className="h-4 w-4" />
+              <PanelLeft className="h-5 w-5" />
             ) : (
               <>
-                <PanelLeftClose className="h-4 w-4 mr-2" />
+                <PanelLeftClose className="h-5 w-5 mr-2" />
                 <span className="text-xs">Réduire</span>
               </>
             )}
@@ -344,9 +344,9 @@ export function Sidebar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-sidebar-accent">
-                <Avatar className="h-7 w-7 shrink-0">
+                <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={user?.image ?? undefined} />
-                  <AvatarFallback className="bg-primary/20 text-[11px] text-primary">
+                  <AvatarFallback className="bg-primary/20 text-[12px] text-primary">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -357,7 +357,7 @@ export function Sidebar() {
                         {user?.name ?? "User"}
                       </p>
                     </div>
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
                   </>
                 )}
               </button>
@@ -365,18 +365,18 @@ export function Sidebar() {
             <DropdownMenuContent align="start" side="top" className="w-56">
               <DropdownMenuLabel>
                 <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/settings")}>
-                <Settings className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 h-5 w-5" />
                 Paramètres
               </DropdownMenuItem>
               {currentWorkspace && (
                 <DropdownMenuItem
                   onClick={() => router.push(`/workspace/${currentWorkspace.id}/settings`)}
                 >
-                  <Building2 className="mr-2 h-4 w-4" />
+                  <Building2 className="mr-2 h-5 w-5" />
                   Paramètres de l&apos;espace
                 </DropdownMenuItem>
               )}
@@ -385,7 +385,7 @@ export function Sidebar() {
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="text-red-400 focus:text-red-400"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-5 w-5" />
                 Déconnexion
               </DropdownMenuItem>
             </DropdownMenuContent>

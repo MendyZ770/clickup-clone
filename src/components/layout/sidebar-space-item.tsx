@@ -93,7 +93,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
               className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
               style={{ backgroundColor: space.color ?? "#3B82F6" }}
             >
-              <SpaceIcon className="h-3.5 w-3.5 text-white" />
+              <SpaceIcon className="h-4 w-4 text-white" />
             </div>
           </button>
         </TooltipTrigger>
@@ -108,17 +108,17 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
             <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">
-              <ChevronRight
+                <ChevronRight
                 className={cn(
-                  "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
+                  "h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200",
                   isOpen && "rotate-90"
                 )}
               />
               <div
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded"
                 style={{ backgroundColor: space.color ?? "#3B82F6" }}
               >
-                <SpaceIcon className="h-3 w-3 text-white" />
+                <SpaceIcon className="h-4 w-4 text-white" />
               </div>
               <span className="flex-1 truncate font-medium text-sidebar-foreground/90">
                 {space.name}
@@ -132,16 +132,16 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
                 className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-5 w-5" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right">
               <DropdownMenuItem onClick={() => setCreateFolderOpen(true)}>
-                <FolderPlus className="mr-2 h-4 w-4" />
+                <FolderPlus className="mr-2 h-5 w-5" />
                 Nouveau dossier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCreateListOpen(true)}>
-                <ListPlus className="mr-2 h-4 w-4" />
+                <ListPlus className="mr-2 h-5 w-5" />
                 Nouvelle liste
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -168,7 +168,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
 
             {space.folders.length === 0 && space.lists.length === 0 && (
               <div className="px-2 py-2">
-                <p className="text-[11px] text-muted-foreground/70">Aucune liste</p>
+                <p className="text-[13px] text-muted-foreground/70">Aucune liste</p>
               </div>
             )}
           </div>
