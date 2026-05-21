@@ -35,7 +35,7 @@ export function CategorySelect({
         {categories.map((cat) => (
           <SelectItem key={cat.id} value={cat.id}>
             <div className="flex items-center gap-2">
-              <Tag className="h-3.5 w-3.5" style={{ color: cat.color }} />
+              <Tag className="h-5 w-5" style={{ color: cat.color }} />
               <span>{cat.name}</span>
             </div>
           </SelectItem>

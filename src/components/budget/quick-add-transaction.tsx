@@ -180,7 +180,7 @@ export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{b.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {b.amount.toLocaleString("fr-FR", {
                         style: "currency",
                         currency: b.currency,
@@ -198,7 +198,7 @@ export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense
               onClick={() => setStep("select")}
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
               Changer de budget
             </button>
 
@@ -241,7 +241,7 @@ export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense
                 placeholder="0.00"
                 autoFocus
               />
-              {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
+              {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
             </div>
 
             <div className="space-y-2">

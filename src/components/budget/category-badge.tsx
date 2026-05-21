@@ -14,7 +14,7 @@ export function CategoryBadge({ name, color = "#6B7280", className }: CategoryBa
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium",
         className
       )}
       style={{
@@ -22,7 +22,7 @@ export function CategoryBadge({ name, color = "#6B7280", className }: CategoryBa
         color,
       }}
     >
-      <Tag className="h-3 w-3" />
+      <Tag className="h-4 w-4" />
       {name}
     </span>
   );

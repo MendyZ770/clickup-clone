@@ -43,21 +43,21 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
           }`}
         >
           {isIncome ? (
-            <ArrowDownLeft className="h-4 w-4" />
+            <ArrowDownLeft className="h-5 w-5" />
           ) : (
-            <ArrowUpRight className="h-4 w-4" />
+            <ArrowUpRight className="h-5 w-5" />
           )}
         </div>
         <div className="space-y-0.5">
           <p className="text-sm font-medium">
             {transaction.description || SUBTYPE_LABELS[transaction.subType ?? ""] || (isIncome ? "Revenu" : "Dépense")}
           </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
             <span>
               {format(new Date(transaction.date), "dd MMM yyyy", { locale: fr })}
             </span>
             {transaction.subType && (
-              <Badge variant="outline" className="text-[10px] px-1 py-0">
+              <Badge variant="outline" className="text-xs px-1 py-0">
                 {SUBTYPE_LABELS[transaction.subType] || transaction.subType}
               </Badge>
             )}

@@ -46,11 +46,11 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
         <div className="flex items-start justify-between">
           <Link href={`/budget/${budget.id}`} className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Wallet className="h-4 w-4 shrink-0" style={{ color: budget.color }} />
+              <Wallet className="h-5 w-5 shrink-0" style={{ color: budget.color }} />
               <h3 className="font-semibold truncate">{budget.name}</h3>
             </div>
             {budget.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">{budget.description}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">{budget.description}</p>
             )}
           </Link>
           <div className="flex items-center gap-1 ml-2">
@@ -60,7 +60,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
               className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={() => onEdit(budget)}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-5 w-5" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -69,7 +69,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
                   size="icon"
                   className="h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-5 w-5" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -98,12 +98,12 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
             <span className="text-muted-foreground">
               {netSpent.toLocaleString("fr-FR", { style: "currency", currency: budget.currency })} utilisé
             </span>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-sm">
               {percentUsed.toFixed(0)}%
             </Badge>
           </div>
-          <Progress value={percentUsed} className="h-2" />
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <Progress value={percentUsed} className="h-2.5" />
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               Reste :{" "}
               <span className={cn("font-medium", remaining < 0 ? "text-red-500" : "text-emerald-600")}>

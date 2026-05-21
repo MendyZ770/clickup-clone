@@ -130,7 +130,7 @@ export function BudgetFormDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Marketing Q1"
             />
-            {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+            {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
@@ -156,7 +156,7 @@ export function BudgetFormDialog({
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
               />
-              {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
+              {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Devise</Label>

@@ -170,7 +170,7 @@ export function AddTransactionDialog({
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
             />
-            {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
+            {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
           </div>
 
           <div className="space-y-2">
@@ -199,7 +199,7 @@ export function AddTransactionDialog({
                 <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   {tag}
                   <button type="button" onClick={() => setTags(tags.filter((t) => t !== tag))}>
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </button>
                 </Badge>
               ))}
@@ -230,7 +230,7 @@ export function AddTransactionDialog({
                   }
                 }}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </div>
