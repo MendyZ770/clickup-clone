@@ -57,24 +57,24 @@ export function Breadcrumbs() {
   if (segments.length === 0) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
-        <Home className="h-4 w-4" />
+        <Home className="h-5 w-5" />
       </div>
     );
   }
 
   return (
-    <nav className="flex items-center gap-1 text-xs md:text-sm min-w-0 overflow-hidden">
+    <nav className="flex items-center gap-1 text-sm md:text-base min-w-0 overflow-hidden">
       <Link
         href="/dashboard"
         className="text-muted-foreground transition-colors hover:text-foreground"
       >
-        <Home className="h-4 w-4" />
+        <Home className="h-5 w-5" />
       </Link>
       {segments.map((segment, index) => (
         <div key={segment.href} className="flex items-center gap-1">
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
           {index === segments.length - 1 ? (
-            <span className="font-medium text-foreground truncate max-w-[120px] md:max-w-none">
+            <span className="font-medium text-foreground truncate max-w-[140px] md:max-w-none">
               {segment.label}
             </span>
           ) : (

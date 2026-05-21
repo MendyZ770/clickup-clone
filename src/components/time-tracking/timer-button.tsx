@@ -126,18 +126,18 @@ export function TimerButton() {
       <div className="flex items-center gap-1 sm:gap-2">
         <div className="flex items-center gap-1 sm:gap-2 rounded-md bg-green-500/10 px-1.5 sm:px-2.5 py-1">
           <TimerDisplay startTime={runningTimer.startTime} />
-          <span className="hidden sm:inline max-w-[120px] truncate text-xs text-muted-foreground">
+          <span className="hidden sm:inline max-w-[120px] truncate text-sm text-muted-foreground">
             {runningTimer.task.title}
           </span>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+          className="h-8 w-8 text-red-500 hover:bg-red-500/10 hover:text-red-600"
           onClick={handleStop}
           disabled={stopping}
         >
-          <Square className="h-3.5 w-3.5 fill-current" />
+          <Square className="h-4 w-4 fill-current" />
         </Button>
       </div>
     );
@@ -149,16 +149,16 @@ export function TimerButton() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
+          className="h-9 gap-1.5 text-muted-foreground hover:text-foreground"
         >
-          <Clock className="h-4 w-4" />
-          <Play className="h-3 w-3" />
+          <Clock className="h-5 w-5" />
+          <Play className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-3" align="end">
+      <PopoverContent className="w-80 p-3" align="end">
         <div className="space-y-2">
           <p className="text-sm font-medium">Démarrer le chrono</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Rechercher une tâche pour commencer le suivi
           </p>
           <Input
@@ -168,7 +168,7 @@ export function TimerButton() {
             autoFocus
           />
           {searching && (
-            <p className="text-xs text-muted-foreground py-2">Recherche...</p>
+            <p className="text-sm text-muted-foreground py-2">Recherche...</p>
           )}
           {searchResults.length > 0 && (
             <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -178,14 +178,14 @@ export function TimerButton() {
                   onClick={() => handleStart(task.id)}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent transition-colors"
                 >
-                  <Play className="h-3 w-3 shrink-0 text-green-500" />
+                  <Play className="h-4 w-4 shrink-0 text-green-500" />
                   <span className="truncate">{task.title}</span>
                 </button>
               ))}
             </div>
           )}
           {taskSearch && !searching && searchResults.length === 0 && (
-            <p className="text-xs text-muted-foreground py-2">
+            <p className="text-sm text-muted-foreground py-2">
               Aucune tâche trouvée. Essayez un autre terme.
             </p>
           )}
