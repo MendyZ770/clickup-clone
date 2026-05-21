@@ -53,16 +53,16 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
                   }`}
                 >
                   {t.type === "income" ? (
-                    <TrendingUp className="h-4 w-4" />
+                    <TrendingUp className="h-5 w-5" />
                   ) : t.type === "expense" ? (
-                    <TrendingDown className="h-4 w-4" />
+                    <TrendingDown className="h-5 w-5" />
                   ) : (
-                    <ArrowRightLeft className="h-4 w-4" />
+                    <ArrowRightLeft className="h-5 w-5" />
                   )}
                 </div>
                 <div>
                   <p className="font-medium text-sm">{t.description || "Sans description"}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {getAccountName(t.accountId)}
                     {t.category && ` • ${t.category.name}`}
                     {t.isRecurring && ` • 🔁 ${t.recurringFrequency === "monthly" ? "mensuel" : t.recurringFrequency === "weekly" ? "hebdo" : "annuel"}`}
@@ -86,23 +86,23 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
                       currency: t.account?.currency || "EUR",
                     })}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {new Date(t.date).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                      <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setEditing(t)}>
-                      <Pencil className="h-3.5 w-3.5 mr-2" />
+                      <Pencil className="h-5 w-5 mr-2" />
                       Modifier
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDelete(t.id)} className="text-red-500 focus:text-red-500">
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />
+                      <Trash2 className="h-5 w-5 mr-2" />
                       Supprimer
                     </DropdownMenuItem>
                   </DropdownMenuContent>

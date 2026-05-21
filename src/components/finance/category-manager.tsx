@@ -89,10 +89,10 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
             onKeyDown={(e) => { if (e.key === "Enter") handleEdit(c.id); }}
             autoFocus
           />
-          <Button size="sm" className="h-8 text-xs" onClick={() => handleEdit(c.id)}>
+          <Button size="sm" className="h-8 text-sm" onClick={() => handleEdit(c.id)}>
             OK
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs px-2" onClick={() => { setEditing(null); setEditName(""); }}>
+          <Button variant="ghost" size="sm" className="h-8 text-sm px-2" onClick={() => { setEditing(null); setEditName(""); }}>
             ✕
           </Button>
         </div>
@@ -101,17 +101,17 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
           <span className="text-sm">{c.name}</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => { setEditing(c.id); setEditName(c.name); }}>
-                <Pencil className="h-3.5 w-3.5 mr-2" />
+                <Pencil className="h-5 w-5 mr-2" />
                 Modifier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDelete(c.id)} className="text-red-500 focus:text-red-500">
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                <Trash2 className="h-5 w-5 mr-2" />
                 Supprimer
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -152,7 +152,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="font-medium mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-emerald-500" />
+            <Tag className="h-5 w-5 text-emerald-500" />
             Revenus ({incomeCategories.length})
           </h3>
           <div className="space-y-2">
@@ -167,7 +167,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
 
         <div>
           <h3 className="font-medium mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-rose-500" />
+            <Tag className="h-5 w-5 text-rose-500" />
             Dépenses ({expenseCategories.length})
           </h3>
           <div className="space-y-2">

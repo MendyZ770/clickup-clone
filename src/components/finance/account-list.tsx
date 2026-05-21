@@ -63,11 +63,11 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
                       className="flex h-10 w-10 items-center justify-center rounded-full"
                       style={{ backgroundColor: account.color + "20" }}
                     >
-                      <Icon className="h-5 w-5" style={{ color: account.color }} />
+                      <Icon className="h-6 w-6" style={{ color: account.color }} />
                     </div>
                     <div>
                       <p className="font-medium">{account.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">
+                      <p className="text-sm text-muted-foreground capitalize">
                         {account.type === "bank" && account.bankName
                           ? `${account.bankName} • `
                           : ""}
@@ -78,16 +78,16 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setEditing(account)}>
-                        <Pencil className="h-3.5 w-3.5 mr-2" />
+                        <Pencil className="h-5 w-5 mr-2" />
                         Modifier
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(account.id)} className="text-red-500 focus:text-red-500">
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                        <Trash2 className="h-5 w-5 mr-2" />
                         Supprimer
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -100,7 +100,7 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
                       currency: account.currency,
                     })}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {account._count?.transactions || 0} transaction
                     {(account._count?.transactions || 0) > 1 ? "s" : ""}
                   </p>

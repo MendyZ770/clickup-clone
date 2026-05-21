@@ -59,7 +59,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
             <Target className="h-6 w-6 text-amber-500" />
           </div>
           <p className="font-medium">Aucun objectif</p>
-          <p className="text-xs mt-1">Créez votre premier objectif d&apos;épargne</p>
+          <p className="text-sm mt-1">Créez votre premier objectif d&apos;épargne</p>
         </CardContent>
       </Card>
     );
@@ -89,37 +89,37 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                       style={{ backgroundColor: (goal.color || "#F59E0B") + "20" }}
                     >
                       {goal.isCompleted ? (
-                        <CheckCircle2 className="h-5 w-5" style={{ color: goal.color || "#F59E0B" }} />
+                        <CheckCircle2 className="h-6 w-6" style={{ color: goal.color || "#F59E0B" }} />
                       ) : (
-                        <Target className="h-5 w-5" style={{ color: goal.color || "#F59E0B" }} />
+                        <Target className="h-6 w-6" style={{ color: goal.color || "#F59E0B" }} />
                       )}
                     </div>
                     <div>
                       <p className="font-semibold text-sm">{goal.name}</p>
                       {goal.account && (
-                        <p className="text-[11px] text-muted-foreground">{goal.account.name}</p>
+                        <p className="text-sm text-muted-foreground">{goal.account.name}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
                     {goal.deadline && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground mr-1">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground mr-1">
                         {new Date(goal.deadline).toLocaleDateString("fr-FR")}
                       </span>
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors">
-                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                          <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setEditing(goal)}>
-                          <Pencil className="h-3.5 w-3.5 mr-2" />
+                          <Pencil className="h-5 w-5 mr-2" />
                           Modifier
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(goal.id)} className="text-red-500 focus:text-red-500">
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          <Trash2 className="h-5 w-5 mr-2" />
                           Supprimer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -129,7 +129,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
 
                 {/* Progress */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
                       {goal.currentAmount.toLocaleString("fr-FR", { style: "currency", currency: goal.currency })}
                     </span>
@@ -137,7 +137,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                       {goal.targetAmount.toLocaleString("fr-FR", { style: "currency", currency: goal.currency })}
                     </span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
                       initial={{ width: 0 }}
@@ -145,7 +145,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                       transition={{ duration: 1, delay: 0.2 }}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground text-center font-medium">
+                  <p className="text-xs text-muted-foreground text-center font-medium">
                     {Math.round(progress)}% atteint
                   </p>
                 </div>
@@ -156,10 +156,10 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 text-xs flex-1 gap-1"
+                      className="h-9 text-sm flex-1 gap-1"
                       onClick={() => setContributingId(goal.id)}
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-4 w-4" />
                       Contribuer
                     </Button>
                   </div>
@@ -171,7 +171,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                           key={amt}
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs flex-1"
+                          className="h-9 text-sm flex-1"
                           disabled={isSubmitting}
                           onClick={() => handleContribute(goal.id, amt)}
                         >
@@ -183,7 +183,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                       <Input
                         type="number"
                         placeholder="Montant perso..."
-                        className="h-7 text-xs"
+                        className="h-9 text-sm"
                         value={customAmount}
                         onChange={(e) => setCustomAmount(e.target.value)}
                         onKeyDown={(e) => {
@@ -192,16 +192,16 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
                       />
                       <Button
                         size="sm"
-                        className="h-7 text-xs"
+                        className="h-9 text-sm"
                         disabled={isSubmitting || !customAmount}
                         onClick={() => handleContribute(goal.id, parseFloat(customAmount) || 0)}
                       >
-                        <TrendingUp className="h-3 w-3" />
+                        <TrendingUp className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs px-2"
+                        className="h-9 text-sm px-2"
                         onClick={() => { setContributingId(null); setCustomAmount(""); }}
                       >
                         ✕

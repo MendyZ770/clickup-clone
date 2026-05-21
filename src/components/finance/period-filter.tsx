@@ -16,7 +16,7 @@ const PERIODS: { value: PeriodFilter; label: string }[] = [
 export function PeriodFilter({ value, onChange }: { value: PeriodFilter; onChange: (v: PeriodFilter) => void }) {
   return (
     <div className="flex items-center gap-1 bg-muted/40 rounded-lg p-1 border border-border/30">
-      <CalendarRange className="h-3.5 w-3.5 text-muted-foreground ml-2" />
+      <CalendarRange className="h-5 w-5 text-muted-foreground ml-2" />
       {PERIODS.map((p) => (
         <Button
           key={p.value}
@@ -24,7 +24,7 @@ export function PeriodFilter({ value, onChange }: { value: PeriodFilter; onChang
           size="sm"
           onClick={() => onChange(p.value)}
           className={cn(
-            "h-7 text-xs px-3 rounded-md transition-all",
+            "h-9 text-sm px-3 rounded-md transition-all",
             value === p.value
               ? "bg-background text-foreground shadow-sm font-medium"
               : "text-muted-foreground hover:text-foreground hover:bg-transparent"

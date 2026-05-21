@@ -80,9 +80,9 @@ export function ExpenseChart({ data }: { data: any[] }) {
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
             {chartData.slice(0, 5).map((item: any, i: number) => (
-              <div key={i} className="flex items-center gap-1.5 text-xs">
+              <div key={i} className="flex items-center gap-1.5 text-sm">
                 <div
-                  className="h-2 w-2 rounded-full"
+                  className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: item.color || COLORS[i % COLORS.length] }}
                 />
                 <span className="text-muted-foreground truncate max-w-[80px]">{item.name}</span>
