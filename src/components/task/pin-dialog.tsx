@@ -65,7 +65,7 @@ export function PinDialog({ open, taskId, onSuccess, onCancel }: PinDialogProps)
       <DialogContent className="sm:max-w-xs" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-amber-500" />
+            <Lock className="h-5 w-5 text-amber-500" />
             Tâche verrouillée
           </DialogTitle>
           <DialogDescription>
@@ -117,7 +117,7 @@ export function PinDialog({ open, taskId, onSuccess, onCancel }: PinDialogProps)
               className="flex-1"
               disabled={pin.length !== 4 || loading}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               Accéder
             </Button>
           </div>

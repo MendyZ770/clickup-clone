@@ -43,8 +43,8 @@ export function AssigneeSelector({
     fetcher
   );
 
-  const avatarSize = size === "sm" ? "h-6 w-6" : "h-8 w-8";
-  const textSize = size === "sm" ? "text-xs" : "text-sm";
+  const avatarSize = size === "sm" ? "h-7 w-7" : "h-9 w-9";
+  const textSize = size === "sm" ? "text-sm" : "text-base";
 
   const trigger = (
     <button
@@ -68,7 +68,7 @@ export function AssigneeSelector({
             "rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center"
           )}
         >
-          <UserIcon className="h-3 w-3 text-muted-foreground/50" />
+          <UserIcon className="h-4 w-4 text-muted-foreground/50" />
         </div>
       )}
     </button>
@@ -88,8 +88,8 @@ export function AssigneeSelector({
             }}
             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
           >
-            <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-              <UserIcon className="h-3 w-3 text-muted-foreground/50" />
+            <div className="h-7 w-7 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+              <UserIcon className="h-4 w-4 text-muted-foreground/50" />
             </div>
             <span className={cn("text-muted-foreground", textSize)}>
               Non assigné
@@ -107,9 +107,9 @@ export function AssigneeSelector({
                 assignee?.id === m.user.id && "bg-muted"
               )}
             >
-              <Avatar className="h-6 w-6">
+              <Avatar className="h-7 w-7">
                 <AvatarImage src={m.user.image ?? undefined} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-xs">
                   {(m.user.name ?? m.user.email).slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

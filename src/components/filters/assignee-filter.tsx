@@ -50,7 +50,7 @@ export function AssigneeFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+        <Button variant="outline" size="sm" className="h-8 text-sm gap-1">
           Assigné
           {selected.length > 0 && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
@@ -66,9 +66,9 @@ export function AssigneeFilter({
             onClick={() => toggle(m.user.id)}
             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
           >
-            <Avatar className="h-5 w-5">
+            <Avatar className="h-6 w-6">
               <AvatarImage src={m.user.image ?? undefined} />
-              <AvatarFallback className="text-[9px]">
+              <AvatarFallback className="text-xs">
                 {(m.user.name ?? m.user.email).slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -76,7 +76,7 @@ export function AssigneeFilter({
               {m.user.name ?? m.user.email}
             </span>
             {selected.includes(m.user.id) && (
-              <Check className="h-3.5 w-3.5 text-primary" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </button>
         ))}

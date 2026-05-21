@@ -111,7 +111,7 @@ export function TagSelector({
       {taskTags.map((tt) => (
         <span
           key={tt.tag.id}
-          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
+          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
           style={{ backgroundColor: tt.tag.color }}
         >
           {tt.tag.name}
@@ -123,7 +123,7 @@ export function TagSelector({
               }}
               className="hover:bg-black/20 dark:hover:bg-white/20 rounded-full"
             >
-              <X className="h-2.5 w-2.5" />
+              <X className="h-3 w-3" />
             </button>
           )}
         </span>
@@ -131,9 +131,9 @@ export function TagSelector({
       {onTagAdded && (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <button className="inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] text-muted-foreground hover:bg-muted transition-colors">
-              <Plus className="h-3 w-3" />
-              <TagIcon className="h-3 w-3" />
+            <button className="inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs text-muted-foreground hover:bg-muted transition-colors">
+              <Plus className="h-4 w-4" />
+              <TagIcon className="h-4 w-4" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-56 p-2" align="start">
@@ -143,7 +143,7 @@ export function TagSelector({
                   placeholder="Nouveau tag..."
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
-                  className="h-7 text-xs"
+                  className="h-8 text-sm"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -153,7 +153,7 @@ export function TagSelector({
                 />
                 <Button
                   size="sm"
-                  className="h-7 px-2 text-xs"
+                  className="h-8 px-2 text-sm"
                   onClick={handleCreateTag}
                   disabled={!newTagName.trim() || isCreating}
                 >
@@ -174,17 +174,17 @@ export function TagSelector({
                         }
                       }}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded px-2 py-1 text-xs hover:bg-muted",
+                        "flex w-full items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted",
                         isAttached && "bg-muted"
                       )}
                     >
                       <span
-                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        className="h-3 w-3 rounded-full shrink-0"
                         style={{ backgroundColor: tag.color }}
                       />
                       <span className="truncate">{tag.name}</span>
                       {isAttached && (
-                        <X className="h-3 w-3 ml-auto text-muted-foreground" />
+                        <X className="h-4 w-4 ml-auto text-muted-foreground" />
                       )}
                     </button>
                   );

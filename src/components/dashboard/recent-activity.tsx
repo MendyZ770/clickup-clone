@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface ActivityItem {
   id: string;
@@ -41,14 +43,14 @@ interface RecentActivityProps {
 }
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
-  created: <Plus className="h-5 w-5" />,
-  updated: <Edit3 className="h-5 w-5" />,
-  deleted: <Trash2 className="h-5 w-5" />,
-  moved: <ArrowRight className="h-5 w-5" />,
-  completed: <CheckCircle2 className="h-5 w-5" />,
-  due_soon: <Clock className="h-5 w-5" />,
-  overdue: <AlertCircle className="h-5 w-5" />,
-  comment: <MessageSquare className="h-5 w-5" />,
+  created: <Plus className="h-6 w-6" />,
+  updated: <Edit3 className="h-6 w-6" />,
+  deleted: <Trash2 className="h-6 w-6" />,
+  moved: <ArrowRight className="h-6 w-6" />,
+  completed: <CheckCircle2 className="h-6 w-6" />,
+  due_soon: <Clock className="h-6 w-6" />,
+  overdue: <AlertCircle className="h-6 w-6" />,
+  comment: <MessageSquare className="h-6 w-6" />,
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -96,41 +98,71 @@ function getActivityDescription(activity: ActivityItem): string {
 export const RecentActivity = memo(function RecentActivity({ activities, isLoading }: RecentActivityProps) {
   if (isLoading) {
     return (
-      <div className="rounded-2xl border bg-card p-5 space-y-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="rounded-2xl border bg-card p-5 space-y-4"
+      >
         <Skeleton className="h-5 w-32" />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex gap-3">
+          <motion.div key={i} variants={staggerItem} className="flex gap-3">
             <Skeleton className="h-8 w-8 rounded-full" />
             <div className="flex-1 space-y-1.5">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-20" />
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     );
   }
 
   if (activities.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]">
-        <Clock className="h-8 w-8 text-muted-foreground/40 mb-3" />
-        <p className="text-sm text-muted-foreground">Aucune activité récente</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]"
+      >
+        <motion.div
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Clock className="h-9 w-9 text-muted-foreground/40 mb-3" />
+        </motion.div>
+        <p className="text-base text-muted-foreground">Aucune activité récente</p>
+      </motion.div>
     );
   }
 
   return (
-    <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow"
+    >
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
-        <span className="h-3 w-3 rounded-full bg-primary" />
+        <motion.span
+          className="h-4 w-4 rounded-full bg-primary"
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
         Activité récente
       </h3>
 
       <div className="relative space-y-0">
         {/* Timeline line */}
-        <div className="absolute left-4 top-2 bottom-2 w-px bg-border" />
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="absolute left-4 top-2 bottom-2 w-px bg-border origin-top"
+        />
 
+        <AnimatePresence>
         {activities.map((activity, index) => {
           const icon = ACTION_ICONS[activity.action] ?? ACTION_ICONS.updated;
           const color = ACTION_COLORS[activity.action] ?? ACTION_COLORS.updated;
@@ -140,22 +172,30 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
           });
 
           return (
-            <div
+            <motion.div
               key={activity.id}
+              variants={staggerItem}
+              layout
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ backgroundColor: "hsl(var(--muted) / 0.4)", x: 2 }}
               className={cn(
-                "relative flex gap-3 pl-1 pr-1 py-2.5 rounded-lg",
-                "hover:bg-muted/40 transition-colors cursor-default",
+                "relative flex gap-3 pl-1 pr-1 py-2.5 rounded-lg cursor-default",
                 index !== activities.length - 1 && "border-b border-border/50"
               )}
             >
-              <div
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15, delay: index * 0.05 }}
                 className={cn(
-                  "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-2",
+                  "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2",
                   color
                 )}
               >
                 {icon}
-              </div>
+              </motion.div>
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm leading-snug">
@@ -171,14 +211,15 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
                     {activity.task.title}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground/60 mt-1">
+                <p className="text-sm text-muted-foreground/60 mt-1">
                   {timeAgo}
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 });

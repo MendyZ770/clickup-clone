@@ -70,23 +70,23 @@ export function TaskAttachments({ taskId }: { taskId: string }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-          <Paperclip className="h-3.5 w-3.5" />
+        <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+          <Paperclip className="h-4 w-4" />
           Pièces jointes ({items.length})
         </h4>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 text-xs gap-1">
-              <Plus className="h-3 w-3" />
+            <Button variant="ghost" size="sm" className="h-7 text-sm gap-1">
+              <Plus className="h-4 w-4" />
               Ajouter
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-72 space-y-2" align="end">
             <p className="text-sm font-medium">Ajouter un lien</p>
-            <Input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
-            <Input placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} className="h-8 text-xs" />
-            <Button size="sm" className="w-full text-xs" onClick={handleAdd} disabled={adding || !name || !url}>
-              {adding && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+            <Input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-sm" />
+            <Input placeholder="https://..." value={url} onChange={(e) => setUrl(e.target.value)} className="h-9 text-sm" />
+            <Button size="sm" className="w-full text-sm" onClick={handleAdd} disabled={adding || !name || !url}>
+              {adding && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
               Ajouter
             </Button>
           </PopoverContent>
@@ -98,8 +98,8 @@ export function TaskAttachments({ taskId }: { taskId: string }) {
           {items.map((att) => {
             const Icon = getFileIcon(att.mimeType);
             return (
-              <div key={att.id} className="flex items-center gap-2 rounded border px-2 py-1.5 text-xs group">
-                <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div key={att.id} className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm group">
+                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                 <a
                   href={att.url}
                   target="_blank"
@@ -107,16 +107,16 @@ export function TaskAttachments({ taskId }: { taskId: string }) {
                   className="flex-1 truncate text-blue-500 hover:underline flex items-center gap-1"
                 >
                   {att.name}
-                  <ExternalLink className="h-2.5 w-2.5" />
+                  <ExternalLink className="h-3 w-3" />
                 </a>
-                <span className="text-[10px] text-muted-foreground shrink-0">
+                <span className="text-xs text-muted-foreground shrink-0">
                   {formatDistanceToNow(new Date(att.createdAt), { addSuffix: true })}
                 </span>
                 <button
                   onClick={() => handleDelete(att.id)}
                   className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             );

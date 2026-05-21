@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   ChevronRight,
   Folder,
   Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { FolderWithLists } from "@/types";
 import type { SpaceWithContents } from "@/types";
 import type { KeyedMutator } from "swr";
@@ -50,30 +50,41 @@ export function SidebarFolderItem({
       <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
-            <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">
-              <ChevronRight
-                className={cn(
-                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-                  isOpen && "rotate-90"
-                )}
-              />
-              <Folder className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <motion.button
+              whileHover={{ x: 1 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent"
+            >
+              <motion.div
+                animate={{ rotate: isOpen ? 90 : 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <Folder className="h-6 w-6 shrink-0 text-muted-foreground" />
+              </motion.div>
               <span className="flex-1 truncate text-sidebar-foreground/80">
                 {folder.name}
               </span>
-            </button>
+            </motion.button>
           </CollapsibleTrigger>
 
-          <button
+          <motion.button
             onClick={(e) => {
               e.stopPropagation();
               setCreateListOpen(true);
             }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
             title="Ajouter une liste"
           >
-            <Plus className="h-4 w-4" />
-          </button>
+            <Plus className="h-5 w-5" />
+          </motion.button>
         </div>
 
         <CollapsibleContent>

@@ -33,9 +33,9 @@ export function CommentList({ taskId }: CommentListProps) {
         <div className="space-y-3">
           {[1, 2].map((i) => (
             <div key={i} className="flex gap-2">
-              <Skeleton className="h-7 w-7 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
               <div className="flex-1 space-y-1">
-                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-full" />
               </div>
             </div>
@@ -45,9 +45,9 @@ export function CommentList({ taskId }: CommentListProps) {
         <div className="space-y-4">
           {(comments ?? []).map((comment) => (
             <div key={comment.id} className="flex gap-2.5">
-              <Avatar className="h-7 w-7 shrink-0">
+              <Avatar className="h-8 w-8 shrink-0">
                 <AvatarImage src={comment.user.image ?? undefined} />
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback className="text-xs">
                   {(comment.user.name ?? comment.user.email)
                     .slice(0, 2)
                     .toUpperCase()}
@@ -58,7 +58,7 @@ export function CommentList({ taskId }: CommentListProps) {
                   <span className="text-sm font-medium">
                     {comment.user.name ?? comment.user.email}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(comment.createdAt), {
                       addSuffix: true,
                     })}
@@ -71,7 +71,7 @@ export function CommentList({ taskId }: CommentListProps) {
             </div>
           ))}
           {comments?.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">
+            <p className="text-sm text-muted-foreground text-center py-4">
               No comments yet
             </p>
           )}

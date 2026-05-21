@@ -83,14 +83,14 @@ export function CustomFieldRenderer({
                   if (e.key === "Enter") handleSave();
                   if (e.key === "Escape") handleCancel();
                 }}
-                className="h-7 text-sm"
+                className="h-8 text-base"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -117,14 +117,14 @@ export function CustomFieldRenderer({
                   if (e.key === "Enter") handleSave();
                   if (e.key === "Escape") handleCancel();
                 }}
-                className="h-7 text-sm"
+                className="h-8 text-base"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -142,11 +142,11 @@ export function CustomFieldRenderer({
       return (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-7 text-sm justify-between", className)}>
+            <Button variant="outline" size="sm" className={cn("h-8 text-base justify-between", className)}>
               <span className="truncate">
                 {value || <span className="text-muted-foreground">Select...</span>}
               </span>
-              <ChevronDown className="h-3 w-3 ml-1 shrink-0" />
+              <ChevronDown className="h-4 w-4 ml-1 shrink-0" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-48 p-1" align="start">
@@ -194,8 +194,8 @@ export function CustomFieldRenderer({
       return (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-7 text-sm", className)}>
-              <Calendar className="h-3 w-3 mr-1" />
+            <Button variant="outline" size="sm" className={cn("h-8 text-base", className)}>
+              <Calendar className="h-4 w-4 mr-1" />
               {value ? format(new Date(value), "MMM d, yyyy") : "Set date"}
             </Button>
           </PopoverTrigger>
@@ -223,14 +223,14 @@ export function CustomFieldRenderer({
                   if (e.key === "Escape") handleCancel();
                 }}
                 placeholder="https://..."
-                className="h-7 text-sm"
+                className="h-8 text-base"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -238,7 +238,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors flex items-center gap-1"
             >
-              <Link className="h-3 w-3 shrink-0" />
+              <Link className="h-4 w-4 shrink-0" />
               {value ? (
                 <span className="text-blue-500 underline truncate">{value}</span>
               ) : (
@@ -263,14 +263,14 @@ export function CustomFieldRenderer({
                   if (e.key === "Escape") handleCancel();
                 }}
                 placeholder="email@example.com"
-                className="h-7 text-sm"
+                className="h-8 text-base"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -278,7 +278,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors flex items-center gap-1"
             >
-              <Mail className="h-3 w-3 shrink-0" />
+              <Mail className="h-4 w-4 shrink-0" />
               {value || <span className="text-muted-foreground italic">Add email</span>}
             </button>
           )}
@@ -299,14 +299,14 @@ export function CustomFieldRenderer({
                   if (e.key === "Escape") handleCancel();
                 }}
                 placeholder="+1 (555) 000-0000"
-                className="h-7 text-sm"
+                className="h-8 text-base"
                 autoFocus
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -314,7 +314,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors flex items-center gap-1"
             >
-              <Phone className="h-3 w-3 shrink-0" />
+              <Phone className="h-4 w-4 shrink-0" />
               {value || <span className="text-muted-foreground italic">Add phone</span>}
             </button>
           )}
@@ -327,7 +327,7 @@ export function CustomFieldRenderer({
           {editing ? (
             <div className="flex items-center gap-1 flex-1">
               <div className="relative flex-1">
-                <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="number"
                   step="0.01"
@@ -337,15 +337,15 @@ export function CustomFieldRenderer({
                     if (e.key === "Enter") handleSave();
                     if (e.key === "Escape") handleCancel();
                   }}
-                  className="h-7 text-sm pl-6"
+                  className="h-8 text-base pl-7"
                   autoFocus
                 />
               </div>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave}>
-                <Check className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSave}>
+                <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
-                <X className="h-3 w-3" />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -353,7 +353,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors flex items-center gap-1"
             >
-              <DollarSign className="h-3 w-3 shrink-0" />
+              <DollarSign className="h-4 w-4 shrink-0" />
               {value ? parseFloat(value).toFixed(2) : <span className="text-muted-foreground italic">0.00</span>}
             </button>
           )}
@@ -415,7 +415,7 @@ function renderViewValue(
             <Star
               key={s}
               className={cn(
-                "h-3 w-3",
+                "h-4 w-4",
                 s <= parseInt(value) ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
               )}
             />

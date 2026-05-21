@@ -166,7 +166,7 @@ export function CustomFieldManager({
                   <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{field.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {FIELD_TYPES.find((t) => t.value === field.type)?.label ?? field.type}
                       {field.required && " (required)"}
                       {parsedOptions.length > 0 && ` - ${parsedOptions.length} options`}
@@ -176,25 +176,25 @@ export function CustomFieldManager({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
                       onClick={() => handleToggleRequired(field)}
                       title={field.required ? "Make optional" : "Make required"}
                     >
-                      <span className={cn("text-xs font-bold", field.required && "text-red-500")}>
+                      <span className={cn("text-sm font-bold", field.required && "text-red-500")}>
                         *
                       </span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(field.id)}
                       disabled={deleting === field.id}
                     >
                       {deleting === field.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
@@ -209,7 +209,7 @@ export function CustomFieldManager({
         {showAdd ? (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Field Name</Label>
+              <Label className="text-sm">Field Name</Label>
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -220,7 +220,7 @@ export function CustomFieldManager({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">Field Type</Label>
+              <Label className="text-sm">Field Type</Label>
               <div className="grid grid-cols-5 gap-1">
                 {FIELD_TYPES.map((t) => {
                   const TypeIcon = getFieldTypeIcon(t.value);
@@ -229,12 +229,12 @@ export function CustomFieldManager({
                       key={t.value}
                       onClick={() => setNewType(t.value)}
                       className={cn(
-                        "flex flex-col items-center gap-1 rounded-md border p-2 text-xs hover:bg-muted transition-colors",
+                        "flex flex-col items-center gap-1 rounded-md border p-2 text-sm hover:bg-muted transition-colors",
                         newType === t.value &&
                           "border-primary bg-primary/5 text-primary"
                       )}
                     >
-                      <TypeIcon className="h-3.5 w-3.5" />
+                      <TypeIcon className="h-4 w-4" />
                       {t.label}
                     </button>
                   );
@@ -244,7 +244,7 @@ export function CustomFieldManager({
 
             {newType === "dropdown" && (
               <div className="space-y-1.5">
-                <Label className="text-xs">
+                <Label className="text-sm">
                   Options (comma-separated)
                 </Label>
                 <Input
@@ -264,7 +264,7 @@ export function CustomFieldManager({
                   setNewRequired(checked === true)
                 }
               />
-              <label htmlFor="required" className="text-xs">
+              <label htmlFor="required" className="text-sm">
                 Required field
               </label>
             </div>
@@ -277,9 +277,9 @@ export function CustomFieldManager({
                 className="h-8"
               >
                 {creating ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
                 ) : (
-                  <Plus className="h-3 w-3 mr-1" />
+                  <Plus className="h-4 w-4 mr-1" />
                 )}
                 Create Field
               </Button>
@@ -306,7 +306,7 @@ export function CustomFieldManager({
             className="w-full"
             size="sm"
           >
-            <Plus className="h-3.5 w-3.5 mr-1" />
+            <Plus className="h-4 w-4 mr-1" />
             Add Custom Field
           </Button>
         )}

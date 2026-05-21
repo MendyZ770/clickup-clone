@@ -111,13 +111,13 @@ export function CreateListDialog({
                 type="button"
                 onClick={() => setColor(undefined)}
                 className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed transition-all",
+                  "flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed transition-all",
                   !color
                     ? "border-primary text-primary"
                     : "border-muted-foreground/30 text-muted-foreground hover:border-muted-foreground"
                 )}
               >
-                <span className="text-xs">-</span>
+                <span className="text-sm">-</span>
               </button>
               {SIDEBAR_COLORS.map((c) => (
                 <button
@@ -125,7 +125,7 @@ export function CreateListDialog({
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    "h-7 w-7 rounded-full transition-all",
+                    "h-8 w-8 rounded-full transition-all",
                     color === c
                       ? "ring-2 ring-white ring-offset-2 ring-offset-background"
                       : "hover:scale-110"

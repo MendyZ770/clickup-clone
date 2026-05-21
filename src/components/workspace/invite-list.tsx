@@ -134,7 +134,7 @@ export function InviteList({ workspaceId }: InviteListProps) {
     <Card className="border-border/50">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <Mail className="h-4 w-4" />
+          <Mail className="h-5 w-5" />
           Invitations
         </CardTitle>
         <CardDescription>
@@ -175,7 +175,7 @@ export function InviteList({ workspaceId }: InviteListProps) {
           <>
             <Separator />
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
                 {"En attente ("}{invites.length}{")"}
               </p>
               <div className="space-y-2">
@@ -186,7 +186,7 @@ export function InviteList({ workspaceId }: InviteListProps) {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{invite.email}</p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {invite.role === "admin" ? "Admin" : "Membre"} ·{" "}
                         {"expire le "}
                         {format(new Date(invite.expiresAt), "d MMM yyyy", {
@@ -197,24 +197,24 @@ export function InviteList({ workspaceId }: InviteListProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-8 w-8"
                       onClick={() => handleCopy(invite.token)}
                       title="Copier le lien"
                     >
                       {copiedToken === invite.token ? (
-                        <Check className="h-3.5 w-3.5 text-green-500" />
+                        <Check className="h-4 w-4 text-green-500" />
                       ) : (
-                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Copy className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500"
                       onClick={() => handleCancel(invite.id)}
                       title="Annuler"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}

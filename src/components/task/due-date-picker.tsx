@@ -48,13 +48,13 @@ export function DueDatePicker({
   const trigger = (
     <button
       className={cn(
-        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium transition-colors",
+        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-sm font-medium transition-colors",
         getDateColor(),
         onChange && "hover:bg-muted cursor-pointer",
         className
       )}
     >
-      <CalendarIcon className="h-3 w-3" />
+      <CalendarIcon className="h-4 w-4" />
       <span>{getDateLabel()}</span>
     </button>
   );
@@ -85,7 +85,7 @@ export function DueDatePicker({
                 setOpen(false);
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
               {"Supprimer l'échéance"}
             </Button>
           </div>

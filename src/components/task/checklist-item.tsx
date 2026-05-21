@@ -50,7 +50,7 @@ export function ChecklistItemRow({
       <Checkbox
         checked={item.completed}
         onCheckedChange={(checked) => handleToggle(!!checked)}
-        className="h-3.5 w-3.5"
+        className="h-4 w-4"
       />
       <span
         className={cn(
@@ -65,7 +65,7 @@ export function ChecklistItemRow({
         disabled={isDeleting}
         className="hidden group-hover:block text-muted-foreground hover:text-destructive transition-colors"
       >
-        <Trash2 className="h-3 w-3" />
+        <Trash2 className="h-4 w-4" />
       </button>
     </div>
   );

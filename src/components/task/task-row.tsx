@@ -74,7 +74,7 @@ function TaskRowComponent({
             if (todoStatus) await handleUpdate({ statusId: todoStatus.id });
           }
         }}
-        className="h-4 w-4"
+        className="h-5 w-5"
       />
 
       {/* Title */}
@@ -86,23 +86,23 @@ function TaskRowComponent({
         )}
       >
         {task.locked && (
-          <Lock className="h-3 w-3 shrink-0 text-amber-500" aria-label="Verrouillée" />
+          <Lock className="h-4 w-4 shrink-0 text-amber-500" aria-label="Verrouillée" />
         )}
         <span className="truncate">{task.title}</span>
       </button>
 
       {/* Subtask / comment counts */}
       {(task._count.subtasks > 0 || task._count.comments > 0) && (
-        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
           {task._count.subtasks > 0 && (
             <span className="inline-flex items-center gap-0.5">
-              <GitBranch className="h-3 w-3" />
+              <GitBranch className="h-4 w-4" />
               {task._count.subtasks}
             </span>
           )}
           {task._count.comments > 0 && (
             <span className="inline-flex items-center gap-0.5">
-              <MessageSquare className="h-3 w-3" />
+              <MessageSquare className="h-4 w-4" />
               {task._count.comments}
             </span>
           )}
@@ -115,13 +115,13 @@ function TaskRowComponent({
           {task.taskTags.slice(0, 3).map((tt) => (
             <span
               key={tt.tag.id}
-              className="h-2 w-2 rounded-full"
+              className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: tt.tag.color }}
               title={tt.tag.name}
             />
           ))}
           {task.taskTags.length > 3 && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               +{task.taskTags.length - 3}
             </span>
           )}
@@ -131,12 +131,12 @@ function TaskRowComponent({
       {/* Mobile mini dots */}
       <div className="flex items-center gap-1.5 sm:hidden shrink-0">
         <span
-          className="h-2 w-2 rounded-full"
+          className="h-2.5 w-2.5 rounded-full"
           style={{ backgroundColor: task.status.color }}
           title={task.status.name}
         />
         <span
-          className={cn("h-2 w-2 rounded-full", PRIORITY_DOT_COLORS[task.priority] ?? "bg-gray-400")}
+          className={cn("h-2.5 w-2.5 rounded-full", PRIORITY_DOT_COLORS[task.priority] ?? "bg-gray-400")}
           title={task.priority}
         />
       </div>

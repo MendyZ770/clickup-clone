@@ -110,7 +110,7 @@ export function WorkspaceSettingsForm({
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
+                    "h-9 w-9 rounded-full border-2 transition-transform hover:scale-110",
                     color === c
                       ? "border-white scale-110"
                       : "border-transparent"

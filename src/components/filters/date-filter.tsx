@@ -28,8 +28,8 @@ export function DateFilter({ selected, onChange }: DateFilterProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-          <CalendarDays className="h-3 w-3" />
+        <Button variant="outline" size="sm" className="h-8 text-sm gap-1">
+          <CalendarDays className="h-4 w-4" />
           Échéance
           {selected && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
@@ -50,7 +50,7 @@ export function DateFilter({ selected, onChange }: DateFilterProps) {
           >
             <span className="flex-1 text-left">{opt.label}</span>
             {selected === opt.value && (
-              <Check className="h-3.5 w-3.5 text-primary" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </button>
         ))}

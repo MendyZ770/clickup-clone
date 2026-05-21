@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Plus, ListChecks } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, Plus, ListChecks } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChecklistItemRow } from "./checklist-item";
 import type { ChecklistWithItems } from "@/types";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface ChecklistProps {
   checklist: ChecklistWithItems;
@@ -46,45 +48,69 @@ export function Checklist({ checklist, taskId, onChanged }: ChecklistProps) {
   return (
     <div className="space-y-2 rounded-lg border p-3">
       <div className="flex items-center gap-2">
-        <button
+        <motion.button
           onClick={() => setCollapsed(!collapsed)}
+          whileTap={{ scale: 0.98 }}
           className="flex items-center gap-1.5 text-sm font-semibold hover:text-primary transition-colors"
         >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-          <ListChecks className="h-4 w-4" />
+          <motion.div
+            animate={{ rotate: collapsed ? 0 : 90 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </motion.div>
+          <motion.div whileHover={{ rotate: 5 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+            <ListChecks className="h-5 w-5" />
+          </motion.div>
           {checklist.title}
-        </button>
-        <span className="text-xs text-muted-foreground">
+        </motion.button>
+        <span className="text-sm text-muted-foreground">
           {doneCount}/{totalCount}
         </span>
       </div>
 
+      <AnimatePresence>
       {!collapsed && (
-        <>
-          <Progress value={progress} className="h-1.5" />
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="space-y-2 overflow-hidden"
+        >
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{ originX: 0 }}
+          >
+            <Progress value={progress} className="h-2" />
+          </motion.div>
 
-          <div className="space-y-0.5">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="space-y-0.5"
+          >
             {checklist.items.map((item) => (
-              <ChecklistItemRow
-                key={item.id}
-                item={item}
-                taskId={taskId}
-                checklistId={checklist.id}
-                onChanged={onChanged}
-              />
+              <motion.div key={item.id} variants={staggerItem}>
+                <ChecklistItemRow
+                  item={item}
+                  taskId={taskId}
+                  checklistId={checklist.id}
+                  onChanged={onChanged}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           <div className="flex gap-1 px-2">
             <Input
               value={newText}
               onChange={(e) => setNewText(e.target.value)}
               placeholder="Ajouter un élément..."
-              className="h-7 text-xs"
+              className="h-8 text-sm"
               disabled={isCreating}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -94,8 +120,9 @@ export function Checklist({ checklist, taskId, onChanged }: ChecklistProps) {
               }}
             />
           </div>
-        </>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -138,20 +165,28 @@ export function ChecklistSection({
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Checklists</h3>
         {!isAdding && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={() => setIsAdding(true)}
-          >
-            <Plus className="h-3 w-3" />
-            Ajouter une checklist
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-sm gap-1"
+              onClick={() => setIsAdding(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Ajouter une checklist
+            </Button>
+          </motion.div>
         )}
       </div>
 
+      <AnimatePresence>
       {isAdding && (
-        <div className="flex gap-2">
+        <motion.div
+          initial={{ opacity: 0, y: -8, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -8, height: 0 }}
+          className="flex gap-2 overflow-hidden"
+        >
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -170,25 +205,36 @@ export function ChecklistSection({
               }
             }}
           />
-          <Button
-            size="sm"
-            className="h-8"
-            onClick={handleCreateChecklist}
-            disabled={!newTitle.trim() || isCreating}
-          >
-            Ajouter
-          </Button>
-        </div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              size="sm"
+              className="h-8"
+              onClick={handleCreateChecklist}
+              disabled={!newTitle.trim() || isCreating}
+            >
+              Ajouter
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
-      {checklists.map((cl) => (
-        <Checklist
-          key={cl.id}
-          checklist={cl}
-          taskId={taskId}
-          onChanged={onChanged}
-        />
-      ))}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="space-y-3"
+      >
+        {checklists.map((cl) => (
+          <motion.div key={cl.id} variants={staggerItem}>
+            <Checklist
+              checklist={cl}
+              taskId={taskId}
+              onChanged={onChanged}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
     </div>
   );
 }

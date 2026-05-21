@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   ChevronRight,
   Plus,
@@ -17,7 +18,6 @@ import {
   Settings,
   Folder,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { SpaceWithContents } from "@/types";
 import type { KeyedMutator } from "swr";
 import {
@@ -85,17 +85,21 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="flex w-full items-center justify-center rounded-md py-1.5 transition-colors hover:bg-sidebar-accent"
             title={space.name}
           >
-            <div
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded"
+            <motion.div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded"
               style={{ backgroundColor: space.color ?? "#3B82F6" }}
+              whileHover={{ rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
-              <SpaceIcon className="h-4 w-4 text-white" />
-            </div>
-          </button>
+              <SpaceIcon className="h-5 w-5 text-white" />
+            </motion.div>
+          </motion.button>
         </TooltipTrigger>
         <TooltipContent side="right">{space.name}</TooltipContent>
       </Tooltip>
@@ -107,41 +111,49 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
       <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
-            <button className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent">
-                <ChevronRight
-                className={cn(
-                  "h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200",
-                  isOpen && "rotate-90"
-                )}
-              />
-              <div
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded"
-                style={{ backgroundColor: space.color ?? "#3B82F6" }}
+            <motion.button
+              whileHover={{ x: 1 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent"
+            >
+              <motion.div
+                animate={{ rotate: isOpen ? 90 : 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <SpaceIcon className="h-4 w-4 text-white" />
-              </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+              </motion.div>
+              <motion.div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded"
+                style={{ backgroundColor: space.color ?? "#3B82F6" }}
+                whileHover={{ scale: 1.05, rotate: 3 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <SpaceIcon className="h-5 w-5 text-white" />
+              </motion.div>
               <span className="flex-1 truncate font-medium text-sidebar-foreground/90">
                 {space.name}
               </span>
-            </button>
+            </motion.button>
           </CollapsibleTrigger>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Plus className="h-5 w-5" />
-              </button>
+                <Plus className="h-6 w-6" />
+              </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right">
               <DropdownMenuItem onClick={() => setCreateFolderOpen(true)}>
-                <FolderPlus className="mr-2 h-5 w-5" />
+                <FolderPlus className="mr-2 h-6 w-6" />
                 Nouveau dossier
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCreateListOpen(true)}>
-                <ListPlus className="mr-2 h-5 w-5" />
+                <ListPlus className="mr-2 h-6 w-6" />
                 Nouvelle liste
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -168,7 +180,7 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
 
             {space.folders.length === 0 && space.lists.length === 0 && (
               <div className="px-2 py-2">
-                <p className="text-[13px] text-muted-foreground/70">Aucune liste</p>
+                <p className="text-sm text-muted-foreground/70">Aucune liste</p>
               </div>
             )}
           </div>

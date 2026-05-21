@@ -22,7 +22,7 @@ export function FavoriteButton({ type, targetId, workspaceId, size = "sm" }: Fav
       size="icon"
       className={cn(
         "shrink-0",
-        size === "sm" ? "h-7 w-7" : "h-8 w-8"
+        size === "sm" ? "h-8 w-8" : "h-9 w-9"
       )}
       onClick={(e) => {
         e.stopPropagation();
@@ -31,7 +31,7 @@ export function FavoriteButton({ type, targetId, workspaceId, size = "sm" }: Fav
     >
       <Star
         className={cn(
-          size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4",
+          size === "sm" ? "h-4 w-4" : "h-5 w-5",
           active ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
         )}
       />

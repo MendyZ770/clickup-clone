@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { X, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusFilter } from "./status-filter";
@@ -34,14 +35,18 @@ export function FilterBar({ listId, workspaceId }: FilterBarProps) {
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {/* Icône avec badge actif */}
-      <div className="relative">
-        <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+      <motion.div className="relative" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+        <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
         {hasFilters && (
-          <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-white">
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"
+          >
             {activeCount}
-          </span>
+          </motion.span>
         )}
-      </div>
+      </motion.div>
 
       <StatusFilter
         listId={listId}
@@ -72,15 +77,23 @@ export function FilterBar({ listId, workspaceId }: FilterBarProps) {
       />
 
       {hasFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 px-2"
-          onClick={clearFilters}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <X className="h-3 w-3" />
-          Effacer ({activeCount})
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10 px-2"
+            onClick={clearFilters}
+          >
+            <X className="h-4 w-4" />
+            Effacer ({activeCount})
+          </Button>
+        </motion.div>
       )}
 
       <div className="ml-auto">

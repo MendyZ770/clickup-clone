@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -37,9 +38,10 @@ export function MobileNav() {
             (item.href !== "/" && pathname.startsWith(item.href));
           const showBadge = item.href === "/notifications" && unreadCount > 0;
           return (
-            <button
+            <motion.button
               key={item.href}
               onClick={() => router.push(item.href)}
+              whileTap={{ scale: 0.9 }}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 w-full h-full rounded-lg mx-0.5 transition-all duration-200",
                 isActive
@@ -48,18 +50,31 @@ export function MobileNav() {
               )}
             >
               <span className="relative">
-                <item.icon className={cn("h-[22px] w-[22px]", isActive && "stroke-[2.5]")} />
+                <motion.div
+                  whileHover={{ scale: 1.15 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                >
+                  <item.icon className={cn("h-6 w-6", isActive && "stroke-[2.5]")} />
+                </motion.div>
                 {showBadge && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -right-2 -top-1.5 flex h-5 min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white"
+                  >
                     {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
+                  </motion.span>
                 )}
               </span>
-              <span className="text-[11px] font-medium leading-tight">{item.label}</span>
+              <span className="text-xs font-medium leading-tight">{item.label}</span>
               {isActive && (
-                <span className="absolute bottom-1.5 h-[3px] w-5 rounded-full bg-primary" />
+                <motion.span
+                  layoutId="mobile-nav-indicator"
+                  className="absolute bottom-1.5 h-[3px] w-5 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                />
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>

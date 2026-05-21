@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -35,19 +36,27 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
 
   return (
-    <div className="flex items-center justify-between rounded-lg border bg-card p-3 hover:bg-muted/40 transition-colors">
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ x: 2, backgroundColor: "hsl(var(--muted) / 0.4)" }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className="flex items-center justify-between rounded-lg border bg-card p-3 cursor-default"
+    >
       <div className="flex items-center gap-3">
-        <div
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: isIncome ? -10 : 10 }}
+          transition={{ type: "spring", stiffness: 300, damping: 15 }}
           className={`flex h-9 w-9 items-center justify-center rounded-full ${
             isIncome ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
           }`}
         >
           {isIncome ? (
-            <ArrowDownLeft className="h-5 w-5" />
+            <ArrowDownLeft className="h-6 w-6" />
           ) : (
-            <ArrowUpRight className="h-5 w-5" />
+            <ArrowUpRight className="h-6 w-6" />
           )}
-        </div>
+        </motion.div>
         <div className="space-y-0.5">
           <p className="text-sm font-medium">
             {transaction.description || SUBTYPE_LABELS[transaction.subType ?? ""] || (isIncome ? "Revenu" : "Dépense")}
@@ -57,7 +66,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
               {format(new Date(transaction.date), "dd MMM yyyy", { locale: fr })}
             </span>
             {transaction.subType && (
-              <Badge variant="outline" className="text-xs px-1 py-0">
+              <Badge variant="outline" className="text-sm px-1 py-0">
                 {SUBTYPE_LABELS[transaction.subType] || transaction.subType}
               </Badge>
             )}
@@ -70,7 +79,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
             {transaction.tags && transaction.tags.length > 0 && (
               <div className="flex gap-1">
                 {transaction.tags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" className="text-[10px] px-1 py-0">
+                  <Badge key={tag.id} variant="secondary" className="text-xs px-1 py-0">
                     {tag.name}
                   </Badge>
                 ))}
@@ -79,7 +88,9 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
           </div>
         </div>
       </div>
-      <span
+      <motion.span
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
         className={`text-sm font-semibold ${
           isIncome ? "text-emerald-600" : "text-red-600"
         }`}
@@ -89,7 +100,7 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
           style: "currency",
           currency: "EUR",
         })}
-      </span>
-    </div>
+      </motion.span>
+    </motion.div>
   );
 }

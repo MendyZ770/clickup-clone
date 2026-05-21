@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, FileText, Bell, NotebookPen, Wallet, TrendingUp } from "lucide-react";
 import { QuickAddTransaction } from "@/components/budget/quick-add-transaction";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 export function QuickActionFab() {
   const [open, setOpen] = useState(false);
@@ -25,19 +27,25 @@ export function QuickActionFab() {
   return (
     <>
       {/* Floating Action Button */}
-      <button
+      <motion.button
         onClick={() => setOpen(true)}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
         className={cn(
           "fixed right-4 bottom-20 md:right-6 md:bottom-6 z-40",
           "flex h-14 w-14 md:h-16 md:w-16 items-center justify-center",
           "rounded-full bg-primary text-primary-foreground shadow-lg",
-          "transition-transform duration-200 hover:scale-105 active:scale-95",
           "ring-2 ring-primary/20"
         )}
         aria-label="Nouvelle action rapide"
       >
-        <Plus className="h-7 w-7 md:h-8 md:w-8" />
-      </button>
+        <motion.div
+          animate={{ rotate: open ? 45 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+          <Plus className="h-8 w-8 md:h-9 md:w-9" />
+        </motion.div>
+      </motion.button>
 
       {/* Quick Action Menu Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
@@ -46,10 +54,21 @@ export function QuickActionFab() {
             <DialogTitle>Nouvelle action</DialogTitle>
           </DialogHeader>
           <div className="grid gap-2 py-2">
+            <AnimatePresence mode="wait">
             {!showTaskForm ? (
-              <>
-                <button
+              <motion.div
+                key="menu"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -8 }}
+                className="grid gap-2"
+              >
+                <motion.button
+                  variants={staggerItem}
                   onClick={() => setShowTaskForm(true)}
+                  whileHover={{ x: 3, borderColor: "hsl(var(--primary) / 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -61,12 +80,15 @@ export function QuickActionFab() {
                       Créer une tâche rapidement
                     </p>
                   </div>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  variants={staggerItem}
                   onClick={() => {
                     setOpen(false);
                     router.push("/reminders");
                   }}
+                  whileHover={{ x: 3, borderColor: "hsl(var(--primary) / 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
@@ -78,12 +100,15 @@ export function QuickActionFab() {
                       Ajouter un rappel
                     </p>
                   </div>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  variants={staggerItem}
                   onClick={() => {
                     setOpen(false);
                     router.push("/notes");
                   }}
+                  whileHover={{ x: 3, borderColor: "hsl(var(--primary) / 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
@@ -95,13 +120,16 @@ export function QuickActionFab() {
                       Prendre une note
                     </p>
                   </div>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  variants={staggerItem}
                   onClick={() => {
                     setOpen(false);
                     setTransactionType("income");
                     setShowTransactionForm(true);
                   }}
+                  whileHover={{ x: 3, borderColor: "hsl(var(--primary) / 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
@@ -113,13 +141,16 @@ export function QuickActionFab() {
                       Ajouter un revenu à un budget
                     </p>
                   </div>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  variants={staggerItem}
                   onClick={() => {
                     setOpen(false);
                     setTransactionType("expense");
                     setShowTransactionForm(true);
                   }}
+                  whileHover={{ x: 3, borderColor: "hsl(var(--primary) / 0.3)" }}
+                  whileTap={{ scale: 0.98 }}
                   className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500/10">
@@ -131,10 +162,16 @@ export function QuickActionFab() {
                       Ajouter une dépense à un budget
                     </p>
                   </div>
-                </button>
-              </>
+                </motion.button>
+              </motion.div>
             ) : (
-              <div className="space-y-3">
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="space-y-3"
+              >
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowTaskForm(false)}
@@ -151,8 +188,9 @@ export function QuickActionFab() {
                     setShowTaskForm(false);
                   }}
                 />
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
         </DialogContent>
       </Dialog>

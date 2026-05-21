@@ -54,7 +54,7 @@ export function TaskTimeTracking({ taskId }: TaskTimeTrackingProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <Clock className="h-5 w-5 text-muted-foreground" />
           <h3 className="text-sm font-semibold">Time Tracking</h3>
         </div>
 
@@ -67,17 +67,17 @@ export function TaskTimeTracking({ taskId }: TaskTimeTrackingProps) {
           <Button
             variant={isRunningForThisTask ? "destructive" : "default"}
             size="sm"
-            className="h-7 gap-1 text-xs"
+            className="h-8 gap-1 text-sm"
             onClick={handleStartStop}
           >
             {isRunningForThisTask ? (
               <>
-                <Square className="h-3 w-3 fill-current" />
+                <Square className="h-4 w-4 fill-current" />
                 Stop
               </>
             ) : (
               <>
-                <Play className="h-3 w-3" />
+                <Play className="h-4 w-4" />
                 Start Timer
               </>
             )}
@@ -89,7 +89,7 @@ export function TaskTimeTracking({ taskId }: TaskTimeTrackingProps) {
       {isRunningForThisTask && runningTimer && (
         <div className="flex items-center gap-2 rounded-md bg-green-500/10 px-3 py-2">
           <TimerDisplay startTime={runningTimer.startTime} />
-          <span className="text-xs text-muted-foreground">Timer running</span>
+          <span className="text-sm text-muted-foreground">Timer running</span>
         </div>
       )}
 

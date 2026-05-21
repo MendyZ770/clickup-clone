@@ -46,7 +46,7 @@ export function StatusFilter({ listId, selected, onChange }: StatusFilterProps) 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+        <Button variant="outline" size="sm" className="h-8 text-sm gap-1">
           Statut
           {selected.length > 0 && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
@@ -63,12 +63,12 @@ export function StatusFilter({ listId, selected, onChange }: StatusFilterProps) 
             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
           >
             <span
-              className="h-2.5 w-2.5 rounded-full shrink-0"
+              className="h-3 w-3 rounded-full shrink-0"
               style={{ backgroundColor: s.color }}
             />
             <span className="flex-1 text-left truncate">{s.name}</span>
             {selected.includes(s.id) && (
-              <Check className="h-3.5 w-3.5 text-primary" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </button>
         ))}

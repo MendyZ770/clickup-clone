@@ -26,11 +26,11 @@ export function BoardColumn({
       {/* Column header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b">
         <span
-          className="h-2.5 w-2.5 rounded-sm shrink-0"
+          className="h-3 w-3 rounded-sm shrink-0"
           style={{ backgroundColor: status.color }}
         />
         <span className="text-sm font-semibold truncate">{status.name}</span>
-        <span className="text-xs text-muted-foreground ml-auto">
+        <span className="text-sm text-muted-foreground ml-auto">
           {tasks.length}
         </span>
       </div>

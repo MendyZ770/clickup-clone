@@ -74,23 +74,23 @@ export function MultiAssigneeSelector({ taskId, workspaceId }: MultiAssigneeSele
       <div className="flex flex-wrap gap-1.5">
         {(assignees ?? []).map((a) => (
           <div key={a.id} className="flex items-center gap-1 rounded-full border pl-0.5 pr-1.5 py-0.5">
-            <Avatar className="h-5 w-5">
+            <Avatar className="h-6 w-6">
               <AvatarImage src={a.user.image ?? undefined} />
-              <AvatarFallback className="text-[8px]">
+              <AvatarFallback className="text-[10px]">
                 {(a.user.name ?? a.user.email)[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs truncate max-w-[80px]">{a.user.name ?? a.user.email}</span>
+            <span className="text-sm truncate max-w-[80px]">{a.user.name ?? a.user.email}</span>
             <button onClick={() => handleRemove(a.userId)} className="text-muted-foreground hover:text-foreground">
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         ))}
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-              <UserPlus className="h-3 w-3" />
+            <Button variant="outline" size="sm" className="h-8 text-sm gap-1">
+              <UserPlus className="h-4 w-4" />
               Ajouter
             </Button>
           </PopoverTrigger>
@@ -99,18 +99,18 @@ export function MultiAssigneeSelector({ taskId, workspaceId }: MultiAssigneeSele
               placeholder="Rechercher..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-7 text-xs"
+              className="h-8 text-sm"
             />
             <div className="max-h-40 overflow-y-auto space-y-0.5">
               {filteredMembers.map((m) => (
                 <button
                   key={m.user.id}
                   onClick={() => { handleAdd(m.user.id); setSearch(""); }}
-                  className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-xs hover:bg-muted transition-colors"
+                  className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 >
-                  <Avatar className="h-5 w-5">
+                  <Avatar className="h-6 w-6">
                     <AvatarImage src={m.user.image ?? undefined} />
-                    <AvatarFallback className="text-[8px]">
+                    <AvatarFallback className="text-[10px]">
                       {(m.user.name ?? m.user.email)[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -118,7 +118,7 @@ export function MultiAssigneeSelector({ taskId, workspaceId }: MultiAssigneeSele
                 </button>
               ))}
               {filteredMembers.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-2">Aucun membre</p>
+                <p className="text-sm text-muted-foreground text-center py-2">Aucun membre</p>
               )}
             </div>
           </PopoverContent>

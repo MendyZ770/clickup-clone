@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -10,17 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TrendingUp, TrendingDown, ArrowRightLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 export function FinanceTransactionList({ transactions, accounts, onMutate }: { transactions: any[]; accounts: any[]; onMutate?: () => void }) {
   const [editing, setEditing] = useState<any>(null);
 
   if (transactions.length === 0) {
     return (
-      <Card className="border-border/50">
-        <CardContent className="py-12 text-center text-muted-foreground">
-          Aucune transaction. Ajoutez votre première transaction.
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Card className="border-border/50">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            Aucune transaction. Ajoutez votre première transaction.
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -39,11 +46,24 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
   return (
     <Card className="border-border/50 overflow-hidden">
       <CardContent className="p-0">
-        <div className="divide-y divide-border/40">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="divide-y divide-border/40"
+        >
           {transactions.map((t: any) => (
-            <div key={t.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors group">
+            <motion.div
+              key={t.id}
+              variants={staggerItem}
+              whileHover={{ x: 2, backgroundColor: "hsl(var(--muted) / 0.4)" }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="flex items-center justify-between p-4 cursor-default group"
+            >
               <div className="flex items-center gap-3">
-                <div
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: t.type === "income" ? -10 : t.type === "expense" ? 10 : 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
                   className={`flex h-9 w-9 items-center justify-center rounded-full ${
                     t.type === "income"
                       ? "bg-emerald-500/10 text-emerald-500"
@@ -53,16 +73,16 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
                   }`}
                 >
                   {t.type === "income" ? (
-                    <TrendingUp className="h-5 w-5" />
+                    <TrendingUp className="h-6 w-6" />
                   ) : t.type === "expense" ? (
-                    <TrendingDown className="h-5 w-5" />
+                    <TrendingDown className="h-6 w-6" />
                   ) : (
-                    <ArrowRightLeft className="h-5 w-5" />
+                    <ArrowRightLeft className="h-6 w-6" />
                   )}
-                </div>
+                </motion.div>
                 <div>
-                  <p className="font-medium text-sm">{t.description || "Sans description"}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-base">{t.description || "Sans description"}</p>
+                  <p className="text-base text-muted-foreground">
                     {getAccountName(t.accountId)}
                     {t.category && ` • ${t.category.name}`}
                     {t.isRecurring && ` • 🔁 ${t.recurringFrequency === "monthly" ? "mensuel" : t.recurringFrequency === "weekly" ? "hebdo" : "annuel"}`}
@@ -86,31 +106,35 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
                       currency: t.account?.currency || "EUR",
                     })}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground">
                     {new Date(t.date).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MoreHorizontal className="h-6 w-6 text-muted-foreground" />
+                    </motion.button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setEditing(t)}>
-                      <Pencil className="h-5 w-5 mr-2" />
+                      <Pencil className="h-6 w-6 mr-2" />
                       Modifier
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDelete(t.id)} className="text-red-500 focus:text-red-500">
-                      <Trash2 className="h-5 w-5 mr-2" />
+                      <Trash2 className="h-6 w-6 mr-2" />
                       Supprimer
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </CardContent>
 
       {/* Inline Edit Dialog */}

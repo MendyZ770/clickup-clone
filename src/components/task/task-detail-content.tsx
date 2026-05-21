@@ -130,16 +130,16 @@ export function TaskDetailContent({
     return (
       <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
         <div className="flex-1 p-4 md:p-6 space-y-4">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-9 w-3/4" />
+          <Skeleton className="h-5 w-1/2" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-40 w-full" />
         </div>
         <div className="w-full md:w-72 border-t md:border-t-0 md:border-l p-4 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-1">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-7 w-full" />
             </div>
           ))}
         </div>
@@ -153,8 +153,8 @@ export function TaskDetailContent({
       <ScrollArea className="flex-1">
         <div className="p-4 md:p-6 space-y-4 md:space-y-6">
           {task.locked && (
-            <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
-              <Lock className="h-3.5 w-3.5 shrink-0" />
+            <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+              <Lock className="h-4 w-4 shrink-0" />
               <span>
                 {"Cette tâche est verrouillée. Cliquez sur Déverrouiller pour la modifier ou la supprimer."}
               </span>
@@ -194,7 +194,7 @@ export function TaskDetailContent({
                     task.locked ? "cursor-default" : "cursor-text hover:text-primary/80"
                   }`}
                 >
-                  {task.locked && <Lock className="h-4 w-4 text-amber-500 shrink-0" />}
+                  {task.locked && <Lock className="h-5 w-5 text-amber-500 shrink-0" />}
                   <span className="truncate">{task.title}</span>
                 </h1>
               )}
@@ -205,17 +205,17 @@ export function TaskDetailContent({
                 size="sm"
                 onClick={handleToggleLock}
                 disabled={togglingLock}
-                className={`h-8 gap-1.5 ${task.locked ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
+                className={`h-9 gap-1.5 ${task.locked ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
                 aria-label={task.locked ? "Déverrouiller" : "Verrouiller"}
               >
                 {task.locked ? (
                   <>
-                    <Unlock className="h-3.5 w-3.5" />
+                    <Unlock className="h-4 w-4" />
                     <span className="hidden sm:inline">Déverrouiller</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="h-3.5 w-3.5" />
+                    <Lock className="h-4 w-4" />
                     <span className="hidden sm:inline">Verrouiller</span>
                   </>
                 )}
@@ -230,15 +230,15 @@ export function TaskDetailContent({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground"
+                className="h-9 w-9 text-muted-foreground"
                 onClick={() => setShowProperties((p) => !p)}
                 aria-label={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
                 title={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
               >
                 {showProperties ? (
-                  <PanelRightClose className="h-4 w-4" />
+                  <PanelRightClose className="h-5 w-5" />
                 ) : (
-                  <PanelRightOpen className="h-4 w-4" />
+                  <PanelRightOpen className="h-5 w-5" />
                 )}
               </Button>
             </div>
@@ -249,7 +249,7 @@ export function TaskDetailContent({
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">
               Description
             </label>
             {editingDesc ? (
@@ -264,7 +264,7 @@ export function TaskDetailContent({
                     setEditingDesc(false);
                   }
                 }}
-                className="min-h-[100px] text-sm resize-y"
+                className="min-h-[100px] text-base resize-y"
                 autoFocus
                 placeholder="Ajouter une description..."
               />
@@ -274,7 +274,7 @@ export function TaskDetailContent({
                   setEditingDesc(true);
                   setTimeout(() => descRef.current?.focus(), 0);
                 }}
-                className="min-h-[60px] cursor-text rounded-md border border-transparent p-2 text-sm text-muted-foreground hover:border-border transition-colors whitespace-pre-wrap"
+                className="min-h-[60px] cursor-text rounded-md border border-transparent p-2 text-base text-muted-foreground hover:border-border transition-colors whitespace-pre-wrap"
               >
                 {task.description || "Ajouter une description..."}
               </div>
@@ -285,7 +285,7 @@ export function TaskDetailContent({
 
           {/* Multi-Assignees */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
+            <label className="text-sm font-medium text-muted-foreground">
               Assignés
             </label>
             <MultiAssigneeSelector taskId={task.id} workspaceId={workspaceId} />

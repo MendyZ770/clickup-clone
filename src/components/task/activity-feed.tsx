@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -15,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ActivityWithUser } from "@/types";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -83,57 +85,70 @@ export function ActivityFeed({ taskId }: ActivityFeedProps) {
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold flex items-center gap-1.5">
-        <Activity className="h-4 w-4" />
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="space-y-3"
+    >
+      <motion.h3 variants={staggerItem} className="text-sm font-semibold flex items-center gap-1.5">
+        <Activity className="h-5 w-5" />
         Activité
-      </h3>
+      </motion.h3>
 
       {isLoading ? (
-        <div className="space-y-3">
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex gap-2">
-              <Skeleton className="h-6 w-6 rounded-full" />
-              <Skeleton className="h-4 w-48" />
-            </div>
+            <motion.div key={i} variants={staggerItem} className="flex gap-2">
+              <Skeleton className="h-7 w-7 rounded-full" />
+              <Skeleton className="h-5 w-48" />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-3">
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
           {(activities ?? []).map((activity) => {
             const Icon = ACTION_ICONS[activity.action] ?? Activity;
             return (
-              <div key={activity.id} className="flex items-start gap-2.5">
-                <Avatar className="h-6 w-6 shrink-0">
-                  <AvatarImage src={activity.user.image ?? undefined} />
-                  <AvatarFallback className="text-[9px]">
-                    {(activity.user.name ?? activity.user.email)
-                      .slice(0, 2)
-                      .toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+              <motion.div
+                key={activity.id}
+                variants={staggerItem}
+                whileHover={{ x: 2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="flex items-start gap-2.5"
+              >
+                <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+                  <Avatar className="h-7 w-7 shrink-0">
+                    <AvatarImage src={activity.user.image ?? undefined} />
+                    <AvatarFallback className="text-xs">
+                      {(activity.user.name ?? activity.user.email)
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <Icon className="inline h-3 w-3 mr-1" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <Icon className="inline h-4 w-4 mr-1" />
                     {getDescription(activity)}
                   </p>
-                  <span className="text-[10px] text-muted-foreground/60">
+                  <span className="text-xs text-muted-foreground/60">
                     {formatDistanceToNow(new Date(activity.createdAt), {
                       addSuffix: true,
                       locale: fr,
                     })}
                   </span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
           {activities?.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">
+            <motion.p variants={staggerItem} className="text-sm text-muted-foreground text-center py-4">
               Aucune activité pour le moment
-            </p>
+            </motion.p>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

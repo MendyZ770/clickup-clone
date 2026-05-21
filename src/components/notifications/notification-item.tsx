@@ -96,7 +96,7 @@ export function NotificationItem({
           config.bgColor
         )}
       >
-        <Icon className={cn("h-4 w-4", config.color)} />
+        <Icon className={cn("h-5 w-5", config.color)} />
       </div>
 
       {/* Content */}
@@ -109,7 +109,7 @@ export function NotificationItem({
         >
           {notification.message}
         </p>
-        <p className="mt-0.5 text-xs text-muted-foreground/70">
+        <p className="mt-0.5 text-sm text-muted-foreground/70">
           {formatDistanceToNow(new Date(notification.createdAt), {
             addSuffix: true,
             locale: fr,

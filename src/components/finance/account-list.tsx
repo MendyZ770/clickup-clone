@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Banknote, Bitcoin, PiggyBank, Landmark, CreditCard, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 const TYPE_ICONS: Record<string, any> = {
   bank: Landmark,
@@ -31,11 +33,16 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
 
   if (accounts.length === 0) {
     return (
-      <Card className="border-border/50">
-        <CardContent className="py-12 text-center text-muted-foreground">
-          Aucun compte. Créez votre premier compte pour commencer.
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Card className="border-border/50">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            Aucun compte. Créez votre premier compte pour commencer.
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -51,23 +58,31 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
         {accounts.map((account: any) => {
           const Icon = TYPE_ICONS[account.type] || CreditCard;
           return (
-            <Card key={account.id} className="overflow-hidden border-border/50 hover:shadow-lg transition-shadow group">
+            <motion.div key={account.id} variants={staggerItem} whileHover={{ y: -3 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
+            <Card className="overflow-hidden border-border/50 hover:shadow-lg transition-shadow duration-300 group">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div
+                    <motion.div
                       className="flex h-10 w-10 items-center justify-center rounded-full"
                       style={{ backgroundColor: account.color + "20" }}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     >
-                      <Icon className="h-6 w-6" style={{ color: account.color }} />
-                    </div>
+                      <Icon className="h-7 w-7" style={{ color: account.color }} />
+                    </motion.div>
                     <div>
                       <p className="font-medium">{account.name}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
+                      <p className="text-base text-muted-foreground capitalize">
                         {account.type === "bank" && account.bankName
                           ? `${account.bankName} • `
                           : ""}
@@ -77,17 +92,21 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-                      </button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreHorizontal className="h-6 w-6 text-muted-foreground" />
+                      </motion.button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setEditing(account)}>
-                        <Pencil className="h-5 w-5 mr-2" />
+                        <Pencil className="h-6 w-6 mr-2" />
                         Modifier
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(account.id)} className="text-red-500 focus:text-red-500">
-                        <Trash2 className="h-5 w-5 mr-2" />
+                        <Trash2 className="h-6 w-6 mr-2" />
                         Supprimer
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -100,16 +119,17 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
                       currency: account.currency,
                     })}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground">
                     {account._count?.transactions || 0} transaction
                     {(account._count?.transactions || 0) > 1 ? "s" : ""}
                   </p>
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Edit Dialog */}
       {editing && (

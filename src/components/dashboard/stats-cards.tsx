@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { motion } from "framer-motion";
 import {
   CheckSquare,
   Target,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface StatsCardsProps {
   totalTasks: number;
@@ -71,60 +73,83 @@ export const StatsCards = memo(function StatsCards({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
+      >
         {cards.map((c, i) => (
-          <div key={i} className="rounded-2xl border bg-card p-4 md:p-5 space-y-3">
+          <motion.div key={i} variants={staggerItem} className="rounded-2xl border bg-card p-4 md:p-5 space-y-3">
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-10 rounded-xl" />
               <Skeleton className="h-4 w-20" />
             </div>
             <Skeleton className="h-8 w-16" />
             <Skeleton className="h-3 w-24" />
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
+    >
       {cards.map((card) => {
         const Icon = card.icon;
         const value = values[card.key];
         const isOverdue = card.key === "overdueTasks" && value > 0;
 
         return (
-          <div
+          <motion.div
             key={card.key}
+            variants={staggerItem}
+            whileHover={{ y: -3, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+            whileTap={{ scale: 0.98 }}
             className={cn(
               "group relative overflow-hidden rounded-2xl border bg-card p-4 md:p-5",
-              "hover:shadow-md hover:-translate-y-0.5 transition-all duration-300",
-              "bg-gradient-to-br",
+              "hover:shadow-lg transition-shadow duration-300",
+              "bg-gradient-to-br cursor-default",
               card.gradient
             )}
           >
             <div className="flex items-center justify-between">
-              <div className={cn("rounded-xl p-2.5", card.iconBg)}>
-                <Icon className="h-5 w-5" />
-              </div>
+              <motion.div
+                className={cn("rounded-xl p-2.5", card.iconBg)}
+                whileHover={{ rotate: 5, scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
+                <Icon className="h-6 w-6" />
+              </motion.div>
               {card.key === "completedTasks" && (
                 <div className="flex items-center gap-1 text-sm font-medium text-green-600">
-                  <TrendingUp className="h-5 w-5" />
+                  <TrendingUp className="h-6 w-6" />
                   {completionRate}%
                 </div>
               )}
               {isOverdue && (
                 <div className="flex items-center gap-1 text-sm font-medium text-red-600">
-                  <TrendingDown className="h-5 w-5" />
+                  <TrendingDown className="h-6 w-6" />
                   Attention
                 </div>
               )}
             </div>
 
             <div className="mt-3">
-              <p className="text-2xl md:text-3xl font-bold tracking-tight">
+              <motion.p
+                key={value}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="text-2xl md:text-3xl font-bold tracking-tight"
+              >
                 {value.toLocaleString("fr-FR")}
-              </p>
+              </motion.p>
               <p className="text-sm md:text-base text-muted-foreground mt-0.5">
                 {card.label}
               </p>
@@ -136,9 +161,9 @@ export const StatsCards = memo(function StatsCards({
                 card.ring
               )}
             />
-          </div>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 });

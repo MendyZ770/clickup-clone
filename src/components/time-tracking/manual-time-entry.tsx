@@ -83,8 +83,8 @@ export function ManualTimeEntry({ taskId, onCreated }: ManualTimeEntryProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 gap-1 text-xs">
-          <Plus className="h-3 w-3" />
+        <Button variant="outline" size="sm" className="h-8 gap-1 text-sm">
+          <Plus className="h-4 w-4" />
           Saisir le temps
         </Button>
       </DialogTrigger>

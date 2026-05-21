@@ -164,23 +164,23 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-muted-foreground opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0"
+          className="h-7 w-7 text-muted-foreground opacity-60 hover:opacity-100 hover:bg-muted transition-all shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <MoreHorizontal className="h-3.5 w-3.5" />
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
         <DropdownMenuItem onClick={handleOpenFullPage}>
-          <ExternalLink className="mr-2 h-3.5 w-3.5" />
+          <ExternalLink className="mr-2 h-4 w-4" />
           Ouvrir en pleine page
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={handleDuplicate} disabled={duplicating}>
           {duplicating ? (
-            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Copy className="mr-2 h-3.5 w-3.5" />
+            <Copy className="mr-2 h-4 w-4" />
           )}
           Dupliquer
         </DropdownMenuItem>
@@ -188,7 +188,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         {otherLists.length > 0 && (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger disabled={locked}>
-              <ArrowRightLeft className="mr-2 h-3.5 w-3.5" />
+              <ArrowRightLeft className="mr-2 h-4 w-4" />
               Déplacer vers
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-h-60 overflow-y-auto">
@@ -205,7 +205,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         )}
 
         <DropdownMenuItem onClick={handleSaveAsTemplate} disabled={locked}>
-          <BookmarkPlus className="mr-2 h-3.5 w-3.5" />
+          <BookmarkPlus className="mr-2 h-4 w-4" />
           Enregistrer comme modèle
         </DropdownMenuItem>
 
@@ -213,11 +213,11 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
 
         <DropdownMenuItem onClick={handleToggleLock} disabled={togglingLock}>
           {togglingLock ? (
-            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : locked ? (
-            <Unlock className="mr-2 h-3.5 w-3.5" />
+            <Unlock className="mr-2 h-4 w-4" />
           ) : (
-            <Lock className="mr-2 h-3.5 w-3.5" />
+            <Lock className="mr-2 h-4 w-4" />
           )}
           {locked ? "Déverrouiller" : "Verrouiller"}
         </DropdownMenuItem>
@@ -227,7 +227,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
           disabled={locked}
           className="text-red-500 focus:text-red-500"
         >
-          <Trash2 className="mr-2 h-3.5 w-3.5" />
+          <Trash2 className="mr-2 h-4 w-4" />
           Supprimer
         </DropdownMenuItem>
       </DropdownMenuContent>

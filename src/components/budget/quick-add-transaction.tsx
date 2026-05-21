@@ -159,7 +159,7 @@ export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense
         {step === "select" ? (
           <div className="space-y-3 py-2">
             {budgets.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-base text-muted-foreground text-center py-4">
                 Aucun budget. Créez-en un d&apos;abord dans la page Budget.
               </p>
             ) : (
@@ -176,11 +176,11 @@ export function QuickAddTransaction({ open, onOpenChange, defaultType = "expense
                     className="flex h-9 w-9 items-center justify-center rounded-full"
                     style={{ backgroundColor: b.color + "20" }}
                   >
-                    <Wallet className="h-5 w-5" style={{ color: b.color }} />
+                    <Wallet className="h-6 w-6" style={{ color: b.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{b.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-base text-muted-foreground">
                       {b.amount.toLocaleString("fr-FR", {
                         style: "currency",
                         currency: b.currency,

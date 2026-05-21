@@ -67,15 +67,15 @@ export function TemplatePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-          <BookmarkPlus className="h-3 w-3" />
+        <Button variant="ghost" size="sm" className="h-8 text-sm gap-1 text-muted-foreground">
+          <BookmarkPlus className="h-4 w-4" />
           Templates
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="start">
         <div className="p-3 border-b">
           <p className="text-sm font-medium">Templates de tâches</p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Créez des tâches à partir de modèles
           </p>
         </div>
@@ -84,7 +84,7 @@ export function TemplatePicker({
           {templates.length === 0 && !showCreate && (
             <div className="px-3 py-6 text-center">
               <BookmarkPlus className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">Aucun template</p>
+              <p className="text-sm text-muted-foreground">Aucun template</p>
             </div>
           )}
           {templates.map((t) => (
@@ -98,7 +98,7 @@ export function TemplatePicker({
               >
                 <p className="text-sm font-medium truncate">{t.name}</p>
                 {t.description && (
-                  <p className="text-[10px] text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {t.description}
                   </p>
                 )}
@@ -107,7 +107,7 @@ export function TemplatePicker({
                 onClick={() => deleteTemplate(t.id)}
                 className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-all shrink-0"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -120,7 +120,7 @@ export function TemplatePicker({
                 placeholder="Nom du template"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="h-7 text-xs"
+                className="h-8 text-sm"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreateTemplate();
@@ -131,22 +131,22 @@ export function TemplatePicker({
                 placeholder="Description (optionnel)"
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                className="h-7 text-xs"
+                className="h-8 text-sm"
               />
               <div className="flex gap-1">
                 <Button
                   size="sm"
-                  className="h-7 text-xs flex-1"
+                  className="h-8 text-sm flex-1"
                   onClick={handleCreateTemplate}
                   disabled={saving || !newName.trim()}
                 >
-                  {saving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                  {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
                   Créer
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 text-xs"
+                  className="h-8 text-sm"
                   onClick={() => setShowCreate(false)}
                 >
                   Annuler
@@ -157,10 +157,10 @@ export function TemplatePicker({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full h-7 text-xs gap-1 justify-start"
+              className="w-full h-8 text-sm gap-1 justify-start"
               onClick={() => setShowCreate(true)}
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-4 w-4" />
               Nouveau template
             </Button>
           )}

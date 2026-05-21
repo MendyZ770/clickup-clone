@@ -80,12 +80,12 @@ export function SubtaskList({
         className="flex items-center gap-1.5 text-sm font-semibold hover:text-primary transition-colors"
       >
         {collapsed ? (
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-5 w-5" />
         ) : (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-5 w-5" />
         )}
         Sous-tâches
-        <span className="text-xs font-normal text-muted-foreground">
+        <span className="text-sm font-normal text-muted-foreground">
           ({doneCount}/{items.length})
         </span>
       </button>
@@ -93,7 +93,7 @@ export function SubtaskList({
       {!collapsed && (
         <>
           {items.length > 0 && (
-            <Progress value={progress} className="h-1.5" />
+            <Progress value={progress} className="h-2" />
           )}
 
           <div className="space-y-0.5">
@@ -105,7 +105,7 @@ export function SubtaskList({
                   key={sub.id}
                   className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/50 transition-colors"
                 >
-                  <Checkbox checked={isDone} className="h-3.5 w-3.5" />
+                  <Checkbox checked={isDone} className="h-4 w-4" />
                   <button
                     onClick={() => openTaskModal(sub.id)}
                     className={cn(
@@ -128,7 +128,7 @@ export function SubtaskList({
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Nom de la sous-tâche..."
-                className="h-7 text-xs"
+                className="h-8 text-sm"
                 autoFocus
                 disabled={isCreating}
                 onKeyDown={(e) => {
@@ -151,9 +151,9 @@ export function SubtaskList({
           ) : (
             <button
               onClick={() => setIsAdding(true)}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-4 w-4" />
               Ajouter une sous-tâche
             </button>
           )}

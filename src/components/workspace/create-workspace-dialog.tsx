@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { SIDEBAR_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface CreateWorkspaceDialogProps {
   open: boolean;
@@ -89,8 +91,14 @@ export function CreateWorkspaceDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+        <motion.form
+          onSubmit={handleSubmit}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="space-y-4"
+        >
+          <motion.div variants={staggerItem} className="space-y-2">
             <Label htmlFor="ws-name">Nom</Label>
             <Input
               id="ws-name"
@@ -100,9 +108,9 @@ export function CreateWorkspaceDialog({
               disabled={isLoading}
               autoFocus
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div variants={staggerItem} className="space-y-2">
             <Label htmlFor="ws-desc">Description (optionnel)</Label>
             <Textarea
               id="ws-desc"
@@ -112,46 +120,52 @@ export function CreateWorkspaceDialog({
               disabled={isLoading}
               rows={2}
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <motion.div variants={staggerItem} className="space-y-2">
             <Label>Couleur</Label>
-            <div className="flex flex-wrap gap-2">
+            <motion.div className="flex flex-wrap gap-2">
               {SIDEBAR_COLORS.map((c) => (
-                <button
+                <motion.button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "h-7 w-7 rounded-full transition-all",
+                    "h-8 w-8 rounded-full transition-all",
                     color === c
                       ? "ring-2 ring-white ring-offset-2 ring-offset-background"
-                      : "hover:scale-110"
+                      : ""
                   )}
                   style={{ backgroundColor: c }}
                 />
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <motion.p variants={staggerItem} className="text-sm text-destructive">{error}</motion.p>
           )}
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Annuler
-            </Button>
-            <Button type="submit" disabled={isLoading || !name.trim()}>
-              {isLoading ? "Création..." : "Créer"}
-            </Button>
+            <motion.div variants={staggerItem} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                Annuler
+              </Button>
+            </motion.div>
+            <motion.div variants={staggerItem} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button type="submit" disabled={isLoading || !name.trim()}>
+                {isLoading ? "Création..." : "Créer"}
+              </Button>
+            </motion.div>
           </DialogFooter>
-        </form>
+        </motion.form>
       </DialogContent>
     </Dialog>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Loader2,
   UserPlus,
@@ -34,6 +35,7 @@ import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface Member {
   id: string;
@@ -176,7 +178,12 @@ export function MemberList({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Invite form */}
-        <form onSubmit={handleInvite} className="flex items-end gap-2">
+        <motion.form
+          onSubmit={handleInvite}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-end gap-2"
+        >
           <div className="flex-1 space-y-2">
             <Label htmlFor="invite-email">Inviter par email</Label>
             <Input
@@ -196,18 +203,24 @@ export function MemberList({
               <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
-          <Button type="submit" disabled={inviting || !email.trim()}>
-            {inviting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <UserPlus className="h-4 w-4" />
-            )}
-          </Button>
-        </form>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button type="submit" disabled={inviting || !email.trim()}>
+              {inviting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="h-4 w-4" />
+              )}
+            </Button>
+          </motion.div>
+        </motion.form>
 
         {/* Lien d'invitation nouvellement créé */}
         {lastInviteUrl && (
-          <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 space-y-2">
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 space-y-2"
+          >
             <p className="text-sm font-medium text-green-600 dark:text-green-400">
               Invitation créée — partagez ce lien
             </p>
@@ -217,24 +230,26 @@ export function MemberList({
                 value={lastInviteUrl}
                 className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-muted-foreground"
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopyLink}
-                className="shrink-0"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                <span className="ml-2 hidden sm:inline">
-                  {copied ? "Copié" : "Copier"}
-                </span>
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="shrink-0"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  <span className="ml-2 hidden sm:inline">
+                    {copied ? "Copié" : "Copier"}
+                  </span>
+                </Button>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -242,55 +257,69 @@ export function MemberList({
         <Separator />
 
         {/* Member list */}
-        <div className="space-y-2">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="space-y-2"
+        >
           {members.map((member) => {
             const roleConfig = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.member;
             const RoleIcon = roleConfig.icon;
             return (
-              <div
+              <motion.div
                 key={member.id}
-                className="flex items-center gap-3 rounded-lg border border-border/50 px-3 py-2"
+                variants={staggerItem}
+                whileHover={{ x: 2, backgroundColor: "hsl(var(--muted) / 0.4)" }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="flex items-center gap-3 rounded-lg border border-border/50 px-3 py-2 cursor-default"
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={member.user.image ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-[10px] text-primary">
-                    {getInitials(member.user.name, member.user.email)}
-                  </AvatarFallback>
-                </Avatar>
+                <motion.div whileHover={{ scale: 1.1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={member.user.image ?? undefined} />
+                    <AvatarFallback className="bg-primary/10 text-xs text-primary">
+                      {getInitials(member.user.name, member.user.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {member.user.name ?? member.user.email}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-sm text-muted-foreground">
                     {member.user.email}
                   </p>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={cn("gap-1 text-[10px]", roleConfig.color)}
-                >
-                  <RoleIcon className="h-3 w-3" />
-                  {roleConfig.label}
-                </Badge>
-                {member.role !== "owner" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-red-500"
-                    disabled={removingId === member.id}
-                    onClick={() => setConfirmRemove(member)}
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Badge
+                    variant="outline"
+                    className={cn("gap-1 text-xs", roleConfig.color)}
                   >
-                    {removingId === member.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
+                    <RoleIcon className="h-4 w-4" />
+                    {roleConfig.label}
+                  </Badge>
+                </motion.div>
+                {member.role !== "owner" && (
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                      disabled={removingId === member.id}
+                      onClick={() => setConfirmRemove(member)}
+                    >
+                      {removingId === member.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </CardContent>
 
       {/* Confirm remove dialog */}

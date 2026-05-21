@@ -77,7 +77,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
     <div>
       {!showForm ? (
         <Button size="sm" onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus className="h-5 w-5 mr-1.5" />
           Nouvelle tâche
         </Button>
       ) : (
@@ -138,7 +138,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
             </div>
           </div>
           {allLists.length === 0 && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Aucune liste disponible. Créez d&apos;abord une liste dans un espace.
             </p>
           )}

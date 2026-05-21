@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
+import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 interface BreadcrumbSegment {
   label: string;
@@ -57,26 +59,37 @@ export function Breadcrumbs() {
   if (segments.length === 0) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
-        <Home className="h-5 w-5" />
+        <Home className="h-6 w-6" />
       </div>
     );
   }
 
   return (
-    <nav className="flex items-center gap-1 text-sm md:text-base min-w-0 overflow-hidden">
-      <Link
-        href="/dashboard"
-        className="text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <Home className="h-5 w-5" />
-      </Link>
+    <motion.nav
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="flex items-center gap-1 text-sm md:text-base min-w-0 overflow-hidden"
+    >
+      <motion.div variants={staggerItem}>
+        <Link
+          href="/dashboard"
+          className="text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Home className="h-6 w-6" />
+        </Link>
+      </motion.div>
       {segments.map((segment, index) => (
-        <div key={segment.href} className="flex items-center gap-1">
-          <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+        <motion.div key={segment.href} variants={staggerItem} className="flex items-center gap-1">
+          <ChevronRight className="h-6 w-6 text-muted-foreground/50" />
           {index === segments.length - 1 ? (
-            <span className="font-medium text-foreground truncate max-w-[140px] md:max-w-none">
+            <motion.span
+              className="font-medium text-foreground truncate max-w-[140px] md:max-w-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
               {segment.label}
-            </span>
+            </motion.span>
           ) : (
             <Link
               href={segment.href}
@@ -85,8 +98,8 @@ export function Breadcrumbs() {
               {segment.label}
             </Link>
           )}
-        </div>
+        </motion.div>
       ))}
-    </nav>
+    </motion.nav>
   );
 }

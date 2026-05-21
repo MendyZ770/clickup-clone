@@ -90,11 +90,11 @@ export function TaskForm({
           setTimeout(() => inputRef.current?.focus(), 0);
         }}
         className={cn(
-          "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted/50 transition-colors",
+          "flex w-full items-center gap-2 rounded-md px-3 py-2 text-base text-muted-foreground hover:bg-muted/50 transition-colors",
           className
         )}
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-5 w-5" />
         <span>Ajouter une tâche</span>
       </button>
     );
@@ -110,7 +110,7 @@ export function TaskForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Nom de la tâche"
-          className="h-8 text-sm flex-1"
+          className="h-9 text-base flex-1"
           disabled={isSubmitting}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -125,11 +125,11 @@ export function TaskForm({
         />
         <Button
           size="sm"
-          className="h-8 px-3 text-xs"
+          className="h-9 px-3 text-sm"
           onClick={handleSubmit}
           disabled={isSubmitting || !title.trim()}
         >
-          <Plus className="h-3 w-3 mr-1" />
+          <Plus className="h-4 w-4 mr-1" />
           Créer
         </Button>
       </div>
@@ -139,8 +139,8 @@ export function TaskForm({
         {/* Priority picker */}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted transition-colors">
-              <span className={cn("h-2 w-2 rounded-full", currentPriority.color)} />
+            <button className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
+              <span className={cn("h-2.5 w-2.5 rounded-full", currentPriority.color)} />
               {currentPriority.label}
             </button>
           </PopoverTrigger>
@@ -150,11 +150,11 @@ export function TaskForm({
                 key={p.value}
                 onClick={() => setPriority(p.value)}
                 className={cn(
-                  "flex items-center gap-2 w-full rounded px-2 py-1.5 text-xs hover:bg-muted transition-colors",
+                  "flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors",
                   priority === p.value && "bg-muted"
                 )}
               >
-                <span className={cn("h-2 w-2 rounded-full", p.color)} />
+                <span className={cn("h-2.5 w-2.5 rounded-full", p.color)} />
                 {p.label}
               </button>
             ))}
@@ -164,8 +164,8 @@ export function TaskForm({
         {/* Due date picker */}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted transition-colors">
-              <CalendarIcon className="h-2.5 w-2.5" />
+            <button className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
+              <CalendarIcon className="h-3 w-3" />
               {dueDate ? format(dueDate, "d MMM", { locale: fr }) : "Échéance"}
             </button>
           </PopoverTrigger>
@@ -181,7 +181,7 @@ export function TaskForm({
 
         <button
           onClick={handleCancel}
-          className="ml-auto text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           Annuler
         </button>

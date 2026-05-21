@@ -28,9 +28,9 @@ export function NotificationBell() {
           size="icon"
           className="relative h-8 w-8 text-muted-foreground hover:text-foreground"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -43,7 +43,7 @@ export function NotificationBell() {
           {unreadCount > 0 && (
             <button
               onClick={() => markAllAsRead()}
-              className="text-xs text-primary hover:underline"
+              className="text-sm text-primary hover:underline"
             >
               Mark all as read
             </button>
@@ -59,7 +59,7 @@ export function NotificationBell() {
             </div>
           ) : recentNotifications.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <Bell className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
+              <Bell className="mx-auto mb-2 h-9 w-9 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">
                 No notifications yet
               </p>
@@ -82,7 +82,7 @@ export function NotificationBell() {
         <div className="p-2">
           <button
             onClick={() => router.push("/notifications")}
-            className="w-full rounded-md py-2 text-center text-xs font-medium text-primary transition-colors hover:bg-muted"
+            className="w-full rounded-md py-2 text-center text-sm font-medium text-primary transition-colors hover:bg-muted"
           >
             View all notifications
           </button>

@@ -38,13 +38,13 @@ export function StatusBadge({
   const badge = (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-sm font-medium",
         onChange && "cursor-pointer hover:opacity-80",
         className
       )}
     >
       <span
-        className="h-2 w-2 rounded-full shrink-0"
+        className="h-2.5 w-2.5 rounded-full shrink-0"
         style={{ backgroundColor: status.color }}
       />
       <span className="truncate">{status.name}</span>
@@ -68,7 +68,7 @@ export function StatusBadge({
               className="gap-2"
             >
               <span
-                className="h-2.5 w-2.5 rounded-full shrink-0"
+                className="h-3 w-3 rounded-full shrink-0"
                 style={{ backgroundColor: s.color }}
               />
               <span>{s.name}</span>

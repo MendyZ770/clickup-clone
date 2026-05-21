@@ -35,8 +35,8 @@ export function SortSelector({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-          <ArrowUpDown className="h-3 w-3" />
+        <Button variant="ghost" size="sm" className="h-8 text-sm gap-1">
+          <ArrowUpDown className="h-4 w-4" />
           {currentLabel ? `Tri : ${currentLabel}` : "Trier"}
         </Button>
       </DropdownMenuTrigger>
@@ -59,14 +59,14 @@ export function SortSelector({
               onClick={() => onChange(sortBy, "asc")}
               className={cn("gap-1", sortOrder === "asc" && "bg-muted")}
             >
-              <ArrowUp className="h-3 w-3" />
+              <ArrowUp className="h-4 w-4" />
               Croissant
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => onChange(sortBy, "desc")}
               className={cn("gap-1", sortOrder === "desc" && "bg-muted")}
             >
-              <ArrowDown className="h-3 w-3" />
+              <ArrowDown className="h-4 w-4" />
               Décroissant
             </DropdownMenuItem>
             <DropdownMenuSeparator />

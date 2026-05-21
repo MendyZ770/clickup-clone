@@ -44,7 +44,7 @@ export function PriorityFilter({ selected, onChange }: PriorityFilterProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+        <Button variant="outline" size="sm" className="h-8 text-sm gap-1">
           Priorité
           {selected.length > 0 && (
             <span className="ml-0.5 rounded-full bg-primary/10 px-1.5 text-primary">
@@ -62,10 +62,10 @@ export function PriorityFilter({ selected, onChange }: PriorityFilterProps) {
               onClick={() => toggle(p.value)}
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
             >
-              <Icon className={cn("h-3.5 w-3.5", COLORS[p.value])} />
+              <Icon className={cn("h-4 w-4", COLORS[p.value])} />
               <span className="flex-1 text-left">{p.label}</span>
               {selected.includes(p.value) && (
-                <Check className="h-3.5 w-3.5 text-primary" />
+                <Check className="h-4 w-4 text-primary" />
               )}
             </button>
           );

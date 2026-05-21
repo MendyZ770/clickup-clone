@@ -21,7 +21,7 @@ export function PageHeader({
       <div className="flex items-start gap-3 min-w-0">
         {Icon && (
           <div className="mt-0.5 rounded-lg bg-muted/50 p-2 shrink-0">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="h-6 w-6 text-primary" />
           </div>
         )}
         <div className="min-w-0">
@@ -29,7 +29,7 @@ export function PageHeader({
             {title}
           </h1>
           {description && (
-            <p className="mt-0.5 text-sm text-muted-foreground">
+            <p className="mt-0.5 text-base text-muted-foreground">
               {description}
             </p>
           )}

@@ -123,7 +123,7 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
             {!isCollapsed && (
               <div className="stagger-children">
                 {/* Column headers */}
-                <div className="flex items-center gap-2 border-b px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="flex items-center gap-2 border-b px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   <span className="w-4" />
                   <span className="flex-1">Titre</span>
                   <span className="hidden sm:block w-16" />
@@ -172,16 +172,16 @@ function StatusHeader({
       className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold hover:bg-muted/50 transition-colors"
     >
       {isCollapsed ? (
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
       ) : (
-        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        <ChevronDown className="h-5 w-5 text-muted-foreground" />
       )}
       <span
-        className="h-3 w-3 rounded-sm shrink-0"
+        className="h-3.5 w-3.5 rounded-sm shrink-0"
         style={{ backgroundColor: status.color }}
       />
       <span>{status.name}</span>
-      <span className="text-xs font-normal text-muted-foreground">
+      <span className="text-sm font-normal text-muted-foreground">
         {count}
       </span>
     </button>

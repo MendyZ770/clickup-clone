@@ -83,14 +83,14 @@ export function CustomFieldsSection({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs"
+            className="h-8 text-sm"
             onClick={() => setManagerOpen(true)}
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-4 w-4 mr-1" />
             Add Field
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           No custom fields defined for this workspace.
         </p>
         <CustomFieldManager
@@ -118,10 +118,10 @@ export function CustomFieldsSection({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs"
+          className="h-8 text-sm"
           onClick={() => setManagerOpen(true)}
         >
-          <Settings2 className="h-3 w-3 mr-1" />
+          <Settings2 className="h-4 w-4 mr-1" />
           Manage
         </Button>
       </div>
@@ -136,14 +136,14 @@ export function CustomFieldsSection({
 
           return (
             <div key={field.id} className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Icon className="h-3 w-3" />
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Icon className="h-4 w-4" />
                 <span>{field.name}</span>
                 {field.required && (
                   <span className="text-red-500">*</span>
                 )}
                 {saving === field.id && (
-                  <Loader2 className="h-3 w-3 animate-spin ml-auto" />
+                  <Loader2 className="h-4 w-4 animate-spin ml-auto" />
                 )}
               </div>
               <CustomFieldRenderer

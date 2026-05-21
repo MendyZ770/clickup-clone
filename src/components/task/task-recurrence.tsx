@@ -63,12 +63,12 @@ export function TaskRecurrence({ taskId }: TaskRecurrenceProps) {
     const label = PATTERNS.find((p) => p.value === data.pattern)?.label ?? data.pattern;
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="text-xs gap-1">
-          <Repeat className="h-3 w-3" />
+        <Badge variant="outline" className="text-sm gap-1">
+          <Repeat className="h-4 w-4" />
           {label}{data.interval > 1 ? ` (x${data.interval})` : ""}
         </Badge>
-        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleRemove}>
-          <X className="h-3 w-3" />
+        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRemove}>
+          <X className="h-4 w-4" />
         </Button>
       </div>
     );
@@ -77,15 +77,15 @@ export function TaskRecurrence({ taskId }: TaskRecurrenceProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="text-xs gap-1.5">
-          <Repeat className="h-3 w-3" />
+        <Button variant="outline" size="sm" className="text-sm gap-1.5">
+          <Repeat className="h-4 w-4" />
           Récurrence
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 space-y-3" align="start">
         <p className="text-sm font-medium">Configurer la récurrence</p>
         <Select value={pattern} onValueChange={setPattern}>
-          <SelectTrigger className="h-8 text-xs">
+          <SelectTrigger className="h-9 text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -95,19 +95,19 @@ export function TaskRecurrence({ taskId }: TaskRecurrenceProps) {
           </SelectContent>
         </Select>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Tous les</span>
+          <span className="text-sm text-muted-foreground">Tous les</span>
           <input
             type="number"
             min={1}
             max={30}
             value={interval}
             onChange={(e) => setInterval(parseInt(e.target.value) || 1)}
-            className="h-8 w-16 rounded-md border px-2 text-xs"
+            className="h-9 w-16 rounded-md border px-2 text-sm"
           />
-          <span className="text-xs text-muted-foreground">fois</span>
+          <span className="text-sm text-muted-foreground">fois</span>
         </div>
-        <Button size="sm" className="w-full text-xs" onClick={handleSave} disabled={saving}>
-          {saving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+        <Button size="sm" className="w-full text-sm" onClick={handleSave} disabled={saving}>
+          {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
           Enregistrer
         </Button>
       </PopoverContent>

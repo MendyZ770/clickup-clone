@@ -56,7 +56,7 @@ export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
           onClick={handleSubmit}
           disabled={!content.trim() || isSubmitting}
         >
-          <Send className="h-3.5 w-3.5" />
+          <Send className="h-4 w-4" />
           {isSubmitting ? "Envoi..." : "Commenter"}
         </Button>
       </div>

@@ -1,13 +1,24 @@
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const r = await fetch(url);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ error: "Request failed" }));
+    throw new Error(err.error || `HTTP ${r.status}`);
+  }
+  return r.json();
+};
+
+function ensureArray<T>(data: unknown): T[] {
+  return Array.isArray(data) ? (data as T[]) : [];
+}
 
 export function useFinanceAccounts(workspaceId?: string) {
   const { data, error, mutate } = useSWR(
     workspaceId ? `/api/finance/accounts?workspaceId=${workspaceId}` : null,
     fetcher
   );
-  return { accounts: data || [], isLoading: !error && !data, error, mutate };
+  return { accounts: ensureArray(data), isLoading: !error && !data, error, mutate };
 }
 
 export function useFinanceCategories(workspaceId?: string, type?: string) {
@@ -15,7 +26,7 @@ export function useFinanceCategories(workspaceId?: string, type?: string) {
     ? `/api/finance/categories?workspaceId=${workspaceId}${type ? `&type=${type}` : ""}`
     : null;
   const { data, error, mutate } = useSWR(url, fetcher);
-  return { categories: data || [], isLoading: !error && !data, error, mutate };
+  return { categories: ensureArray(data), isLoading: !error && !data, error, mutate };
 }
 
 export function useFinanceTransactions(workspaceId?: string, filters?: Record<string, string>) {
@@ -24,7 +35,7 @@ export function useFinanceTransactions(workspaceId?: string, filters?: Record<st
   if (filters) Object.entries(filters).forEach(([k, v]) => params.set(k, v));
   const url = workspaceId ? `/api/finance/transactions?${params.toString()}` : null;
   const { data, error, mutate } = useSWR(url, fetcher);
-  return { transactions: data || [], isLoading: !error && !data, error, mutate };
+  return { transactions: ensureArray(data), isLoading: !error && !data, error, mutate };
 }
 
 export function useFinanceGoals(workspaceId?: string) {
@@ -32,7 +43,7 @@ export function useFinanceGoals(workspaceId?: string) {
     workspaceId ? `/api/finance/goals?workspaceId=${workspaceId}` : null,
     fetcher
   );
-  return { goals: data || [], isLoading: !error && !data, error, mutate };
+  return { goals: ensureArray(data), isLoading: !error && !data, error, mutate };
 }
 
 export function useFinanceStats(workspaceId?: string) {

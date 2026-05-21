@@ -46,12 +46,12 @@ export function PriorityBadge({
   const badge = (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-sm font-medium",
         onChange && "cursor-pointer hover:bg-muted",
         className
       )}
     >
-      <Icon className={cn("h-3.5 w-3.5", config.color)} />
+      <Icon className={cn("h-4 w-4", config.color)} />
       {showLabel && <span className={config.color}>{config.label}</span>}
     </div>
   );
@@ -74,7 +74,7 @@ export function PriorityBadge({
               }}
               className="gap-2"
             >
-              <PIcon className={cn("h-3.5 w-3.5", pConfig.color)} />
+              <PIcon className={cn("h-4 w-4", pConfig.color)} />
               <span>{p.label}</span>
             </DropdownMenuItem>
           );

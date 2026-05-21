@@ -101,7 +101,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-5 w-5" />
               Today
             </CardTitle>
           </CardHeader>
@@ -109,7 +109,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
             <p className="text-2xl font-bold">
               {formatSecondsShort(todayReport?.totalSeconds ?? 0)}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {todayReport?.totalEntries ?? 0} entries
             </p>
           </CardContent>
@@ -118,7 +118,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-5 w-5" />
               This Week
             </CardTitle>
           </CardHeader>
@@ -126,7 +126,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
             <p className="text-2xl font-bold">
               {formatSecondsShort(weeklyReport?.totalSeconds ?? 0)}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {weeklyReport?.totalEntries ?? 0} entries
             </p>
           </CardContent>
@@ -170,11 +170,11 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
                       <span className="truncate max-w-[200px]">
                         {item.label}
                       </span>
-                      <span className="font-mono text-xs text-muted-foreground">
+                      <span className="font-mono text-sm text-muted-foreground">
                         {formatSecondsShort(item.totalSeconds)}
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
                       <div
                         className="h-full rounded-full bg-primary transition-all"
                         style={{ width: `${percentage}%` }}
