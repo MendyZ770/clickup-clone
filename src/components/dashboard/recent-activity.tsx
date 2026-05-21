@@ -41,14 +41,14 @@ interface RecentActivityProps {
 }
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
-  created: <Plus className="h-3.5 w-3.5" />,
-  updated: <Edit3 className="h-3.5 w-3.5" />,
-  deleted: <Trash2 className="h-3.5 w-3.5" />,
-  moved: <ArrowRight className="h-3.5 w-3.5" />,
-  completed: <CheckCircle2 className="h-3.5 w-3.5" />,
-  due_soon: <Clock className="h-3.5 w-3.5" />,
-  overdue: <AlertCircle className="h-3.5 w-3.5" />,
-  comment: <MessageSquare className="h-3.5 w-3.5" />,
+  created: <Plus className="h-5 w-5" />,
+  updated: <Edit3 className="h-5 w-5" />,
+  deleted: <Trash2 className="h-5 w-5" />,
+  moved: <ArrowRight className="h-5 w-5" />,
+  completed: <CheckCircle2 className="h-5 w-5" />,
+  due_soon: <Clock className="h-5 w-5" />,
+  overdue: <AlertCircle className="h-5 w-5" />,
+  comment: <MessageSquare className="h-5 w-5" />,
 };
 
 const ACTION_COLORS: Record<string, string> = {
@@ -123,7 +123,7 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
   return (
     <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
-        <span className="h-2 w-2 rounded-full bg-primary" />
+        <span className="h-3 w-3 rounded-full bg-primary" />
         Activité récente
       </h3>
 
@@ -167,11 +167,11 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
                   </span>
                 </p>
                 {activity.task && (
-                  <p className="text-xs text-primary mt-0.5 truncate">
+                  <p className="text-sm text-primary mt-0.5 truncate">
                     {activity.task.title}
                   </p>
                 )}
-                <p className="text-[11px] text-muted-foreground/60 mt-1">
+                <p className="text-xs text-muted-foreground/60 mt-1">
                   {timeAgo}
                 </p>
               </div>

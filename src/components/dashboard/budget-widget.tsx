@@ -37,12 +37,12 @@ export function BudgetWidget({ budgets, isLoading }: BudgetWidgetProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-muted-foreground" />
+          <Wallet className="h-5 w-5 text-muted-foreground" />
           Budgets actifs
         </CardTitle>
         <Link
           href="/budget"
-          className="text-xs text-primary hover:underline"
+          className="text-sm text-primary hover:underline"
         >
           Voir tout
         </Link>
@@ -69,15 +69,15 @@ export function BudgetWidget({ budgets, isLoading }: BudgetWidgetProps) {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium truncate">{budget.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {percentUsed.toFixed(0)}%
                     </span>
                   </div>
                   <Progress
                     value={percentUsed}
-                    className="h-1.5"
+                    className="h-2.5"
                   />
-                  <div className="flex justify-between text-xs text-muted-foreground">
+                  <div className="flex justify-between text-sm text-muted-foreground">
                     <span>
                       {netSpent.toLocaleString("fr-FR", {
                         style: "currency",

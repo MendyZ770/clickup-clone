@@ -79,16 +79,16 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Landmark className="h-4 w-4 text-white" />
+              <Landmark className="h-5 w-5 text-white" />
             </div>
             <h3 className="font-semibold text-sm">Finance</h3>
           </div>
           <Link
             href="/finance"
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors group"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors group"
           >
             Voir tout
-            <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
 
@@ -102,16 +102,16 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
               className={`relative rounded-xl bg-gradient-to-br ${card.color} border border-border/40 p-3 hover:shadow-md transition-shadow`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   {card.label}
                 </span>
                 <div className={`h-6 w-6 rounded-md ${card.bgIcon} flex items-center justify-center`}>
-                  <card.icon className={`h-3 w-3 ${card.iconColor}`} />
+                  <card.icon className={`h-4 w-4 ${card.iconColor}`} />
                 </div>
               </div>
               <p className="text-lg font-bold tracking-tight">{card.value}</p>
               {card.sub && (
-                <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{card.sub}</p>
               )}
               {card.label === "Objectifs" && (
                 <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
@@ -132,10 +132,10 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-3 flex items-center gap-2 text-xs"
+          className="mt-3 flex items-center gap-2 text-sm"
         >
           <div
-            className={`h-2 w-2 rounded-full ${monthlyNet >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
+            className={`h-3 w-3 rounded-full ${monthlyNet >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
           />
           <span className="text-muted-foreground">
             Ce mois :{" "}

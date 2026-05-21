@@ -78,10 +78,10 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
     <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-primary" />
+          <span className="h-3 w-3 rounded-full bg-primary" />
           Échéances prochaines
         </h3>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {tasks.length} tâche{tasks.length > 1 ? "s" : ""}
         </span>
       </div>
@@ -116,14 +116,14 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
                 <div className="flex items-center gap-2 mt-0.5">
                   <span
                     className={cn(
-                      "text-xs font-medium",
+                      "text-sm font-medium",
                       isUrgent ? "text-red-500" : "text-muted-foreground"
                     )}
                   >
                     {dueLabel(task.dueDate)}
                   </span>
-                  <span className="text-xs text-muted-foreground/50">·</span>
-                  <span className="text-xs text-muted-foreground/60 truncate max-w-[100px]">
+                  <span className="text-sm text-muted-foreground/50">·</span>
+                  <span className="text-sm text-muted-foreground/60 truncate max-w-[100px]">
                     {task.list?.name}
                   </span>
                 </div>
@@ -135,18 +135,18 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
                   {task.assignee.image ? (
                     <AvatarImage src={task.assignee.image} alt={task.assignee.name ?? ""} />
                   ) : null}
-                  <AvatarFallback className="text-[9px] bg-muted">
+                  <AvatarFallback className="text-[11px] bg-muted">
                     {task.assignee.name?.charAt(0).toUpperCase() ??
                       task.assignee.email.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               ) : (
                 <div className="h-7 w-7 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
-                  <Clock className="h-3 w-3 text-muted-foreground/40" />
+                  <Clock className="h-4 w-4 text-muted-foreground/40" />
                 </div>
               )}
 
-              <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0" />
+              <ArrowRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors shrink-0" />
             </div>
           );
         })}

@@ -89,10 +89,10 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
     <div className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-primary" />
+          <span className="h-3 w-3 rounded-full bg-primary" />
           Répartition par statut
         </h3>
-        <span className="text-xs text-muted-foreground">{total} tâches</span>
+        <span className="text-sm text-muted-foreground">{total} tâches</span>
       </div>
 
       {/* Donut */}
@@ -118,7 +118,7 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-3xl font-bold">{total}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Total</span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">Total</span>
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  className="h-3 w-3 rounded-full shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
@@ -142,7 +142,7 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-medium tabular-nums text-foreground">{item.count}</span>
-                <span className="text-xs text-muted-foreground w-7 text-right">
+                <span className="text-sm text-muted-foreground w-7 text-right">
                   {pct}%
                 </span>
               </div>

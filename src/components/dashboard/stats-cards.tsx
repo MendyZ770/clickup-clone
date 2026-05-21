@@ -108,14 +108,14 @@ export const StatsCards = memo(function StatsCards({
                 <Icon className="h-5 w-5" />
               </div>
               {card.key === "completedTasks" && (
-                <div className="flex items-center gap-1 text-xs font-medium text-green-600">
-                  <TrendingUp className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                  <TrendingUp className="h-5 w-5" />
                   {completionRate}%
                 </div>
               )}
               {isOverdue && (
-                <div className="flex items-center gap-1 text-xs font-medium text-red-600">
-                  <TrendingDown className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-1 text-sm font-medium text-red-600">
+                  <TrendingDown className="h-5 w-5" />
                   Attention
                 </div>
               )}
@@ -125,7 +125,7 @@ export const StatsCards = memo(function StatsCards({
               <p className="text-2xl md:text-3xl font-bold tracking-tight">
                 {value.toLocaleString("fr-FR")}
               </p>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              <p className="text-sm md:text-base text-muted-foreground mt-0.5">
                 {card.label}
               </p>
             </div>
