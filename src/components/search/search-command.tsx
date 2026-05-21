@@ -121,11 +121,11 @@ export function SearchCommand() {
         {!query && (
           <CommandGroup heading="Actions rapides">
             <CommandItem onSelect={() => handleSelect("/dashboard")}>
-              <Clock className="mr-2 h-4 w-4" />
+              <Clock className="mr-2 h-5 w-5" />
               Aller au tableau de bord
             </CommandItem>
             <CommandItem onSelect={() => handleSelect("/notifications")}>
-              <Clock className="mr-2 h-4 w-4" />
+              <Clock className="mr-2 h-5 w-5" />
               Voir les notifications
             </CommandItem>
           </CommandGroup>
@@ -157,13 +157,13 @@ export function SearchCommand() {
               >
                 <div className="flex items-center gap-2">
                   <div
-                    className="h-2 w-2 shrink-0 rounded-full"
+                    className="h-3 w-3 shrink-0 rounded-full"
                     style={{ backgroundColor: task.status.color }}
                   />
-                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate">{task.title}</span>
                   {task.list && (
-                    <span className="ml-2 text-xs text-muted-foreground">
+                    <span className="ml-2 text-sm text-muted-foreground">
                       dans {task.list.name}
                     </span>
                   )}
@@ -184,15 +184,15 @@ export function SearchCommand() {
                   onSelect={() => handleSelect(`/lists/${list.id}`)}
                 >
                   <div className="flex items-center gap-2">
-                    <List className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <List className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <span className="flex-1 truncate">{list.name}</span>
                     {list.space && (
-                      <span className="ml-2 text-xs text-muted-foreground">
+                      <span className="ml-2 text-sm text-muted-foreground">
                         dans {list.space.name}
                       </span>
                     )}
                     {list._count && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                         {list._count.tasks} tâches
                       </span>
                     )}
@@ -215,10 +215,10 @@ export function SearchCommand() {
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className="h-3 w-3 shrink-0 rounded"
+                      className="h-4 w-4 shrink-0 rounded"
                       style={{ backgroundColor: space.color }}
                     />
-                    <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Folder className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <span className="truncate">{space.name}</span>
                   </div>
                 </CommandItem>
