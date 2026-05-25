@@ -72,12 +72,19 @@ export function LoginForm() {
 
       const mobileData = await mobileRes.json();
 
+      console.log("[MOBILE LOGIN] Response:", mobileData);
+
       if (!mobileRes.ok) {
+        const description =
+          mobileData.code === "NO_PASSWORD"
+            ? "Ce compte n'a pas de mot de passe. Connectez-vous sur le web d'abord pour en créer un."
+            : mobileData.code === "USER_NOT_FOUND"
+            ? "Aucun compte trouvé avec cet email."
+            : "Email ou mot de passe incorrect.";
+
         toast({
           title: "Connexion échouée",
-          description: mobileData.error === "Invalid credentials"
-            ? "Email ou mot de passe incorrect."
-            : "Erreur de connexion.",
+          description,
           variant: "destructive",
         });
         return;

@@ -22,9 +22,16 @@ export async function POST(req: NextRequest) {
       where: { email },
     });
 
-    if (!user || !user.hashedPassword) {
+    if (!user) {
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        { error: "Invalid credentials", code: "USER_NOT_FOUND" },
+        { status: 401 }
+      );
+    }
+
+    if (!user.hashedPassword) {
+      return NextResponse.json(
+        { error: "No password set. Use web login first or create a password.", code: "NO_PASSWORD" },
         { status: 401 }
       );
     }
@@ -32,7 +39,7 @@ export async function POST(req: NextRequest) {
     const valid = await bcrypt.compare(password, user.hashedPassword);
     if (!valid) {
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        { error: "Invalid credentials", code: "WRONG_PASSWORD" },
         { status: 401 }
       );
     }
