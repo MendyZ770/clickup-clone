@@ -3,7 +3,11 @@
 import useSWR from "swr";
 import type { BudgetStats } from "@/types";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("Failed to fetch");
+  return r.json();
+};
 
 export function useBudgetStats(budgetId: string | undefined) {
   const { data, error, isLoading, mutate } = useSWR<BudgetStats>(

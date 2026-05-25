@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { motion } from "framer-motion";
@@ -7,18 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 
-export function IncomeExpenseChart({ transactions }: { transactions: any[] }) {
+export function IncomeExpenseChart({ transactions }: { transactions: import("@prisma/client").FinanceTransaction[] }) {
   const data = MONTHS.map((month, i) => {
-    const monthTransactions = transactions.filter((t: any) => {
+    const monthTransactions = transactions.filter((t) => {
       const d = new Date(t.date);
       return d.getMonth() === i;
     });
     const income = monthTransactions
-      .filter((t: any) => t.type === "income")
-      .reduce((sum: number, t: any) => sum + t.amount, 0);
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
     const expense = monthTransactions
-      .filter((t: any) => t.type === "expense")
-      .reduce((sum: number, t: any) => sum + t.amount, 0);
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
     return { month, income, expense };
   });
 
@@ -58,7 +57,7 @@ export function IncomeExpenseChart({ transactions }: { transactions: any[] }) {
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip
-                  formatter={(value: any) =>
+                  formatter={(value) =>
                     Number(value).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
                   }
                   contentStyle={{

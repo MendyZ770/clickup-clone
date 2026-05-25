@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -26,11 +25,11 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
   const [name, setName] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  const incomeCategories = categories.filter((c: any) => c.type === "income");
-  const expenseCategories = categories.filter((c: any) => c.type === "expense");
+  const incomeCategories = categories.filter((c) => c.type === "income");
+  const expenseCategories = categories.filter((c) => c.type === "expense");
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +37,15 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
 
     setIsSubmitting(true);
     try {
-      await fetch("/api/finance/categories", {
+      const res = await fetch("/api/finance/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, type, workspaceId }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to create category");
+      }
       mutate();
       setName("");
     } catch (error) {
@@ -55,7 +58,11 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer cette catégorie ?")) return;
     try {
-      await fetch(`/api/finance/categories/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/finance/categories/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to delete category");
+      }
       mutate();
     } catch (error) {
       console.error(error);
@@ -65,11 +72,15 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
   const handleEdit = async (id: string) => {
     if (!editName) return;
     try {
-      await fetch(`/api/finance/categories/${id}`, {
+      const res = await fetch(`/api/finance/categories/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to update category");
+      }
       mutate();
       setEditing(null);
       setEditName("");
@@ -78,7 +89,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
     }
   };
 
-  const CategoryRow = ({ c }: { c: any }) => (
+  const CategoryRow = ({ c }: { c: import("@prisma/client").FinanceCategory }) => (
     <div className="flex items-center justify-between p-2 rounded-lg border group">
       {editing === c.id ? (
         <div className="flex items-center gap-2 flex-1">
@@ -156,7 +167,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
             Revenus ({incomeCategories.length})
           </h3>
           <div className="space-y-2">
-            {incomeCategories.map((c: any) => (
+            {incomeCategories.map((c) => (
               <CategoryRow key={c.id} c={c} />
             ))}
             {incomeCategories.length === 0 && (
@@ -171,7 +182,7 @@ export function CategoryManager({ workspaceId }: { workspaceId?: string }) {
             Dépenses ({expenseCategories.length})
           </h3>
           <div className="space-y-2">
-            {expenseCategories.map((c: any) => (
+            {expenseCategories.map((c) => (
               <CategoryRow key={c.id} c={c} />
             ))}
             {expenseCategories.length === 0 && (

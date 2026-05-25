@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { Camera, Trash2, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,12 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ className }: AvatarUploadProps) {
-  const { data: session, update } = useSession();
+  const { user: sessionUser } = useUnifiedSession();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  const user = session?.user;
+  const user = sessionUser;
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -48,10 +48,8 @@ export function AvatarUpload({ className }: AvatarUploadProps) {
         throw new Error(data.error || "Erreur lors de l'upload");
       }
 
-      // Update NextAuth session with new image
-      await update({ image: data.image });
-
       toast({ title: "Avatar mis à jour" });
+      window.location.reload();
     } catch (err) {
       toast({
         title: "Erreur",
@@ -74,8 +72,8 @@ export function AvatarUpload({ className }: AvatarUploadProps) {
         throw new Error(data.error || "Erreur");
       }
 
-      await update({ image: null });
       toast({ title: "Avatar supprimé" });
+      window.location.reload();
     } catch (err) {
       toast({
         title: "Erreur",

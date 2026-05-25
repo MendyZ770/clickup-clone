@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { revalidateFinance } from "@/lib/swr-config";
 import {
   useFinanceAccounts,
   useFinanceTransactions,
@@ -50,12 +50,12 @@ function getPeriodDates(period: PeriodFilterType) {
   }
 }
 
-function filterByPeriod(data: any[], period: PeriodFilterType, dateField = "date") {
+function filterByPeriod<T extends { date: Date | string }>(data: T[], period: PeriodFilterType): T[] {
   if (period === "all") return data;
   const { start, end } = getPeriodDates(period);
   if (!start || !end) return data;
   return data.filter((item) => {
-    const d = new Date(item[dateField]);
+    const d = new Date(item.date);
     return d >= start && d <= end;
   });
 }
@@ -65,9 +65,9 @@ export default function FinancePage() {
   const workspaceId = currentWorkspace?.id;
 
   const { accounts } = useFinanceAccounts(workspaceId);
-  const { transactions, mutate: mutateTransactions } = useFinanceTransactions(workspaceId);
-  const { goals, mutate: mutateGoals } = useFinanceGoals(workspaceId);
-  const { stats, mutate: mutateStats } = useFinanceStats(workspaceId);
+  const { transactions } = useFinanceTransactions(workspaceId);
+  const { goals } = useFinanceGoals(workspaceId);
+  const { stats } = useFinanceStats(workspaceId);
   useFinanceCategories(workspaceId);
 
   const [period, setPeriod] = useState<PeriodFilterType>("this-month");
@@ -75,16 +75,15 @@ export default function FinancePage() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const totalBalance = accounts.reduce((sum: number, a: any) => sum + a.balance, 0);
+  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
 
   const filteredTransactions = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
 
   const expenseByCategory = useMemo(() => {
     const map = new Map();
     filteredTransactions
-      .filter((t: any) => t.type === "expense")
-      .forEach((t: any) => {
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
         const catId = t.categoryId || "none";
         const existing = map.get(catId) || { amount: 0, category: t.category };
         existing.amount += t.amount;
@@ -93,10 +92,8 @@ export default function FinancePage() {
     return Array.from(map.values());
   }, [filteredTransactions]);
 
-  const handleMutate = () => {
-    mutateTransactions();
-    mutateGoals();
-    mutateStats();
+  const handleMutate = async () => {
+    await revalidateFinance(workspaceId);
   };
 
   const statCards = [

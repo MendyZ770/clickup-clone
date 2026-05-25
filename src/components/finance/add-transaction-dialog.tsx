@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -19,12 +18,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useFinanceAccounts, useFinanceCategories, useFinanceTransactions } from "@/hooks/use-finance";
+import { useFinanceAccounts, useFinanceCategories } from "@/hooks/use-finance";
+import { revalidateFinance } from "@/lib/swr-config";
 
-export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
+interface AddTransactionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workspaceId?: string;
+}
+
+export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTransactionDialogProps) {
   const { accounts } = useFinanceAccounts(workspaceId);
   const { categories } = useFinanceCategories(workspaceId);
-  const { mutate } = useFinanceTransactions(workspaceId);
 
   const [type, setType] = useState<"income" | "expense" | "transfer">("expense");
   const [amount, setAmount] = useState("");
@@ -47,7 +52,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
     setRecurringFrequency("");
   };
 
-  const filteredCategories = categories.filter((c: any) => {
+  const filteredCategories = categories.filter((c) => {
     if (type === "transfer") return false;
     return c.type === type;
   });
@@ -58,7 +63,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
 
     setIsSubmitting(true);
     try {
-      await fetch("/api/finance/transactions", {
+      const res = await fetch("/api/finance/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,7 +79,11 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
           recurringFrequency: recurringFrequency || undefined,
         }),
       });
-      mutate();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to create transaction");
+      }
+      await revalidateFinance(workspaceId);
       reset();
       onOpenChange(false);
     } catch (error) {
@@ -93,7 +102,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Type</Label>
-            <Select value={type} onValueChange={(v) => { setType(v as any); setCategoryId(""); }}>
+            <Select value={type} onValueChange={(v) => { setType(v as "income" | "expense" | "transfer"); setCategoryId(""); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -112,7 +121,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
                 <SelectValue placeholder="Choisir un compte" />
               </SelectTrigger>
               <SelectContent>
-                {accounts.map((a: any) => (
+                {accounts.map((a) => (
                   <SelectItem key={a.id} value={a.id}>{a.name} ({a.currency})</SelectItem>
                 ))}
               </SelectContent>
@@ -127,7 +136,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
                   <SelectValue placeholder="Choisir un compte" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.filter((a: any) => a.id !== accountId).map((a: any) => (
+                  {accounts.filter((a) => a.id !== accountId).map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -143,7 +152,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: any) {
                   <SelectValue placeholder="Choisir une catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredCategories.map((c: any) => (
+                  {filteredCategories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>

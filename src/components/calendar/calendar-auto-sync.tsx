@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { useCalendarAutoSync } from "@/hooks/use-calendar-auto-sync";
 
 export function CalendarAutoSync() {
-  const { status } = useSession();
+  const { status } = useUnifiedSession();
   const isAuthenticated = status === "authenticated";
 
   useCalendarAutoSync(isAuthenticated);

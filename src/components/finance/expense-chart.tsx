@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { motion } from "framer-motion";
@@ -10,7 +9,7 @@ const COLORS = [
   "#EF4444", "#06B6D4", "#84CC16", "#F97316", "#6366F1",
 ];
 
-export function ExpenseChart({ data }: { data: any[] }) {
+export function ExpenseChart({ data }: { data: Array<{ amount: number; category?: { name: string; color: string } | null }> }) {
   if (!data || data.length === 0) {
     return (
       <Card className="border-border/50">
@@ -25,8 +24,8 @@ export function ExpenseChart({ data }: { data: any[] }) {
   }
 
   const chartData = data
-    .filter((item: any) => item.amount > 0)
-    .map((item: any) => ({
+    .filter((item) => item.amount > 0)
+    .map((item) => ({
       name: item.category?.name || "Non catégorisé",
       value: item.amount,
       color: item.category?.color || COLORS[0],
@@ -59,12 +58,12 @@ export function ExpenseChart({ data }: { data: any[] }) {
                   dataKey="value"
                   stroke="none"
                 >
-                  {chartData.map((entry: any, index: number) => (
+                  {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: any) =>
+                  formatter={(value) =>
                     Number(value).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
                   }
                   contentStyle={{
@@ -79,7 +78,7 @@ export function ExpenseChart({ data }: { data: any[] }) {
             </ResponsiveContainer>
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
-            {chartData.slice(0, 5).map((item: any, i: number) => (
+            {chartData.slice(0, 5).map((item, i) => (
               <div key={i} className="flex items-center gap-1.5 text-sm">
                 <div
                   className="h-3 w-3 rounded-full"

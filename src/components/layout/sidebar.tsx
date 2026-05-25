@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
+import { useMobileAuth } from "@/lib/mobile-auth";
 import {
   ChevronDown,
   Plus,
@@ -55,7 +57,8 @@ import { CreateWorkspaceDialog } from "@/components/workspace/create-workspace-d
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { user: sessionUser } = useUnifiedSession();
+  const { logout: mobileLogout } = useMobileAuth();
   const { currentWorkspace, workspaces, setCurrentWorkspace, isLoading } =
     useWorkspace();
   const { spaces, isLoading: spacesLoading, mutate: mutateSpaces } =
@@ -66,7 +69,7 @@ export function Sidebar() {
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
 
-  const user = session?.user;
+  const user = sessionUser;
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -74,7 +77,7 @@ export function Sidebar() {
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : "?";
+    : user?.email?.slice(0, 2).toUpperCase() || "?";
 
   const navItems = [
     { icon: LayoutDashboard, label: "Tableau de bord", href: "/dashboard" },
@@ -382,7 +385,10 @@ export function Sidebar() {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => {
+                  signOut({ callbackUrl: "/login" }).catch(() => {});
+                  mobileLogout();
+                }}
                 className="text-red-400 focus:text-red-400"
               >
                 <LogOut className="mr-2 h-5 w-5" />

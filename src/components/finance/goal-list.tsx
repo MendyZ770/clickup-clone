@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -16,16 +15,22 @@ import { Target, CheckCircle2, TrendingUp, Plus, MoreHorizontal, Pencil, Trash2 
 
 const QUICK_AMOUNTS = [10, 50, 100, 500];
 
-export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: () => void }) {
+type GoalWithAccount = import("@prisma/client").FinanceGoal & { account?: { name: string } | null };
+
+export function FinanceGoalList({ goals, onMutate }: { goals: GoalWithAccount[]; onMutate?: () => void }) {
   const [contributingId, setContributingId] = useState<string | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<GoalWithAccount | null>(null);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer cet objectif ?")) return;
     try {
-      await fetch(`/api/finance/goals/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/finance/goals/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to delete goal");
+      }
       onMutate?.();
     } catch (error) {
       console.error(error);
@@ -36,11 +41,15 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
     if (!amount || amount <= 0) return;
     setIsSubmitting(true);
     try {
-      await fetch(`/api/finance/goals/${goalId}/contribute`, {
+      const res = await fetch(`/api/finance/goals/${goalId}/contribute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to contribute");
+      }
       setContributingId(null);
       setCustomAmount("");
       onMutate?.();
@@ -68,7 +77,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
   return (
     <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {goals.map((goal: any, i: number) => {
+      {goals.map((goal, i) => {
         const progress = goal.targetAmount > 0 ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100) : 0;
         const isContributing = contributingId === goal.id;
 
@@ -228,7 +237,7 @@ export function FinanceGoalList({ goals, onMutate }: { goals: any[]; onMutate?: 
   );
 }
 
-function EditGoalDialog({ goal, open, onOpenChange, onMutate }: any) {
+function EditGoalDialog({ goal, open, onOpenChange, onMutate }: { goal: GoalWithAccount; open: boolean; onOpenChange: (open: boolean) => void; onMutate?: () => void }) {
   const [name, setName] = useState(goal.name);
   const [targetAmount, setTargetAmount] = useState(String(goal.targetAmount));
   const [currentAmount, setCurrentAmount] = useState(String(goal.currentAmount));
@@ -239,7 +248,7 @@ function EditGoalDialog({ goal, open, onOpenChange, onMutate }: any) {
     if (!name || !targetAmount) return;
     setIsSubmitting(true);
     try {
-      await fetch(`/api/finance/goals/${goal.id}`, {
+      const res = await fetch(`/api/finance/goals/${goal.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -248,6 +257,10 @@ function EditGoalDialog({ goal, open, onOpenChange, onMutate }: any) {
           currentAmount: parseFloat(currentAmount),
         }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to update goal");
+      }
       onMutate?.();
       onOpenChange(false);
     } catch (error) {

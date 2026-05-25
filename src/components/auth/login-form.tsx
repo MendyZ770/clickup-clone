@@ -34,14 +34,10 @@ export function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
-        toast({
-          title: "Connexion échouée",
-          description: "Email ou mot de passe incorrect.",
-          variant: "destructive",
-        });
-      } else {
-        // Récupérer le profil pour avoir l'id, name, image à jour
+      console.log("SignIn result:", result);
+
+      if (!result?.error) {
+        // Standard NextAuth OK
         try {
           const meRes = await fetch("/api/me");
           if (meRes.ok) {
@@ -54,7 +50,6 @@ export function LoginForm() {
             });
           }
         } catch {
-          // Fallback : sauvegarder avec l'email uniquement
           addAccount({
             id: email,
             email,
@@ -64,8 +59,43 @@ export function LoginForm() {
         }
         router.push("/dashboard");
         router.refresh();
+        return;
       }
-    } catch {
+
+      // Fallback mobile : NextAuth a échoué (probablement webview)
+      console.log("NextAuth failed, trying mobile login...");
+      const mobileRes = await fetch("/api/mobile-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const mobileData = await mobileRes.json();
+
+      if (!mobileRes.ok) {
+        toast({
+          title: "Connexion échouée",
+          description: mobileData.error === "Invalid credentials"
+            ? "Email ou mot de passe incorrect."
+            : "Erreur de connexion.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Stocker le token mobile
+      localStorage.setItem("mobile_auth_token", mobileData.token);
+      addAccount({
+        id: mobileData.user.id,
+        email: mobileData.user.email,
+        name: mobileData.user.name ?? null,
+        image: mobileData.user.image ?? null,
+      });
+
+      // Recharger la page pour que SessionProvider reprenne la session
+      window.location.href = "/dashboard";
+    } catch (err) {
+      console.error("Login error:", err);
       toast({
         title: "Erreur",
         description: "Veuillez réessayer plus tard.",

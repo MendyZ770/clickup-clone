@@ -9,6 +9,7 @@ import { ToastProvider } from "@/providers/toast-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { CalendarAutoSync } from "@/components/calendar/calendar-auto-sync";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
+import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { SWRProvider } from "@/lib/swr-config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -52,6 +53,26 @@ const themeInitScript = `
 })();
 `;
 
+// Intercepte fetch pour injecter le token mobile auth
+const fetchInterceptorScript = `
+(function() {
+  var origFetch = window.fetch;
+  window.fetch = function(input, init) {
+    init = init || {};
+    var token = null;
+    try { token = localStorage.getItem('mobile_auth_token'); } catch(e) {}
+    if (token && (!init.headers || !init.headers.Authorization)) {
+      var headers = new Headers(init.headers);
+      if (!headers.has('Authorization')) {
+        headers.set('Authorization', 'Bearer ' + token);
+      }
+      init.headers = headers;
+    }
+    return origFetch(input, init);
+  };
+})();
+`;
+
 // Enregistre le Service Worker PWA
 const swRegisterScript = `
 (function() {
@@ -78,6 +99,7 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: fetchInterceptorScript }} />
         <script dangerouslySetInnerHTML={{ __html: swRegisterScript }} />
       </head>
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased`}>
@@ -90,6 +112,7 @@ export default function RootLayout({
                   <ToastProvider />
                   <CalendarAutoSync />
                   <PushNotificationToggle />
+                  <PWAInstallBanner />
                 </ModalProvider>
               </WorkspaceProvider>
             </AuthProvider>

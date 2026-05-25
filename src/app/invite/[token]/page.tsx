@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { Users, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +18,7 @@ interface InviteInfo {
 export default function InvitePage() {
   const params = useParams<{ token: string }>();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user: sessionUser, status } = useUnifiedSession();
 
   const [invite, setInvite] = useState<InviteInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +95,7 @@ export default function InvitePage() {
   const isLoggedIn = status === "authenticated";
   const emailMatches =
     isLoggedIn &&
-    session?.user?.email?.toLowerCase() === invite.email.toLowerCase();
+    sessionUser?.email?.toLowerCase() === invite.email.toLowerCase();
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -152,7 +153,7 @@ export default function InvitePage() {
             <div className="space-y-2">
               <div className="rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-xs text-yellow-600 dark:text-yellow-400">
                 {"Vous êtes connecté avec "}
-                <span className="font-mono">{session?.user?.email}</span>
+                <span className="font-mono">{sessionUser?.email}</span>
                 {" mais l'invitation est pour "}
                 <span className="font-mono">{invite.email}</span>
                 {". Reconnectez-vous avec le bon compte."}

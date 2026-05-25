@@ -9,7 +9,7 @@ import {
   useMemo,
 } from "react";
 import useSWR from "swr";
-import { useSession } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
 interface WorkspaceData {
   id: string;
   name: string;
@@ -46,7 +46,7 @@ interface WorkspaceProviderProps {
 }
 
 export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
-  const { status } = useSession();
+  const { status } = useUnifiedSession();
   const [currentWorkspace, setCurrentWorkspaceState] =
     useState<WorkspaceData | null>(null);
 

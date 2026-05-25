@@ -4,7 +4,11 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import type { BudgetCategory } from "@prisma/client";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("Failed to fetch");
+  return r.json();
+};
 
 export function useBudgetCategories(workspaceId: string | undefined) {
   const { data, error, isLoading, mutate } = useSWR<BudgetCategory[]>(

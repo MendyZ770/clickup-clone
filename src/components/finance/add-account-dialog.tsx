@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -19,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useFinanceAccounts } from "@/hooks/use-finance";
+import { revalidateFinance } from "@/lib/swr-config";
 
 const ACCOUNT_TYPES = [
   { value: "bank", label: "Compte bancaire" },
@@ -30,8 +29,13 @@ const ACCOUNT_TYPES = [
   { value: "other", label: "Autre" },
 ];
 
-export function AddAccountDialog({ open, onOpenChange, workspaceId }: any) {
-  const { mutate } = useFinanceAccounts(workspaceId);
+interface AddAccountDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workspaceId?: string;
+}
+
+export function AddAccountDialog({ open, onOpenChange, workspaceId }: AddAccountDialogProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [bankName, setBankName] = useState("");
@@ -53,7 +57,7 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: any) {
 
     setIsSubmitting(true);
     try {
-      await fetch("/api/finance/accounts", {
+      const res = await fetch("/api/finance/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,7 +69,11 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: any) {
           workspaceId,
         }),
       });
-      mutate();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to create account");
+      }
+      await revalidateFinance(workspaceId);
       reset();
       onOpenChange(false);
     } catch (error) {

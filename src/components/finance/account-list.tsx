@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,7 @@ import {
 import { Banknote, Bitcoin, PiggyBank, Landmark, CreditCard, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
-const TYPE_ICONS: Record<string, any> = {
+const TYPE_ICONS: Record<string, React.ElementType> = {
   bank: Landmark,
   cash: Banknote,
   crypto: Bitcoin,
@@ -22,14 +21,18 @@ const TYPE_ICONS: Record<string, any> = {
   other: CreditCard,
 };
 
-function TrendingUpIcon(props: any) {
+function TrendingUpIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
   );
 }
 
-export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; onMutate?: () => void }) {
-  const [editing, setEditing] = useState<any>(null);
+type FinanceAccountWithCount = import("@prisma/client").FinanceAccount & {
+  _count?: { transactions: number };
+};
+
+export function FinanceAccountList({ accounts, onMutate }: { accounts: FinanceAccountWithCount[]; onMutate?: () => void }) {
+  const [editing, setEditing] = useState<FinanceAccountWithCount | null>(null);
 
   if (accounts.length === 0) {
     return (
@@ -49,7 +52,11 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer ce compte et toutes ses transactions ?")) return;
     try {
-      await fetch(`/api/finance/accounts/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/finance/accounts/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to delete account");
+      }
       onMutate?.();
     } catch (error) {
       console.error(error);
@@ -64,7 +71,7 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
         animate="visible"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
       >
-        {accounts.map((account: any) => {
+        {accounts.map((account) => {
           const Icon = TYPE_ICONS[account.type] || CreditCard;
           return (
             <motion.div key={account.id} variants={staggerItem} whileHover={{ y: -3 }} transition={{ type: "spring", stiffness: 400, damping: 17 }}>
@@ -144,7 +151,7 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: any[]; on
   );
 }
 
-function EditAccountDialog({ account, open, onOpenChange, onMutate }: any) {
+function EditAccountDialog({ account, open, onOpenChange, onMutate }: { account: FinanceAccountWithCount; open: boolean; onOpenChange: (open: boolean) => void; onMutate?: () => void }) {
   const [name, setName] = useState(account.name);
   const [bankName, setBankName] = useState(account.bankName || "");
   const [balance, setBalance] = useState(String(account.balance));
@@ -155,11 +162,15 @@ function EditAccountDialog({ account, open, onOpenChange, onMutate }: any) {
     if (!name) return;
     setIsSubmitting(true);
     try {
-      await fetch(`/api/finance/accounts/${account.id}`, {
+      const res = await fetch(`/api/finance/accounts/${account.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, bankName: bankName || undefined, balance: parseFloat(balance) }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to update account");
+      }
       onMutate?.();
       onOpenChange(false);
     } catch (error) {

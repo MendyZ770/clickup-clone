@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { User, Lock, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { AvatarUpload } from "@/components/user/avatar-upload";
 
 export default function SettingsPage() {
-  const { data: session, update } = useSession();
+  const { user: sessionUser } = useUnifiedSession();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -30,8 +30,8 @@ export default function SettingsPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
-    if (session?.user?.name) setName(session.user.name);
-  }, [session?.user?.name]);
+    if (sessionUser?.name) setName(sessionUser.name);
+  }, [sessionUser?.name]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +54,8 @@ export default function SettingsPage() {
         const data = await res.json();
         throw new Error(data.error ?? "Erreur");
       }
-      await update();
       toast({ title: "Profil mis à jour" });
+      window.location.reload();
     } catch (err) {
       toast({
         title: "Erreur",
@@ -144,7 +144,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input value={session?.user?.email ?? ""} disabled readOnly />
+              <Input value={sessionUser?.email ?? ""} disabled readOnly />
               <p className="text-[10px] text-muted-foreground">
                 {"L'email n'est pas modifiable pour le moment."}
               </p>

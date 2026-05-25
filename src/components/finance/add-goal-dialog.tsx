@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -20,10 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useFinanceGoals, useFinanceAccounts } from "@/hooks/use-finance";
+import { useFinanceAccounts } from "@/hooks/use-finance";
+import { revalidateFinance } from "@/lib/swr-config";
 
-export function AddGoalDialog({ open, onOpenChange, workspaceId }: any) {
-  const { mutate } = useFinanceGoals(workspaceId);
+interface AddGoalDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workspaceId?: string;
+}
+
+export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialogProps) {
   const { accounts } = useFinanceAccounts(workspaceId);
 
   const [name, setName] = useState("");
@@ -49,7 +54,7 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: any) {
 
     setIsSubmitting(true);
     try {
-      await fetch("/api/finance/goals", {
+      const res = await fetch("/api/finance/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,7 +67,11 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: any) {
           accountId: accountId || undefined,
         }),
       });
-      mutate();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to create goal");
+      }
+      await revalidateFinance(workspaceId);
       reset();
       onOpenChange(false);
     } catch (error) {
@@ -123,7 +132,7 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: any) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Aucun</SelectItem>
-                  {accounts.map((a: any) => (
+                  {accounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                   ))}
                 </SelectContent>

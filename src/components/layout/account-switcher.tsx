@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useUnifiedSession } from "@/hooks/use-unified-session";
+import { useMobileAuth } from "@/lib/mobile-auth";
 import { LogOut, Plus, Check } from "lucide-react";
 
 import { useAccounts } from "@/hooks/use-accounts";
@@ -28,11 +29,11 @@ function getInitials(name: string | null): string {
 }
 
 export function AccountSwitcher() {
-  const router = useRouter();
-  const { data: session } = useSession();
+  const { user: sessionUser } = useUnifiedSession();
+  const { logout: mobileLogout } = useMobileAuth();
   const { accounts, mounted } = useAccounts();
 
-  const user = session?.user;
+  const user = sessionUser;
   const currentUserId = user?.id;
 
   const otherAccounts = mounted
@@ -103,12 +104,8 @@ export function AccountSwitcher() {
                 key={account.id}
                 className="flex items-center gap-3 p-2 cursor-pointer"
                 onSelect={() => {
-                  // Sign out then redirect to login with prefill
-                  signOut({ redirect: false }).then(() => {
-                    const url = new URL("/login", window.location.origin);
-                    url.searchParams.set("email", account.email);
-                    window.location.href = url.toString();
-                  });
+                  signOut({ redirect: false }).catch(() => {});
+                  mobileLogout();
                 }}
               >
                 <Avatar className="h-10 w-10">
@@ -134,9 +131,8 @@ export function AccountSwitcher() {
         <DropdownMenuItem
           className="cursor-pointer gap-2"
           onSelect={() => {
-            signOut({ redirect: false }).then(() => {
-              router.push("/login");
-            });
+            signOut({ redirect: false }).catch(() => {});
+            mobileLogout();
           }}
         >
           <Plus className="h-5 w-5" />
@@ -148,7 +144,8 @@ export function AccountSwitcher() {
         <DropdownMenuItem
           className="cursor-pointer gap-2 text-destructive focus:text-destructive"
           onSelect={() => {
-            signOut({ callbackUrl: "/login" });
+            signOut({ callbackUrl: "/login" }).catch(() => {});
+            mobileLogout();
           }}
         >
           <LogOut className="h-5 w-5" />

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -13,8 +12,10 @@ import {
 import { TrendingUp, TrendingDown, ArrowRightLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
-export function FinanceTransactionList({ transactions, accounts, onMutate }: { transactions: any[]; accounts: any[]; onMutate?: () => void }) {
-  const [editing, setEditing] = useState<any>(null);
+import type { FinanceTransactionWithCategory } from "@/hooks/use-finance";
+
+export function FinanceTransactionList({ transactions, accounts, onMutate }: { transactions: FinanceTransactionWithCategory[]; accounts: import("@prisma/client").FinanceAccount[]; onMutate?: () => void }) {
+  const [editing, setEditing] = useState<FinanceTransactionWithCategory | null>(null);
 
   if (transactions.length === 0) {
     return (
@@ -31,12 +32,16 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
     );
   }
 
-  const getAccountName = (id: string) => accounts.find((a: any) => a.id === id)?.name || id;
+  const getAccountName = (id: string) => accounts.find((a) => a.id === id)?.name || id;
 
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer cette transaction ?")) return;
     try {
-      await fetch(`/api/finance/transactions/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/finance/transactions/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to delete transaction");
+      }
       onMutate?.();
     } catch (error) {
       console.error(error);
@@ -52,7 +57,7 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
           animate="visible"
           className="divide-y divide-border/40"
         >
-          {transactions.map((t: any) => (
+          {transactions.map((t) => (
             <motion.div
               key={t.id}
               variants={staggerItem}
@@ -141,7 +146,6 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
       {editing && (
         <EditTransactionDialog
           transaction={editing}
-          accounts={accounts}
           open={!!editing}
           onOpenChange={() => setEditing(null)}
           onMutate={onMutate}
@@ -151,7 +155,7 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
   );
 }
 
-function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: any) {
+function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: { transaction: FinanceTransactionWithCategory; open: boolean; onOpenChange: (open: boolean) => void; onMutate?: () => void }) {
   const [amount, setAmount] = useState(String(transaction.amount));
   const [description, setDescription] = useState(transaction.description || "");
   const [date, setDate] = useState(new Date(transaction.date).toISOString().slice(0, 10));
@@ -162,11 +166,15 @@ function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: an
     if (!amount) return;
     setIsSubmitting(true);
     try {
-      await fetch(`/api/finance/transactions/${transaction.id}`, {
+      const res = await fetch(`/api/finance/transactions/${transaction.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: parseFloat(amount), description, date }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error || "Failed to update transaction");
+      }
       onMutate?.();
       onOpenChange(false);
     } catch (error) {
