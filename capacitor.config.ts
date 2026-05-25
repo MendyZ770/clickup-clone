@@ -10,8 +10,10 @@ const config: CapacitorConfig = {
   },
   android: {
     buildOptions: {
-      keystorePath: undefined,
-      keystoreAlias: undefined,
+      keystorePath: "./android/app/done.keystore",
+      keystorePassword: "donedone",
+      keystoreAlias: "done",
+      keystoreAliasPassword: "donedone",
     },
   },
   plugins: {

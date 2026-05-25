@@ -4,7 +4,7 @@ import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
 
 const SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || "fallback-secret-change-me"
+  process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
 );
 
 export async function POST(req: NextRequest) {

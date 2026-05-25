@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { useAccounts } from "@/hooks/use-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const { addAccount } = useAccounts();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,12 +70,53 @@ export function RegisterForm() {
         redirect: false,
       });
 
-      if (result?.error) {
-        router.push("/login");
-      } else {
+      if (!result?.error) {
+        // Standard NextAuth OK
+        try {
+          const meRes = await fetch("/api/me");
+          if (meRes.ok) {
+            const me = await meRes.json();
+            addAccount({
+              id: me.id ?? email,
+              email: me.email ?? email,
+              name: me.name ?? null,
+              image: me.image ?? null,
+            });
+          }
+        } catch {
+          addAccount({ id: email, email, name: null, image: null });
+        }
         router.push("/dashboard");
         router.refresh();
+        return;
       }
+
+      // Fallback mobile : NextAuth a échoué (webview)
+      const mobileRes = await fetch("/api/mobile-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const mobileData = await mobileRes.json();
+
+      if (!mobileRes.ok) {
+        toast({
+          title: "Connexion échouée",
+          description: "Email ou mot de passe incorrect.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      localStorage.setItem("mobile_auth_token", mobileData.token);
+      addAccount({
+        id: mobileData.user.id,
+        email: mobileData.user.email,
+        name: mobileData.user.name ?? null,
+        image: mobileData.user.image ?? null,
+      });
+      router.push("/dashboard");
+      router.refresh();
     } catch {
       toast({
         title: "Erreur",

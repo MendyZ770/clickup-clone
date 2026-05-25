@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { LayoutDashboard, Zap, Calendar, ListTodo } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useBudgets } from "@/hooks/use-budgets";
 import { PageHeader } from "@/components/shared/page-header";
@@ -63,6 +64,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace();
+  const router = useRouter();
   const { mutate: globalMutate } = useSWRConfig();
   const { budgets: workspaceBudgets, isLoading: budgetsLoading } = useBudgets(currentWorkspace?.id);
 
@@ -224,7 +226,13 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Cards */}
-      <StatsCards {...statsData} isLoading={isLoading} />
+      <StatsCards
+        {...statsData}
+        isLoading={isLoading}
+        onCardClick={() => {
+          router.push("/my-tasks");
+        }}
+      />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">

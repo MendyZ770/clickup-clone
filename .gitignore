@@ -43,3 +43,9 @@ prisma/dev.db-journal
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android build artifacts
+*.keystore
+*.jks
+apk/
+android/app/build/

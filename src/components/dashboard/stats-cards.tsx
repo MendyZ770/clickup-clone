@@ -20,6 +20,7 @@ interface StatsCardsProps {
   overdueTasks: number;
   tasksDueThisWeek: number;
   isLoading: boolean;
+  onCardClick?: (key: string) => void;
 }
 
 const cards = [
@@ -63,6 +64,7 @@ export const StatsCards = memo(function StatsCards({
   overdueTasks,
   tasksDueThisWeek,
   isLoading,
+  onCardClick,
 }: StatsCardsProps) {
   const values = { totalTasks, completedTasks, overdueTasks, tasksDueThisWeek };
 
@@ -106,15 +108,16 @@ export const StatsCards = memo(function StatsCards({
         const isOverdue = card.key === "overdueTasks" && value > 0;
 
         return (
-          <motion.div
+          <motion.button
             key={card.key}
             variants={staggerItem}
             whileHover={{ y: -3, transition: { type: "spring", stiffness: 400, damping: 17 } }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => onCardClick?.(card.key)}
             className={cn(
-              "group relative overflow-hidden rounded-2xl border bg-card p-4 md:p-5",
+              "group relative overflow-hidden rounded-2xl border bg-card p-4 md:p-5 w-full text-left",
               "hover:shadow-lg transition-shadow duration-300",
-              "bg-gradient-to-br cursor-default",
+              "bg-gradient-to-br cursor-pointer",
               card.gradient
             )}
           >
@@ -161,7 +164,7 @@ export const StatsCards = memo(function StatsCards({
                 card.ring
               )}
             />
-          </motion.div>
+          </motion.button>
         );
       })}
     </motion.div>
