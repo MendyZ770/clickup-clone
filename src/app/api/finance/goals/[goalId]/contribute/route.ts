@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
-export async function POST(request: Request, { params }: { params: { goalId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ goalId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { goalId } = await params;
 
     const body = await request.json();
     const { amount, note } = body;
@@ -20,13 +21,13 @@ export async function POST(request: Request, { params }: { params: { goalId: str
         data: {
           amount,
           note,
-          goalId: params.goalId,
+          goalId,
           userId: user.id,
         },
       });
 
       await tx.financeGoal.update({
-        where: { id: params.goalId },
+        where: { id: goalId },
         data: { currentAmount: { increment: amount } },
       });
 

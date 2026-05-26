@@ -4,16 +4,17 @@ import { getCurrentUser } from "@/lib/auth-helpers";
 
 export async function GET(
   request: Request,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const { entryId } = await params;
 
     const entry = await prisma.timeEntry.findUnique({
-      where: { id: params.entryId },
+      where: { id: entryId },
       include: {
         task: {
           select: { id: true, title: true, listId: true },
@@ -43,19 +44,20 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const { entryId } = await params;
 
     const body = await request.json();
     const { description, startTime, endTime, duration, billable } = body;
 
     const existing = await prisma.timeEntry.findUnique({
-      where: { id: params.entryId },
+      where: { id: entryId },
     });
 
     if (!existing) {
@@ -94,7 +96,7 @@ export async function PATCH(
     }
 
     const entry = await prisma.timeEntry.update({
-      where: { id: params.entryId },
+      where: { id: entryId },
       data: updateData,
       include: {
         task: {
@@ -118,16 +120,17 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const { entryId } = await params;
 
     const existing = await prisma.timeEntry.findUnique({
-      where: { id: params.entryId },
+      where: { id: entryId },
     });
 
     if (!existing) {
@@ -142,7 +145,7 @@ export async function DELETE(
     }
 
     await prisma.timeEntry.delete({
-      where: { id: params.entryId },
+      where: { id: entryId },
     });
 
     return NextResponse.json({ success: true });

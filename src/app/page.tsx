@@ -301,6 +301,20 @@ export default async function Home() {
             <div className="w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-indigo-600" />
             <span className="font-medium text-white/40">Done</span>
           </div>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="hover:text-white/50 transition-colors"
+            >
+              Politique de confidentialité
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-white/50 transition-colors"
+            >
+              Conditions
+            </Link>
+          </div>
           <p>Construit avec Next.js, Tailwind CSS et Prisma</p>
         </div>
       </footer>

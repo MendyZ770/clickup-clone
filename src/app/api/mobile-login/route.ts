@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
@@ -9,6 +10,21 @@ const SECRET = new TextEncoder().encode(
 
 export async function POST(req: NextRequest) {
   try {
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const realIp = req.headers.get("x-real-ip");
+    const identifier = forwardedFor?.split(",")[0]?.trim() || realIp || "anonymous";
+
+    const rateLimit = await checkRateLimit(identifier);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too many requests", code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) },
+        }
+      );
+    }
+
     const { email, password } = await req.json();
 
     if (!email || !password) {

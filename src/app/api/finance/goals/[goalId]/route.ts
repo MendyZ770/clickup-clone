@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
-export async function GET(request: Request, { params }: { params: { goalId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ goalId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { goalId } = await params;
 
     const goal = await (prisma as any).financeGoal.findUnique({
-      where: { id: params.goalId, userId: user.id },
+      where: { id: goalId, userId: user.id },
       include: {
         contributions: { orderBy: { date: "desc" } },
         account: { select: { id: true, name: true } },
@@ -24,16 +25,17 @@ export async function GET(request: Request, { params }: { params: { goalId: stri
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { goalId: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ goalId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { goalId } = await params;
 
     const body = await request.json();
     const { name, description, targetAmount, currentAmount, currency, color, deadline, isCompleted, accountId } = body;
 
     const goal = await (prisma as any).financeGoal.update({
-      where: { id: params.goalId, userId: user.id },
+      where: { id: goalId, userId: user.id },
       data: { name, description, targetAmount, currentAmount, currency, color, deadline: deadline ? new Date(deadline) : undefined, isCompleted, accountId },
     });
 
@@ -44,13 +46,14 @@ export async function PATCH(request: Request, { params }: { params: { goalId: st
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { goalId: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ goalId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { goalId } = await params;
 
     await (prisma as any).financeGoal.delete({
-      where: { id: params.goalId, userId: user.id },
+      where: { id: goalId, userId: user.id },
     });
 
     return NextResponse.json({ success: true });

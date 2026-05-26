@@ -1,18 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
-export async function PATCH(request: Request, { params }: { params: { categoryId: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ categoryId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { categoryId } = await params;
 
     const body = await request.json();
     const { name, color, icon } = body;
 
     const category = await (prisma as any).financeCategory.update({
-      where: { id: params.categoryId },
+      where: { id: categoryId },
       data: { name, color, icon },
     });
 
@@ -23,13 +24,14 @@ export async function PATCH(request: Request, { params }: { params: { categoryId
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { categoryId: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ categoryId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { categoryId } = await params;
 
     await (prisma as any).financeCategory.delete({
-      where: { id: params.categoryId },
+      where: { id: categoryId },
     });
 
     return NextResponse.json({ success: true });

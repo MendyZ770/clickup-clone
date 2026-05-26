@@ -54,7 +54,7 @@ export async function GET(request: Request, context: RouteContext) {
     const minAmount = searchParams.get("minAmount");
     const maxAmount = searchParams.get("maxAmount");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const where: any = {
       budgetId,
       ...(type ? { type } : {}),
@@ -87,7 +87,7 @@ export async function GET(request: Request, context: RouteContext) {
         : {}),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const queryArgs: any = {
       where,
       include: {
@@ -97,7 +97,7 @@ export async function GET(request: Request, context: RouteContext) {
       },
       orderBy: { date: "desc" },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const transactions = await (prisma.budgetTransaction.findMany as any)(queryArgs);
 
     return NextResponse.json(transactions);
@@ -128,7 +128,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { tags, recurrenceEnd, ...data } = parsed.data;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const transaction = await (prisma.budgetTransaction.create as any)({
       data: {
         ...data,

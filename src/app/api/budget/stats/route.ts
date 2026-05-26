@@ -67,23 +67,23 @@ export async function GET(req: Request) {
     }
 
     // Répartition par catégorie (dépenses uniquement)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const categoryMap = new Map<string, { name: string; color: string; amount: number }>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const expenseTransactions = (budget.transactions as any[]).filter((t) => t.type === "expense");
 
     // Récupérer les noms de catégories
     const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id: unknown) => !!id)));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const categories = await (prisma as any).budgetCategory.findMany({
       where: { id: { in: categoryIds } },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const categoryById = new Map(categories.map((c: any) => [c.id, c]));
 
     for (const t of expenseTransactions) {
       const cat = t.categoryId ? categoryById.get(t.categoryId) : null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const key = (cat as any)?.name ?? "Sans catégorie";
       const existing = categoryMap.get(key);
       if (existing) {
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
       } else {
         categoryMap.set(key, {
           name: key,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           color: (cat as any)?.color ?? "#9CA3AF",
           amount: t.amount,
         });
@@ -100,7 +100,7 @@ export async function GET(req: Request) {
 
     // Répartition par subType
     const subTypeMap = new Map<string, { name: string; amount: number; type: string }>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     for (const t of budget.transactions as any[]) {
       if (!t.subType) continue;
       const existing = subTypeMap.get(t.subType);

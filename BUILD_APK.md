@@ -90,16 +90,62 @@ L'APK se trouve dans :
 
 ## Signer l'APK Release (pour distribution)
 
+> **Ne jamais commiter le keystore ni ses mots de passe dans Git.**
+
+### 1. Générer un keystore fort (une seule fois)
+
+```bash
+keytool -genkeypair \
+  -v \
+  -keystore done-release.keystore \
+  -alias done \
+  -keyalg RSA \
+  -keysize 4096 \
+  -validity 10000 \
+  -storepass "$(openssl rand -base64 32)" \
+  -keypass "$(openssl rand -base64 32)"
+```
+
+- Conserve le keystore (`done-release.keystore`) dans un endroit sécurisé hors du repo.
+- Note les mots de passe générés dans un gestionnaire de mots de passe.
+
+### 2. Stocker les secrets de signing
+
+Dans `~/.gradle/gradle.properties` (hors du repo) :
+
+```properties
+RELEASE_STORE_FILE=/chemin/absolu/done-release.keystore
+RELEASE_STORE_PASSWORD=ton-store-password
+RELEASE_KEY_ALIAS=done
+RELEASE_KEY_PASSWORD=ton-key-password
+```
+
+Alternative en CI (GitHub Actions, etc.) :
+
+```bash
+export RELEASE_STORE_FILE=/chemin/absolu/done-release.keystore
+export RELEASE_STORE_PASSWORD=...
+export RELEASE_KEY_ALIAS=done
+export RELEASE_KEY_PASSWORD=...
+```
+
+### 3. Compiler et signer en release
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+L'APK signé se trouve dans :
+`android/app/build/outputs/apk/release/app-release.apk`
+
+### 4. Signer manuellement (si besoin)
+
 ```bash
 cd android/app
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+  -keystore done-release.keystore app-release-unsigned.apk done
 
-# Générer un keystore (une seule fois)
-keytool -genkey -v -keystore done-release.keystore -alias done -keyalg RSA -keysize 2048 -validity 10000
-
-# Signer l'APK
-jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore done-release.keystore app-release-unsigned.apk done
-
-# Optimiser avec zipalign
 zipalign -v 4 app-release-unsigned.apk Done.apk
 ```
 

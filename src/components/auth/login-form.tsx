@@ -28,37 +28,25 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
-  const [logs, setLogs] = useState<string[]>([]);
-
-  function log(msg: string) {
-    console.log(msg);
-    setLogs((prev) => [...prev.slice(-9), msg]);
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
-    log(`[LOGIN] email: "${cleanEmail}"`);
 
     try {
       const native = isNativeApp();
-      log(`[LOGIN] isNativeApp: ${native}`);
 
       // ── Mode Web standard ──
       if (!native) {
-        log("[LOGIN] Web mode, calling NextAuth signIn...");
         const result = await signIn("credentials", {
           email: cleanEmail,
           password,
           redirect: false,
         });
 
-        log(`[LOGIN] signIn result: ${JSON.stringify(result)}`);
-
         if (!result?.error) {
-          log("[LOGIN] NextAuth OK, fetching /api/me...");
           try {
             const meRes = await fetch("/api/me");
             if (meRes.ok) {
@@ -83,7 +71,6 @@ export function LoginForm() {
           return;
         }
 
-        log("[LOGIN] NextAuth failed, showing toast");
         toast({
           title: "Connexion échouée",
           description: "Email ou mot de passe incorrect.",
@@ -93,17 +80,13 @@ export function LoginForm() {
       }
 
       // ── Mode Native (Capacitor) : mobile-login direct ──
-      log("[LOGIN] Native mode, calling /api/mobile-login...");
       const mobileRes = await fetch("/api/mobile-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail, password }),
       });
 
-      log(`[LOGIN] mobile-login status: ${mobileRes.status}`);
-
       const mobileData = await mobileRes.json();
-      log(`[LOGIN] mobile-login response: ${JSON.stringify(mobileData)}`);
 
       if (!mobileRes.ok) {
         const description =
@@ -113,7 +96,6 @@ export function LoginForm() {
             ? "Aucun compte trouvé avec cet email."
             : "Email ou mot de passe incorrect.";
 
-        log(`[LOGIN] mobile-login error: ${mobileData.code}`);
         toast({
           title: "Connexion échouée",
           description,
@@ -122,7 +104,6 @@ export function LoginForm() {
         return;
       }
 
-      log("[LOGIN] mobile-login OK, storing token...");
       localStorage.setItem("mobile_auth_token", mobileData.token);
       addAccount({
         id: mobileData.user.id,
@@ -131,10 +112,9 @@ export function LoginForm() {
         image: mobileData.user.image ?? null,
       });
 
-      log("[LOGIN] Redirecting to /dashboard");
       window.location.href = "/dashboard";
     } catch (err) {
-      log(`[LOGIN] EXCEPTION: ${(err as Error).message}`);
+      console.error("Login error:", err);
       toast({
         title: "Erreur",
         description: "Veuillez réessayer plus tard.",
@@ -243,17 +223,21 @@ export function LoginForm() {
         </motion.p>
       </form>
 
-      {logs.length > 0 && (
-        <motion.div
-          variants={staggerItem}
-          className="mt-4 p-3 rounded-xl bg-black/40 border border-white/10"
+      <motion.div variants={staggerItem} className="mt-6 flex items-center justify-center gap-4 text-xs text-white/20">
+        <Link
+          href="/privacy"
+          className="hover:text-white/40 transition-colors"
         >
-          <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Debug</p>
-          <pre className="text-[10px] text-green-400 font-mono whitespace-pre-wrap leading-tight max-h-40 overflow-y-auto">
-            {logs.join("\n")}
-          </pre>
-        </motion.div>
-      )}
+          Politique de confidentialité
+        </Link>
+        <span>|</span>
+        <Link
+          href="/terms"
+          className="hover:text-white/40 transition-colors"
+        >
+          Conditions
+        </Link>
+      </motion.div>
     </motion.div>
   );
 }

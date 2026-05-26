@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
-export async function GET(request: Request, { params }: { params: { accountId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ accountId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { accountId } = await params;
 
     const account = await (prisma as any).financeAccount.findUnique({
-      where: { id: params.accountId, userId: user.id },
+      where: { id: accountId, userId: user.id },
       include: {
         transactions: {
           orderBy: { date: "desc" },
@@ -28,16 +29,17 @@ export async function GET(request: Request, { params }: { params: { accountId: s
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { accountId: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ accountId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { accountId } = await params;
 
     const body = await request.json();
     const { name, type, bankName, currency, balance, color } = body;
 
     const account = await (prisma as any).financeAccount.update({
-      where: { id: params.accountId, userId: user.id },
+      where: { id: accountId, userId: user.id },
       data: { name, type, bankName, currency, balance, color },
     });
 
@@ -48,13 +50,14 @@ export async function PATCH(request: Request, { params }: { params: { accountId:
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { accountId: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ accountId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { accountId } = await params;
 
     await (prisma as any).financeAccount.delete({
-      where: { id: params.accountId, userId: user.id },
+      where: { id: accountId, userId: user.id },
     });
 
     return NextResponse.json({ success: true });
