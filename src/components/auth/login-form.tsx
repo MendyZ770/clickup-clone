@@ -39,6 +39,9 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+    log(`[LOGIN] email: "${cleanEmail}"`);
+
     try {
       const native = isNativeApp();
       log(`[LOGIN] isNativeApp: ${native}`);
@@ -47,7 +50,7 @@ export function LoginForm() {
       if (!native) {
         log("[LOGIN] Web mode, calling NextAuth signIn...");
         const result = await signIn("credentials", {
-          email,
+          email: cleanEmail,
           password,
           redirect: false,
         });
@@ -61,16 +64,16 @@ export function LoginForm() {
             if (meRes.ok) {
               const me = await meRes.json();
               addAccount({
-                id: me.id ?? email,
-                email: me.email ?? email,
+                id: me.id ?? cleanEmail,
+                email: me.email ?? cleanEmail,
                 name: me.name ?? null,
                 image: me.image ?? null,
               });
             }
           } catch {
             addAccount({
-              id: email,
-              email,
+              id: cleanEmail,
+              email: cleanEmail,
               name: null,
               image: null,
             });
@@ -94,7 +97,7 @@ export function LoginForm() {
       const mobileRes = await fetch("/api/mobile-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
 
       log(`[LOGIN] mobile-login status: ${mobileRes.status}`);

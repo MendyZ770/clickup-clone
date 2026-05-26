@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "Done",
   webDir: "public",
   server: {
-    url: "https://clickup-clone-three.vercel.app?v=4",
+    url: "https://clickup-clone-three.vercel.app?v=5",
     allowNavigation: ["*"],
     cleartext: false,
   },
