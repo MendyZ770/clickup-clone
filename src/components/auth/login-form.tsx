@@ -14,6 +14,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { QuickAccounts } from "./quick-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 
+function isNativeApp(): boolean {
+  if (typeof window === "undefined") return false;
+  // @ts-expect-error Capacitor global
+  return !!(window.Capacitor?.isNativePlatform?.());
+}
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,42 +34,55 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      const native = isNativeApp();
+      console.log("[LOGIN] isNativeApp:", native);
 
-      console.log("SignIn result:", result);
+      // ── Mode Web standard ──
+      if (!native) {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
 
-      if (!result?.error) {
-        // Standard NextAuth OK
-        try {
-          const meRes = await fetch("/api/me");
-          if (meRes.ok) {
-            const me = await meRes.json();
+        console.log("SignIn result:", result);
+
+        if (!result?.error) {
+          try {
+            const meRes = await fetch("/api/me");
+            if (meRes.ok) {
+              const me = await meRes.json();
+              addAccount({
+                id: me.id ?? email,
+                email: me.email ?? email,
+                name: me.name ?? null,
+                image: me.image ?? null,
+              });
+            }
+          } catch {
             addAccount({
-              id: me.id ?? email,
-              email: me.email ?? email,
-              name: me.name ?? null,
-              image: me.image ?? null,
+              id: email,
+              email,
+              name: null,
+              image: null,
             });
           }
-        } catch {
-          addAccount({
-            id: email,
-            email,
-            name: null,
-            image: null,
-          });
+          router.push("/dashboard");
+          router.refresh();
+          return;
         }
-        router.push("/dashboard");
-        router.refresh();
+
+        // NextAuth a échoué sur le web → toast et arrêt
+        toast({
+          title: "Connexion échouée",
+          description: "Email ou mot de passe incorrect.",
+          variant: "destructive",
+        });
         return;
       }
 
-      // Fallback mobile : NextAuth a échoué (probablement webview)
-      console.log("NextAuth failed, trying mobile login...");
+      // ── Mode Native (Capacitor) : mobile-login direct ──
+      console.log("[LOGIN] Native app detected, calling /api/mobile-login directly");
       const mobileRes = await fetch("/api/mobile-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,8 +90,7 @@ export function LoginForm() {
       });
 
       const mobileData = await mobileRes.json();
-
-      console.log("[MOBILE LOGIN] Response:", mobileData);
+      console.log("[LOGIN] mobile-login response:", mobileData);
 
       if (!mobileRes.ok) {
         const description =
@@ -99,7 +117,7 @@ export function LoginForm() {
         image: mobileData.user.image ?? null,
       });
 
-      // Recharger la page pour que SessionProvider reprenne la session
+      // Navigation après login réussi
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Login error:", err);
