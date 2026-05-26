@@ -5,8 +5,9 @@ const config: CapacitorConfig = {
   appName: "Done",
   webDir: "public",
   server: {
-    url: "https://clickup-clone-three.vercel.app",
+    url: "https://clickup-clone-three.vercel.app?v=3",
     allowNavigation: ["*"],
+    cleartext: false,
   },
   android: {
     buildOptions: {
