@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { TaskCard } from "@/components/task/task-card";
 import { TaskForm } from "@/components/task/task-form";
@@ -14,7 +15,7 @@ interface BoardColumnProps {
   onTaskAction?: () => void;
 }
 
-export function BoardColumn({
+function BoardColumnComponent({
   status,
   tasks,
   listId,
@@ -78,3 +79,5 @@ export function BoardColumn({
     </div>
   );
 }
+
+export const BoardColumn = memo(BoardColumnComponent);

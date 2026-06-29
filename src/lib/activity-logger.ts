@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendNotificationToUsers, NotificationType } from "@/lib/notifications";
 
 interface LogActivityParams {
   action: string;
@@ -8,9 +9,11 @@ interface LogActivityParams {
   oldValue?: string;
   newValue?: string;
   notifyUserIds?: string[];
-  notificationType?: string;
+  notificationType?: NotificationType;
   notificationMessage?: string;
   notificationLink?: string;
+  notificationTitle?: string;
+  notificationBody?: string;
 }
 
 export async function logActivity({
@@ -24,6 +27,8 @@ export async function logActivity({
   notificationType,
   notificationMessage,
   notificationLink,
+  notificationTitle,
+  notificationBody,
 }: LogActivityParams) {
   const activity = await prisma.activity.create({
     data: {
@@ -37,16 +42,17 @@ export async function logActivity({
   });
 
   if (notifyUserIds && notifyUserIds.length > 0 && notificationMessage) {
-    await prisma.notification.createMany({
-      data: notifyUserIds
-        .filter((id) => id !== userId) // Don't notify the actor
-        .map((notifyUserId) => ({
-          type: notificationType ?? action,
-          message: notificationMessage,
-          link: notificationLink ?? null,
-          userId: notifyUserId,
-        })),
-    });
+    await sendNotificationToUsers(
+      notifyUserIds,
+      {
+        type: notificationType ?? ("teamActivity" as NotificationType),
+        message: notificationMessage,
+        link: notificationLink,
+        title: notificationTitle,
+        body: notificationBody ?? notificationMessage,
+      },
+      userId // actorId — ne se notifie pas lui-même
+    );
   }
 
   return activity;

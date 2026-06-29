@@ -2,9 +2,9 @@
 
 ## Stack
 
-- Next.js 14 App Router, TypeScript
-- Prisma 7 + PostgreSQL (Neon serverless, PG17)
-- NextAuth.js (JWT + Credentials)
+- Next.js 16 App Router, TypeScript
+- Prisma 5 + PostgreSQL (Neon serverless, PG adapter + driver adapters)
+- NextAuth.js v4 (JWT + Credentials)
 - SWR pour les fetchers client (tous doivent vérifier `res.ok`)
 - Tailwind + shadcn/ui, thème dark
 - Hébergement Vercel, repo GitHub `MendyZ770/clickup-clone`

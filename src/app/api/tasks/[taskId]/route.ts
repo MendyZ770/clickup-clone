@@ -22,8 +22,10 @@ export async function GET(request: Request, context: RouteContext) {
       where: { id: taskId },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         creator: {
           select: { id: true, name: true, email: true, image: true },
@@ -31,8 +33,10 @@ export async function GET(request: Request, context: RouteContext) {
         subtasks: {
           include: {
             status: true,
-            assignee: {
-              select: { id: true, name: true, email: true, image: true },
+            assignees: {
+              include: {
+                user: { select: { id: true, name: true, email: true, image: true } }
+              }
             },
           },
           orderBy: { position: "asc" },
@@ -206,46 +210,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
-    if (data.assigneeId !== undefined && data.assigneeId !== existingTask.assigneeId) {
-      updateData.assigneeId = data.assigneeId ?? null;
-
-      let oldAssigneeName = "Unassigned";
-      let newAssigneeName = "Unassigned";
-
-      if (existingTask.assigneeId) {
-        const oldAssignee = await prisma.user.findUnique({
-          where: { id: existingTask.assigneeId },
-          select: { name: true },
-        });
-        oldAssigneeName = oldAssignee?.name ?? "Unknown";
-      }
-
-      if (data.assigneeId) {
-        const newAssignee = await prisma.user.findUnique({
-          where: { id: data.assigneeId },
-          select: { name: true },
-        });
-        newAssigneeName = newAssignee?.name ?? "Unknown";
-      }
-
-      activities.push({
-        field: "assignee",
-        oldValue: oldAssigneeName,
-        newValue: newAssigneeName,
-      });
-
-      // Notify new assignee
-      if (data.assigneeId && data.assigneeId !== user.id) {
-        await prisma.notification.create({
-          data: {
-            type: "assigned",
-            message: `You were assigned to task "${existingTask.title}"`,
-            link: `/tasks/${taskId}`,
-            userId: data.assigneeId,
-          },
-        });
-      }
-    }
+    // assigneeId removed from PATCH as we use dedicated POST/DELETE routes for assignees
 
     if (data.startDate !== undefined) {
       const newStart = data.startDate ? new Date(data.startDate) : null;
@@ -296,8 +261,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: updateData,
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         creator: {
           select: { id: true, name: true, email: true, image: true },

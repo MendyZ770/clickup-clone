@@ -67,32 +67,28 @@ export async function GET(req: Request) {
     }
 
     // Répartition par catégorie (dépenses uniquement)
-     
     const categoryMap = new Map<string, { name: string; color: string; amount: number }>();
-     
-    const expenseTransactions = (budget.transactions as any[]).filter((t) => t.type === "expense");
+    const expenseTransactions = budget.transactions.filter((t) => t.type === "expense");
 
     // Récupérer les noms de catégories
-    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id: unknown) => !!id)));
-     
-    const categories = await (prisma as any).budgetCategory.findMany({
+    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id): id is string => !!id)));
+
+    const categories = await prisma.budgetCategory.findMany({
       where: { id: { in: categoryIds } },
     });
-     
-    const categoryById = new Map(categories.map((c: any) => [c.id, c]));
+
+    const categoryById = new Map(categories.map((c) => [c.id, c]));
 
     for (const t of expenseTransactions) {
       const cat = t.categoryId ? categoryById.get(t.categoryId) : null;
-       
-      const key = (cat as any)?.name ?? "Sans catégorie";
+      const key = cat?.name ?? "Sans catégorie";
       const existing = categoryMap.get(key);
       if (existing) {
         existing.amount += t.amount;
       } else {
         categoryMap.set(key, {
           name: key,
-           
-          color: (cat as any)?.color ?? "#9CA3AF",
+          color: cat?.color ?? "#9CA3AF",
           amount: t.amount,
         });
       }
@@ -100,8 +96,8 @@ export async function GET(req: Request) {
 
     // Répartition par subType
     const subTypeMap = new Map<string, { name: string; amount: number; type: string }>();
-     
-    for (const t of budget.transactions as any[]) {
+
+    for (const t of budget.transactions) {
       if (!t.subType) continue;
       const existing = subTypeMap.get(t.subType);
       if (existing) {

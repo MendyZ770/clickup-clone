@@ -1,12 +1,23 @@
 "use client";
 
 import { SWRConfig, mutate } from "swr";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { storageGet } from "@/lib/storage";
+
+// Cache mémoire du token — mis à jour au montage et au login
+let cachedToken: string | null = null;
+
+export function getTokenSync(): string | null {
+  return cachedToken;
+}
+
+async function refreshTokenCache() {
+  cachedToken = await storageGet("mobile_auth_token");
+}
 
 const fetcher = (url: string) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("mobile_auth_token") : null;
   const headers: HeadersInit = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (cachedToken) headers.Authorization = `Bearer ${cachedToken}`;
   return fetch(url, { headers }).then((res) => {
     if (!res.ok) throw new Error("Failed to fetch");
     return res.json();
@@ -14,12 +25,17 @@ const fetcher = (url: string) => {
 };
 
 export function SWRProvider({ children }: { children: ReactNode }) {
+  // Charger le token au montage
+  useEffect(() => {
+    refreshTokenCache();
+  }, []);
+
   return (
     <SWRConfig
       value={{
         fetcher,
-        dedupingInterval: 1000,
-        refreshInterval: 5000,
+        dedupingInterval: 2000,
+        refreshInterval: 0,
         revalidateOnFocus: true,
         revalidateOnReconnect: true,
         errorRetryCount: 2,

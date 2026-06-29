@@ -123,8 +123,10 @@ export async function GET(request: Request) {
         },
         include: {
           status: true,
-          assignee: {
-            select: { id: true, name: true, email: true, image: true },
+          assignees: {
+            include: {
+              user: { select: { id: true, name: true, email: true, image: true } }
+            }
           },
           list: {
             select: { id: true, name: true },

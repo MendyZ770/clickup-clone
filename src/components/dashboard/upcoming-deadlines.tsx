@@ -16,12 +16,7 @@ interface DeadlineTask {
   dueDate: string;
   priority: string;
   status: { id: string; name: string; color: string };
-  assignee?: {
-    id: string;
-    name: string | null;
-    email: string;
-    image?: string | null;
-  } | null;
+  assignees: { user: { name: string | null; email: string; image: string | null } }[];
   list?: { id: string; name: string } | null;
 }
 
@@ -157,14 +152,14 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
               </div>
 
               {/* Assignee */}
-              {task.assignee ? (
-                <Avatar className="h-8 w-8 border-2 border-background shrink-0">
-                  {task.assignee.image ? (
-                    <AvatarImage src={task.assignee.image} alt={task.assignee.name ?? ""} />
+              {task.assignees && task.assignees.length > 0 ? (
+                <Avatar className="h-6 w-6 border">
+                  {task.assignees[0].user.image ? (
+                    <AvatarImage src={task.assignees[0].user.image} alt={task.assignees[0].user.name ?? ""} />
                   ) : null}
-                  <AvatarFallback className="text-xs bg-muted">
-                    {task.assignee.name?.charAt(0).toUpperCase() ??
-                      task.assignee.email.charAt(0).toUpperCase()}
+                  <AvatarFallback className="text-[10px]">
+                    {task.assignees[0].user.name?.charAt(0).toUpperCase() ??
+                      task.assignees[0].user.email.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               ) : (

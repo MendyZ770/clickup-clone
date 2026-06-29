@@ -80,7 +80,7 @@ export function SidebarFolderItem({
             }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
+            className="mr-1 rounded p-0.5 text-muted-foreground opacity-40 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
             title="Ajouter une liste"
           >
             <Plus className="h-5 w-5" />

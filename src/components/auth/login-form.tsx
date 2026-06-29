@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { QuickAccounts } from "./quick-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
+import { storageSet } from "@/lib/storage";
 
 function isNativeApp(): boolean {
   if (typeof window === "undefined") return false;
@@ -82,6 +83,7 @@ export function LoginForm() {
       // ── Mode Native (Capacitor) : mobile-login direct ──
       const mobileRes = await fetch("/api/mobile-login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail, password }),
       });
@@ -104,7 +106,7 @@ export function LoginForm() {
         return;
       }
 
-      localStorage.setItem("mobile_auth_token", mobileData.token);
+      await storageSet("mobile_auth_token", mobileData.token);
       addAccount({
         id: mobileData.user.id,
         email: mobileData.user.email,
@@ -112,7 +114,8 @@ export function LoginForm() {
         image: mobileData.user.image ?? null,
       });
 
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
+      router.refresh();
     } catch (err) {
       console.error("Login error:", err);
       toast({

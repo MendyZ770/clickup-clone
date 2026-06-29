@@ -1,12 +1,12 @@
 "use client";
 
 import { memo, useCallback, useMemo } from "react";
-import { MessageSquare, GitBranch, Lock } from "lucide-react";
+import { MessageSquare, GitBranch, Lock, User as UserIcon } from "lucide-react";
 import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "./priority-badge";
 import { StatusBadge } from "./status-badge";
-import { AssigneeSelector } from "./assignee-selector";
+// import { AssigneeSelector } from "./assignee-selector";
 import { DueDatePicker } from "./due-date-picker";
 import { TaskActionMenu } from "./task-action-menu";
 import { useUpdateTask } from "@/hooks/use-tasks";
@@ -166,12 +166,28 @@ function TaskRowComponent({
       />
 
       {/* Assignee — hidden on mobile */}
-      <div className="hidden sm:block">
-        <AssigneeSelector
-          assignee={task.assignee}
-          workspaceId={workspaceId}
-          onChange={(assigneeId) => handleUpdate({ assigneeId })}
-        />
+      <div className="hidden sm:flex items-center">
+        {task.assignees && task.assignees.length > 0 ? (
+          <div className="flex -space-x-2 overflow-hidden">
+            {task.assignees.slice(0, 3).map((a) => (
+              <Avatar key={a.userId} className="h-7 w-7 border-2 border-background">
+                <AvatarImage src={a.user.image ?? undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {(a.user.name ?? a.user.email).slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {task.assignees.length > 3 && (
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium">
+                +{task.assignees.length - 3}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="h-7 w-7 rounded-full border border-dashed flex items-center justify-center text-muted-foreground/50">
+            <UserIcon className="h-4 w-4" />
+          </div>
+        )}
       </div>
 
       {/* Action menu */}

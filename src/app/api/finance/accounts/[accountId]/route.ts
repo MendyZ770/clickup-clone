@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ acco
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { accountId } = await params;
 
-    const account = await (prisma as any).financeAccount.findUnique({
+    const account = await prisma.financeAccount.findUnique({
       where: { id: accountId, userId: user.id },
       include: {
         transactions: {
@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ac
     const body = await request.json();
     const { name, type, bankName, currency, balance, color } = body;
 
-    const account = await (prisma as any).financeAccount.update({
+    const account = await prisma.financeAccount.update({
       where: { id: accountId, userId: user.id },
       data: { name, type, bankName, currency, balance, color },
     });
@@ -56,7 +56,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ a
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { accountId } = await params;
 
-    await (prisma as any).financeAccount.delete({
+    await prisma.financeAccount.delete({
       where: { id: accountId, userId: user.id },
     });
 

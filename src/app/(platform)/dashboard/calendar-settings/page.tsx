@@ -2,6 +2,13 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import useSWR from "swr";
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+};
 import {
   Calendar,
   Copy,
@@ -47,13 +54,12 @@ function CalendarSettingsContent() {
   const [regenerating, setRegenerating] = useState(false);
 
   // Google Calendar state
-  const [googleStatus, setGoogleStatus] = useState<{
+  const { data: googleStatus, isLoading: googleLoading, mutate: mutateGoogleStatus } = useSWR<{
     connected: boolean;
     syncEnabled?: boolean;
     lastSyncAt?: string | null;
     calendarId?: string;
-  } | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(true);
+  } | null>("/api/calendar/google/sync", fetcher);
   const [syncing, setSyncing] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
@@ -92,25 +98,9 @@ function CalendarSettingsContent() {
     }
   }, [toast]);
 
-  const fetchGoogleStatus = useCallback(async () => {
-    try {
-      setGoogleLoading(true);
-      const res = await fetch("/api/calendar/google/sync");
-      if (res.ok) {
-        const data = await res.json();
-        setGoogleStatus(data);
-      }
-    } catch {
-      console.error("Failed to fetch Google Calendar status");
-    } finally {
-      setGoogleLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     fetchToken();
-    fetchGoogleStatus();
-  }, [fetchToken, fetchGoogleStatus]);
+  }, [fetchToken]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -122,7 +112,7 @@ function CalendarSettingsContent() {
         description:
           "Votre Google Calendar est maintenant connecté. Vous pouvez synchroniser vos tâches.",
       });
-      fetchGoogleStatus();
+      mutateGoogleStatus();
     }
 
     if (error) {
@@ -141,7 +131,7 @@ function CalendarSettingsContent() {
         variant: "destructive",
       });
     }
-  }, [searchParams, toast, fetchGoogleStatus]);
+  }, [searchParams, toast, mutateGoogleStatus]);
 
   const handleCopyUrl = async (url: string) => {
     try {
@@ -198,7 +188,10 @@ function CalendarSettingsContent() {
           title: "Synchronisation terminée",
           description: `${data.synced} tâche${data.synced !== 1 ? "s" : ""} synchronisée${data.synced !== 1 ? "s" : ""}${data.removed > 0 ? `, ${data.removed} événement${data.removed !== 1 ? "s" : ""} supprimé${data.removed !== 1 ? "s" : ""}` : ""}${data.errors > 0 ? ` (${data.errors} en échec)` : ""}`,
         });
-        fetchGoogleStatus();
+        mutateGoogleStatus(
+          (prev) => prev ? { ...prev, lastSyncAt: new Date().toISOString() } : null,
+          { revalidate: true }
+        );
       } else {
         const data = await res.json();
         throw new Error(data.error || "Sync failed");
@@ -247,7 +240,7 @@ function CalendarSettingsContent() {
         method: "POST",
       });
       if (res.ok) {
-        setGoogleStatus({ connected: false });
+        mutateGoogleStatus({ connected: false });
         setShowDisconnectConfirm(false);
         toast({
           title: "Déconnecté",

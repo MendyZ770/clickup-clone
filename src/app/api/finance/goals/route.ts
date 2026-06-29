@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
-    const goals = await (prisma as any).financeGoal.findMany({
+    const goals = await prisma.financeGoal.findMany({
       where: { workspaceId, userId: user.id },
       include: {
         _count: { select: { contributions: true } },
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const goal = await (prisma as any).financeGoal.create({
+    const goal = await prisma.financeGoal.create({
       data: {
         name,
         description,

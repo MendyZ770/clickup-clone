@@ -98,7 +98,7 @@ export async function GET(request: Request, context: RouteContext) {
       orderBy: { date: "desc" },
     };
      
-    const transactions = await (prisma.budgetTransaction.findMany as any)(queryArgs);
+    const transactions = await prisma.budgetTransaction.findMany(queryArgs);
 
     return NextResponse.json(transactions);
   } catch (error) {
@@ -129,7 +129,7 @@ export async function POST(request: Request, context: RouteContext) {
     const { tags, recurrenceEnd, ...data } = parsed.data;
 
      
-    const transaction = await (prisma.budgetTransaction.create as any)({
+    const transaction = await prisma.budgetTransaction.create({
       data: {
         ...data,
         budgetId,

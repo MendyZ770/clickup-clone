@@ -12,34 +12,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-    },
-    callbackUrl: {
-      name: `next-auth.callback-url`,
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-    },
-    csrfToken: {
-      name: `next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-      },
-    },
-  },
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -52,8 +24,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: normalizedEmail, mode: "insensitive" } },
         });
 
         if (!user || !user.hashedPassword) {

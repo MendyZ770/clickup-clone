@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ goal
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { goalId } = await params;
 
-    const goal = await (prisma as any).financeGoal.findUnique({
+    const goal = await prisma.financeGoal.findUnique({
       where: { id: goalId, userId: user.id },
       include: {
         contributions: { orderBy: { date: "desc" } },
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ go
     const body = await request.json();
     const { name, description, targetAmount, currentAmount, currency, color, deadline, isCompleted, accountId } = body;
 
-    const goal = await (prisma as any).financeGoal.update({
+    const goal = await prisma.financeGoal.update({
       where: { id: goalId, userId: user.id },
       data: { name, description, targetAmount, currentAmount, currency, color, deadline: deadline ? new Date(deadline) : undefined, isCompleted, accountId },
     });
@@ -52,7 +52,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ g
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { goalId } = await params;
 
-    await (prisma as any).financeGoal.delete({
+    await prisma.financeGoal.delete({
       where: { id: goalId, userId: user.id },
     });
 

@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     url: "https://clickup-clone-three.vercel.app",
     allowNavigation: [
       "clickup-clone-three.vercel.app",
+      "*.ngrok-free.app",
       "*.vercel.app",
     ],
     cleartext: false,
@@ -18,12 +19,9 @@ const config: CapacitorConfig = {
   // NOTE: les secrets de signing release sont configurés dans
   // ~/.gradle/gradle.properties ou via variables d'environnement
   // lors du build Gradle (voir BUILD_APK.md).
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: "#a855f7",
-    },
-  },
+  // NOTE: aucun bloc `plugins` déclaré : @capacitor/splash-screen n'est pas
+  // installé. Si la fonctionnalité Splash Screen devient nécessaire, ajouter
+  // d'abord `npm i @capacitor/splash-screen` puis re-déclarer la config ici.
 };
 
 export default config;

@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,17 +19,11 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[100vw] md:max-w-[80vw] h-[100dvh] md:h-[90vh] p-0 gap-0 overflow-hidden rounded-none md:rounded-lg">
-        <div className="flex items-center justify-between border-b px-4 py-2">
-          <span className="text-sm text-muted-foreground font-mono">
-            {taskId.slice(0, 8)}
+      <DialogContent className="!w-screen !max-w-none h-[100dvh] md:!w-[90vw] md:!max-w-6xl md:h-[90vh] !p-0 !gap-0 overflow-hidden !rounded-none md:!rounded-lg flex flex-col">
+        <div className="flex items-center justify-between border-b px-4 py-3 shrink-0 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <span className="text-xs text-muted-foreground font-mono">
+            #{taskId.slice(0, 8)}
           </span>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 hover:bg-muted transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
         <div className="flex-1 overflow-hidden">
           <TaskDetailContent taskId={taskId} workspaceId={workspaceId} />

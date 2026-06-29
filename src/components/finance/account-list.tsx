@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Banknote, Bitcoin, PiggyBank, Landmark, CreditCard, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
+import { formatCurrency } from "@/lib/utils";
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   bank: Landmark,
@@ -121,10 +122,7 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: FinanceAc
                 </div>
                 <div className="mt-4">
                   <p className="text-2xl font-bold">
-                    {account.balance.toLocaleString("fr-FR", {
-                      style: "currency",
-                      currency: account.currency,
-                    })}
+                    {formatCurrency(account.balance, account.currency)}
                   </p>
                   <p className="text-base text-muted-foreground">
                     {account._count?.transactions || 0} transaction

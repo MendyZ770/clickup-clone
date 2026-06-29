@@ -97,16 +97,28 @@ export async function POST(request: Request, context: RouteContext) {
       userId: user.id,
     });
 
-    // Notify task assignee if different from commenter
-    if (task.assigneeId && task.assigneeId !== user.id) {
-      await prisma.notification.create({
-        data: {
-          type: "comment",
-          message: `${user.name ?? "Someone"} commented on "${task.title}"`,
-          link: `/tasks/${taskId}`,
-          userId: task.assigneeId,
+    // Notify task assignee + multi-assignees if different from commenter
+    const notifyIds = new Set<string>();
+    if (task.assigneeId && task.assigneeId !== user.id) notifyIds.add(task.assigneeId);
+    // Also notify multi-assignees
+    const assignees = await prisma.taskAssignee.findMany({ where: { taskId }, select: { userId: true } });
+    for (const a of assignees) {
+      if (a.userId !== user.id) notifyIds.add(a.userId);
+    }
+    if (notifyIds.size > 0) {
+      const { sendNotificationToUsers } = await import("@/lib/notifications");
+      await sendNotificationToUsers(
+        Array.from(notifyIds),
+        {
+          type: "taskComment",
+          message: `${user.name ?? "Quelqu'un"} a commenté "${task.title}"`,
+          link: `/task/${taskId}`,
+          title: "Nouveau commentaire",
+          body: `${user.name ?? "Quelqu'un"} : ${comment.content.slice(0, 80)}`,
+          tag: "task-comment",
         },
-      });
+        user.id
+      );
     }
 
     return NextResponse.json(comment, { status: 201 });

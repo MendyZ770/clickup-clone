@@ -7,8 +7,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useBudgets } from "@/hooks/use-budgets";
+import { useModal } from "@/providers/modal-provider";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
-import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart";
 import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
@@ -67,6 +69,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { mutate: globalMutate } = useSWRConfig();
   const { budgets: workspaceBudgets, isLoading: budgetsLoading } = useBudgets(currentWorkspace?.id);
+  const { openCreateTask } = useModal();
 
   const { data, isLoading: dataLoading } = useSWR<DashboardData>(
     currentWorkspace
@@ -140,10 +143,13 @@ export default function DashboardPage() {
         }
         actions={
           currentWorkspace ? (
-            <QuickCreateTask
-              workspaceId={currentWorkspace.id}
-              onCreated={handleTaskCreated}
-            />
+            <Button
+              size="sm"
+              onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
+            >
+              <Plus className="h-5 w-5 mr-1.5" />
+              Nouvelle tâche
+            </Button>
           ) : undefined
         }
       />

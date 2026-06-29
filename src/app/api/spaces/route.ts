@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { createSpaceSchema } from "@/lib/validations/space";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const user = await getCurrentUser();

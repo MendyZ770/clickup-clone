@@ -16,10 +16,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
-    const where: any = { workspaceId };
+    const where: Record<string, unknown> = { workspaceId };
     if (type) where.type = type;
 
-    const categories = await (prisma as any).financeCategory.findMany({
+    const categories = await prisma.financeCategory.findMany({
       where,
       orderBy: { name: "asc" },
     });
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const category = await (prisma as any).financeCategory.create({
+    const category = await prisma.financeCategory.create({
       data: {
         name,
         type,
@@ -54,9 +54,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(category);
-  } catch (error: any) {
+  } catch (error) {
     console.error("[FINANCE_CATEGORIES_POST]", error);
-    if (error.code === "P2002") {
+    if ((error as { code?: string }).code === "P2002") {
       return NextResponse.json({ error: "Category already exists" }, { status: 409 });
     }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

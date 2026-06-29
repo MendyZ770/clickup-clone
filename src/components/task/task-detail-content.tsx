@@ -45,14 +45,6 @@ export function TaskDetailContent({
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
-  // Hide properties panel by default on mobile
-  useEffect(() => {
-    const update = () => setShowProperties(window.innerWidth >= 768);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   useEffect(() => {
     if (task) {
       setTitleValue(task.title);
@@ -148,9 +140,9 @@ export function TaskDetailContent({
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden">
       {/* Left: Main content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 md:p-6 space-y-4 md:space-y-6">
           {task.locked && (
             <div className="flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
@@ -226,11 +218,11 @@ export function TaskDetailContent({
                 workspaceId={workspaceId}
                 size="md"
               />
-              {/* Toggle panel propriétés */}
+              {/* Toggle panel propriétés — desktop uniquement */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-muted-foreground"
+                className="hidden md:inline-flex h-9 w-9 text-muted-foreground"
                 onClick={() => setShowProperties((p) => !p)}
                 aria-label={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
                 title={showProperties ? "Masquer les propriétés" : "Afficher les propriétés"}
@@ -242,6 +234,16 @@ export function TaskDetailContent({
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Properties — toujours visible sur mobile, dans la sidebar à droite sur desktop */}
+          <div className="md:hidden rounded-lg border bg-muted/30 p-3">
+            <TaskProperties
+              task={task}
+              workspaceId={workspaceId}
+              onUpdate={handleUpdate}
+              onTagsChanged={() => mutate()}
+            />
           </div>
 
           {/* Recurrence */}
@@ -354,9 +356,9 @@ export function TaskDetailContent({
         </div>
       </ScrollArea>
 
-      {/* Right: Properties sidebar — masquable */}
+      {/* Properties panel: à droite sur desktop */}
       {showProperties && (
-        <div className="w-full md:w-72 border-t md:border-t-0 md:border-l md:shrink-0">
+        <div className="hidden md:block md:w-80 md:border-l md:shrink-0">
           <ScrollArea className="h-full">
             <div className="p-4">
               <TaskProperties

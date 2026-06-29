@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAccounts } from "@/hooks/use-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
-
+import { storageSet } from "@/lib/storage";
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -45,12 +45,13 @@ export function RegisterForm() {
     }
 
     setIsLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
 
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email: cleanEmail, password }),
       });
 
       const data = await response.json();
@@ -65,7 +66,7 @@ export function RegisterForm() {
       }
 
       const result = await signIn("credentials", {
-        email,
+        email: cleanEmail,
         password,
         redirect: false,
       });
@@ -78,13 +79,13 @@ export function RegisterForm() {
             const me = await meRes.json();
             addAccount({
               id: me.id ?? email,
-              email: me.email ?? email,
+              email: me.email ?? cleanEmail,
               name: me.name ?? null,
               image: me.image ?? null,
             });
           }
         } catch {
-          addAccount({ id: email, email, name: null, image: null });
+          addAccount({ id: cleanEmail, email: cleanEmail, name: null, image: null });
         }
         router.push("/dashboard");
         router.refresh();
@@ -94,8 +95,9 @@ export function RegisterForm() {
       // Fallback mobile : NextAuth a échoué (webview)
       const mobileRes = await fetch("/api/mobile-login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
       const mobileData = await mobileRes.json();
 
@@ -108,7 +110,7 @@ export function RegisterForm() {
         return;
       }
 
-      localStorage.setItem("mobile_auth_token", mobileData.token);
+      await storageSet("mobile_auth_token", mobileData.token);
       addAccount({
         id: mobileData.user.id,
         email: mobileData.user.email,

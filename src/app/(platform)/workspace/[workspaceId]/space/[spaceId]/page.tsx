@@ -12,6 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CreateFolderDialog } from "@/components/folder/create-folder-dialog";
+import { CreateListDialog } from "@/components/list/create-list-dialog";
 import type { SpaceWithContents } from "@/types";
 
 const fetcher = (url: string) =>
@@ -23,7 +27,10 @@ const fetcher = (url: string) =>
 export default function SpacePage() {
   const params = useParams<{ workspaceId: string; spaceId: string }>();
   const { workspaceId, spaceId } = params;
-  const { data: space, isLoading } = useSWR<SpaceWithContents>(
+  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [createListOpen, setCreateListOpen] = useState(false);
+
+  const { data: space, isLoading, mutate } = useSWR<SpaceWithContents>(
     `/api/spaces/${spaceId}`,
     fetcher
   );
@@ -156,9 +163,32 @@ export default function SpacePage() {
         <EmptyState
           icon={FolderOpen}
           title="Cet espace est vide"
-          description="Créez des dossiers et des listes pour organiser vos tâches."
-        />
+          description="Créez un dossier ou une liste pour commencer à organiser vos tâches. Les dossiers permettent de regrouper plusieurs listes."
+        >
+          <div className="flex items-center gap-3 justify-center">
+            <Button variant="outline" onClick={() => setCreateFolderOpen(true)}>
+              Créer un dossier
+            </Button>
+            <Button onClick={() => setCreateListOpen(true)}>
+              Créer une liste
+            </Button>
+          </div>
+        </EmptyState>
       )}
+
+      <CreateFolderDialog
+        open={createFolderOpen}
+        onOpenChange={setCreateFolderOpen}
+        spaceId={spaceId}
+        onCreated={() => mutate()}
+      />
+
+      <CreateListDialog
+        open={createListOpen}
+        onOpenChange={setCreateListOpen}
+        spaceId={spaceId}
+        onCreated={() => mutate()}
+      />
     </div>
   );
 }

@@ -197,22 +197,22 @@ export default function FinancePage() {
       </div>
 
       <Tabs defaultValue="accounts" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-flex bg-muted/40 border border-border/30 p-1 rounded-lg">
-          <TabsTrigger value="accounts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+        <TabsList className="flex w-full overflow-x-auto md:w-auto md:inline-flex bg-muted/40 border border-border/30 p-1 rounded-lg">
+          <TabsTrigger value="accounts" className="flex-shrink-0 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
             <CreditCard className="h-4 w-4" />
-            Comptes
+            <span className="hidden sm:inline">Comptes</span>
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="transactions" className="flex-shrink-0 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
             <ArrowLeftRight className="h-4 w-4" />
-            Transactions
+            <span className="hidden sm:inline">Transactions</span>
           </TabsTrigger>
-          <TabsTrigger value="goals" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="goals" className="flex-shrink-0 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
             <Target className="h-4 w-4" />
-            Objectifs
+            <span className="hidden sm:inline">Objectifs</span>
           </TabsTrigger>
-          <TabsTrigger value="categories" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+          <TabsTrigger value="categories" className="flex-shrink-0 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
             <Settings className="h-4 w-4" />
-            Catégories
+            <span className="hidden sm:inline">Catégories</span>
           </TabsTrigger>
         </TabsList>
 
@@ -226,7 +226,7 @@ export default function FinancePage() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
-          <FinanceTransactionList transactions={filteredTransactions} accounts={accounts} onMutate={handleMutate} />
+          <FinanceTransactionList transactions={filteredTransactions} accounts={accounts} onMutate={handleMutate} onAddTransaction={() => setShowAddTransaction(true)} />
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">

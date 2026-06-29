@@ -7,8 +7,8 @@ android {
         applicationId "com.done.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -29,17 +29,14 @@ android {
             def releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")
             def releaseKeyPassword = System.getenv("RELEASE_KEY_PASSWORD")
 
-            if (!releaseStoreFile || !releaseStorePassword || !releaseKeyAlias || !releaseKeyPassword) {
-                throw new Exception(
-                    "Missing release signing environment variables. " +
-                    "Set RELEASE_STORE_FILE, RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD."
-                )
+            if (releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            } else {
+                logger.warn("Missing release signing environment variables. Release builds will not be signed.")
             }
-
-            storeFile file(releaseStoreFile)
-            storePassword releaseStorePassword
-            keyAlias releaseKeyAlias
-            keyPassword releaseKeyPassword
         }
     }
     buildTypes {
@@ -47,7 +44,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             signingConfig signingConfigs.debug

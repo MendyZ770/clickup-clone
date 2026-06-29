@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Règles Android Auto Backup (Android 6 → 11).
+  Exclut les SharedPreferences Capacitor (CapacitorStorage) qui contiennent
+  le bearer token mobile (`mobile_auth_token`) et tout autre secret persistant
+  via @capacitor/preferences. Voir audit Finding F-MOB-004.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+    <exclude domain="sharedpref" path="CapacitorCookies.xml" />
+</full-backup-content>

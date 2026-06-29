@@ -81,7 +81,22 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
           Nouvelle tâche
         </Button>
       ) : (
-        <div className="rounded-xl border bg-card p-3 md:p-4 space-y-2 md:space-y-3 w-full max-w-2xl">
+        <div className="rounded-xl border bg-card p-3 md:p-4 space-y-2 md:space-y-3 w-full md:max-w-2xl">
+          {allLists.length === 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm">Aucune liste disponible.</p>
+              <p className="text-xs text-muted-foreground">
+                Créez d&apos;abord un espace puis une liste pour pouvoir ajouter des tâches.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowForm(false)}
+              >
+                Annuler
+              </Button>
+            </div>
+          ) : (
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Titre de la tâche..."
@@ -98,7 +113,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
             />
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <Select value={newListId} onValueChange={setNewListId}>
-                <SelectTrigger className="w-[140px] sm:w-[180px]">
+                <SelectTrigger className="flex-1 sm:w-[180px]">
                   <SelectValue placeholder="Liste" />
                 </SelectTrigger>
                 <SelectContent>
@@ -110,7 +125,7 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
                 </SelectContent>
               </Select>
               <Select value={newPriority} onValueChange={setNewPriority}>
-                <SelectTrigger className="w-[100px] sm:w-[120px]">
+                <SelectTrigger className="flex-1 sm:w-[120px]">
                   <SelectValue placeholder="Priorité" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,10 +152,6 @@ export function QuickCreateTask({ workspaceId, onCreated }: QuickCreateTaskProps
               </Button>
             </div>
           </div>
-          {allLists.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Aucune liste disponible. Créez d&apos;abord une liste dans un espace.
-            </p>
           )}
         </div>
       )}

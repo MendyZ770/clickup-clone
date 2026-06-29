@@ -141,18 +141,18 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
+                className="mr-1 rounded p-0.5 text-muted-foreground opacity-40 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Plus className="h-6 w-6" />
               </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right">
-              <DropdownMenuItem onClick={() => setCreateFolderOpen(true)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setCreateFolderOpen(true), 100); }}>
                 <FolderPlus className="mr-2 h-6 w-6" />
                 Nouveau dossier
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setCreateListOpen(true)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setTimeout(() => setCreateListOpen(true), 100); }}>
                 <ListPlus className="mr-2 h-6 w-6" />
                 Nouvelle liste
               </DropdownMenuItem>

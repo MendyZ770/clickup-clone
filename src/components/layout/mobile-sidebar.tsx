@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,12 @@ import { Sidebar } from "./sidebar";
 
 export function MobileSidebar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Ferme le sheet automatiquement à chaque changement de page
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -20,8 +27,11 @@ export function MobileSidebar() {
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-[320px] bg-sidebar border-r-0" onClick={() => setOpen(false)}>
-        <Sidebar />
+      <SheetContent
+        side="left"
+        className="p-0 w-[320px] bg-sidebar border-r-0"
+      >
+        <Sidebar onCloseSheet={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

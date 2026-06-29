@@ -3,12 +3,12 @@
 import { useMemo } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ClipboardList, Calendar, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { ClipboardList, Calendar, AlertTriangle, CheckCircle2, Plus } from "lucide-react";
 import useSWR, { useSWRConfig } from "swr";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useModal } from "@/hooks/use-modal";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
-import { QuickCreateTask } from "@/components/task/quick-create-task";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,7 +48,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 export default function MyTasksPage() {
   const { currentWorkspace } = useWorkspace();
-  const { openTaskModal } = useModal();
+  const { openTaskModal, openCreateTask } = useModal();
   const { mutate: globalMutate } = useSWRConfig();
 
   const { data: tasks, isLoading } = useSWR<MyTask[]>(
@@ -149,10 +149,13 @@ export default function MyTasksPage() {
           }
           actions={
             currentWorkspace ? (
-              <QuickCreateTask
-                workspaceId={currentWorkspace.id}
-                onCreated={handleTaskCreated}
-              />
+              <Button
+                size="sm"
+                onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
+              >
+                <Plus className="h-5 w-5 mr-1.5" />
+                Nouvelle tâche
+              </Button>
             ) : undefined
           }
         />

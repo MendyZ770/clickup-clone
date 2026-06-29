@@ -51,10 +51,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarNav } from "./sidebar-nav";
-import { CreateSpaceDialog } from "@/components/space/create-space-dialog";
-import { CreateWorkspaceDialog } from "@/components/workspace/create-workspace-dialog";
+import { useModal } from "@/providers/modal-provider";
 
-export function Sidebar() {
+export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const { user: sessionUser } = useUnifiedSession();
@@ -66,8 +65,26 @@ export function Sidebar() {
   const { favorites } = useFavorites(currentWorkspace?.id);
   const { unreadCount } = useNotifications();
   const { collapsed, toggle } = useSidebar();
-  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
-  const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
+  const { openCreateSpace, openCreateWorkspace } = useModal();
+
+  const handleCreateSpace = () => {
+    if (!currentWorkspace) return;
+    if (onCloseSheet) {
+      onCloseSheet();
+      setTimeout(() => openCreateSpace(currentWorkspace.id), 250);
+    } else {
+      openCreateSpace(currentWorkspace.id);
+    }
+  };
+
+  const handleCreateWorkspace = () => {
+    if (onCloseSheet) {
+      onCloseSheet();
+      setTimeout(() => openCreateWorkspace(), 250);
+    } else {
+      openCreateWorkspace();
+    }
+  };
 
   const user = sessionUser;
   const initials = user?.name
@@ -100,7 +117,7 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
       <aside
-        className="group/sidebar flex h-screen flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border transition-[width] duration-300 ease-in-out relative"
+        className="group/sidebar flex h-screen flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border transition-[width] duration-300 ease-in-out relative overflow-hidden"
         style={{ width: collapsed ? 72 : 300, minWidth: collapsed ? 72 : 300 }}
       >
         {/* Workspace Switcher */}
@@ -148,7 +165,7 @@ export function Sidebar() {
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setCreateWorkspaceOpen(true)}>
+              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleCreateWorkspace(); }}>
                 <Plus className="mr-2 h-5 w-5" />
                 Créer un espace de travail
               </DropdownMenuItem>
@@ -282,7 +299,7 @@ export function Sidebar() {
             </span>
           )}
           <button
-            onClick={() => setCreateSpaceOpen(true)}
+            onClick={handleCreateSpace}
             className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
             title="Ajouter un espace"
           >
@@ -307,7 +324,7 @@ export function Sidebar() {
                 <div className="px-2 py-4 text-center">
                   <p className="text-xs text-muted-foreground">Aucun espace</p>
                   <button
-                    onClick={() => setCreateSpaceOpen(true)}
+                    onClick={handleCreateSpace}
                     className="mt-1 text-xs text-primary hover:underline"
                   >
                     Créer votre premier espace
@@ -399,19 +416,6 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Dialogs */}
-      {currentWorkspace && (
-        <CreateSpaceDialog
-          open={createSpaceOpen}
-          onOpenChange={setCreateSpaceOpen}
-          workspaceId={currentWorkspace.id}
-          onCreated={() => mutateSpaces()}
-        />
-      )}
-      <CreateWorkspaceDialog
-        open={createWorkspaceOpen}
-        onOpenChange={setCreateWorkspaceOpen}
-      />
     </TooltipProvider>
   );
 }

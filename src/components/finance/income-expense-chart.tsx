@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 const MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 
@@ -57,9 +58,7 @@ export function IncomeExpenseChart({ transactions }: { transactions: import("@pr
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip
-                  formatter={(value) =>
-                    Number(value).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
-                  }
+                  formatter={(value) => formatCurrency(Number(value), "EUR")}
                   contentStyle={{
                     borderRadius: "12px",
                     border: "1px solid hsl(var(--border))",

@@ -17,7 +17,18 @@ export async function GET(request: Request) {
 
     const tasks = await prisma.task.findMany({
       where: {
-        assigneeId: user.id,
+        OR: [
+          {
+            assignees: {
+              some: { userId: user.id }
+            }
+          },
+          {
+            assignees: {
+              none: {}
+            }
+          }
+        ],
         list: {
           space: { workspaceId },
         },
@@ -25,8 +36,10 @@ export async function GET(request: Request) {
       },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         list: {
           select: { id: true, name: true, space: { select: { id: true, name: true } } },

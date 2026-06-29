@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth-helpers";
 import { createListSchema } from "@/lib/validations/list";
 import { DEFAULT_STATUSES } from "@/lib/constants";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const user = await getCurrentUser();
@@ -20,6 +22,25 @@ export async function GET(request: Request) {
         { error: "spaceId or folderId query param is required" },
         { status: 400 }
       );
+    }
+
+    // Verify access
+    if (folderId) {
+      const folderAccess = await prisma.folder.findUnique({
+        where: { id: folderId },
+        include: { space: { include: { workspace: { include: { members: { where: { userId: user.id } } } } } } }
+      });
+      if (!folderAccess || folderAccess.space.workspace.members.length === 0) {
+        return NextResponse.json({ error: "Unauthorized access to folder" }, { status: 403 });
+      }
+    } else if (spaceId) {
+      const spaceAccess = await prisma.space.findUnique({
+        where: { id: spaceId },
+        include: { workspace: { include: { members: { where: { userId: user.id } } } } }
+      });
+      if (!spaceAccess || spaceAccess.workspace.members.length === 0) {
+        return NextResponse.json({ error: "Unauthorized access to space" }, { status: 403 });
+      }
     }
 
     // Build where clause

@@ -1,9 +1,11 @@
 import next from "eslint-config-next";
 
 const eslintConfig = [
+  {
+    ignores: ["src/generated/**", "node_modules/**", ".next/**", "android/**", "apk/**", "ios/**"],
+  },
   ...next,
   {
-    ignores: ["src/generated/**", "node_modules/**", ".next/**"],
     rules: {
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/immutability": "off",

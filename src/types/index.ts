@@ -36,8 +36,8 @@ export type TaskAssigneeWithUser = TaskAssignee & {
 
 export type TaskWithDetails = Task & {
   status: Status;
-  assignee: Pick<User, "id" | "name" | "email" | "image"> | null;
   creator: Pick<User, "id" | "name" | "email" | "image">;
+  assignees: { user: Pick<User, "id" | "name" | "email" | "image"> }[];
   checklists: ChecklistWithItems[];
   taskTags: TaskTagWithTag[];
   comments: CommentWithUser[];
@@ -47,7 +47,6 @@ export type TaskWithDetails = Task & {
   dependencies?: TaskDependencyWithTask[];
   dependents?: TaskDependencyWithTask[];
   recurrence?: TaskRecurrence | null;
-  assignees?: TaskAssigneeWithUser[];
   _count?: {
     subtasks: number;
     comments: number;
@@ -59,10 +58,9 @@ export type TaskWithDetails = Task & {
 
 export type TaskSummary = Task & {
   status: Status;
-  assignee: Pick<User, "id" | "name" | "email" | "image"> | null;
   taskTags: TaskTagWithTag[];
   recurrence?: TaskRecurrence | null;
-  assignees?: TaskAssigneeWithUser[];
+  assignees: TaskAssigneeWithUser[];
   _count: {
     subtasks: number;
     comments: number;

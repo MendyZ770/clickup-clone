@@ -1,10 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Search, Bell, Sun, Moon } from "lucide-react";
+import { Search, Bell, Sun, Moon, Monitor } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Breadcrumbs } from "./breadcrumbs";
 import { TimerButton } from "@/components/time-tracking/timer-button";
 import { MobileSidebar } from "./mobile-sidebar";
@@ -13,7 +19,7 @@ import { AccountSwitcher } from "./account-switcher";
 export function TopBar() {
   const router = useRouter();
   const { unreadCount } = useNotifications();
-  const { theme, toggleTheme } = useTheme();
+  const { mode, theme, setMode } = useTheme();
 
   const openSearch = () => {
     const event = new KeyboardEvent("keydown", {
@@ -23,8 +29,13 @@ export function TopBar() {
     document.dispatchEvent(event);
   };
 
+  const themeIcon = mode === "system" ? <Monitor className="h-5 w-5" /> :
+    theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />;
+
+  const themeLabel = mode === "light" ? "Thème clair" : mode === "dark" ? "Thème sombre" : "Thème système";
+
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:static md:px-4">
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 pt-[env(safe-area-inset-top)] md:static md:px-4 md:pt-0">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />
@@ -35,16 +46,42 @@ export function TopBar() {
       <div className="flex items-center gap-0.5 sm:gap-1">
         <TimerButton />
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="hidden sm:inline-flex h-9 w-9 text-muted-foreground hover:text-foreground"
-          onClick={toggleTheme}
-          aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
-          title={theme === "dark" ? "Mode clair" : "Mode sombre"}
-        >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {themeIcon}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem
+              onClick={() => setMode("light")}
+              className={mode === "light" ? "bg-accent" : ""}
+            >
+              <Sun className="mr-2 h-4 w-4" />
+              Clair
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setMode("dark")}
+              className={mode === "dark" ? "bg-accent" : ""}
+            >
+              <Moon className="mr-2 h-4 w-4" />
+              Sombre
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setMode("system")}
+              className={mode === "system" ? "bg-accent" : ""}
+            >
+              <Monitor className="mr-2 h-4 w-4" />
+              Système
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button
           variant="ghost"

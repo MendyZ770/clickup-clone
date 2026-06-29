@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -138,12 +139,12 @@ export function FinanceGoalList({ goals, onMutate }: { goals: GoalWithAccount[];
 
                 {/* Progress */}
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {goal.currentAmount.toLocaleString("fr-FR", { style: "currency", currency: goal.currency })}
+                  <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-2xl font-bold">
+                      {formatCurrency(goal.currentAmount, goal.currency)}
                     </span>
-                    <span className="font-semibold">
-                      {goal.targetAmount.toLocaleString("fr-FR", { style: "currency", currency: goal.currency })}
+                    <span className="text-sm text-muted-foreground font-medium">
+                      sur {formatCurrency(goal.targetAmount, goal.currency)}
                     </span>
                   </div>
                   <div className="h-3 w-full rounded-full bg-muted overflow-hidden">

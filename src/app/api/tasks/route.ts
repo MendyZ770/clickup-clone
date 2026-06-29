@@ -6,6 +6,8 @@ import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";
 import { Prisma } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
     const user = await getCurrentUser();
@@ -29,6 +31,23 @@ export async function GET(request: Request) {
       );
     }
 
+    const listAccess = await prisma.list.findUnique({
+      where: { id: listId },
+      include: {
+        space: {
+          include: {
+            workspace: {
+              include: { members: { where: { userId: user.id } } },
+            },
+          },
+        },
+      },
+    });
+
+    if (!listAccess || listAccess.space.workspace.members.length === 0) {
+      return NextResponse.json({ error: "Unauthorized access to list" }, { status: 403 });
+    }
+
     // Build where clause
     const where: Prisma.TaskWhereInput = {
       listId,
@@ -37,7 +56,11 @@ export async function GET(request: Request) {
 
     if (statusId) where.statusId = statusId;
     if (priority) where.priority = priority;
-    if (assigneeId) where.assigneeId = assigneeId;
+    if (assigneeId) {
+      where.assignees = {
+        some: { userId: assigneeId }
+      };
+    }
     if (search) {
       where.OR = [
         { title: { contains: search } },
@@ -61,8 +84,10 @@ export async function GET(request: Request) {
       where,
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         creator: {
           select: { id: true, name: true, email: true, image: true },
@@ -169,14 +194,18 @@ export async function POST(request: Request) {
         position: taskPosition,
         listId,
         statusId: taskStatusId,
-        assigneeId: assigneeId ?? null,
         creatorId: user.id,
         parentId: parentId ?? null,
+        assignees: assigneeId ? {
+          create: [{ userId: assigneeId }]
+        } : undefined,
       },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         creator: {
           select: { id: true, name: true, email: true, image: true },

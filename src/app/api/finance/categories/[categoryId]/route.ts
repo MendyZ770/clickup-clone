@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ca
     const body = await request.json();
     const { name, color, icon } = body;
 
-    const category = await (prisma as any).financeCategory.update({
+    const category = await prisma.financeCategory.update({
       where: { id: categoryId },
       data: { name, color, icon },
     });
@@ -30,7 +30,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ c
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { categoryId } = await params;
 
-    await (prisma as any).financeCategory.delete({
+    await prisma.financeCategory.delete({
       where: { id: categoryId },
     });
 

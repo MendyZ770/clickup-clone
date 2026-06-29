@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Règles d'extraction de données (Android 12+, API 31+).
+  Couvre cloud-backup et device-transfer.
+  Exclut les SharedPreferences Capacitor qui contiennent le bearer token
+  mobile (`mobile_auth_token`) et tout autre secret persistant.
+  Voir audit Finding F-MOB-004.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+        <exclude domain="sharedpref" path="CapacitorCookies.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+        <exclude domain="sharedpref" path="CapacitorCookies.xml" />
+    </device-transfer>
+</data-extraction-rules>

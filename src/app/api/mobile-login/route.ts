@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
+import { MOBILE_SESSION_COOKIE } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -26,16 +27,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = await req.json();
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: "insensitive" } },
     });
 
     if (!user) {
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("30d")
       .sign(SECRET);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       token,
       user: {
         id: user.id,
@@ -80,7 +82,18 @@ export async function POST(req: NextRequest) {
         image: user.image,
       },
     });
-  } catch {
+
+    response.cookies.set(MOBILE_SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    return response;
+  } catch (error) {
+    console.error("[MOBILE_LOGIN_ERROR]", error);
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }

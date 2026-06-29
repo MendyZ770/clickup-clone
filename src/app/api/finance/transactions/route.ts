@@ -20,21 +20,26 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: user.id,
       account: { workspaceId },
     };
 
-    if (accountId) where.accountId = accountId;
+    if (accountId) {
+      where.OR = [
+        { accountId: accountId },
+        { targetAccountId: accountId }
+      ];
+    }
     if (type) where.type = type;
     if (categoryId) where.categoryId = categoryId;
     if (from || to) {
-      where.date = {};
-      if (from) where.date.gte = new Date(from);
-      if (to) where.date.lte = new Date(to);
+      where.date = {} as Record<string, Date>;
+      if (from) (where.date as Record<string, Date>).gte = new Date(from);
+      if (to) (where.date as Record<string, Date>).lte = new Date(to);
     }
 
-    const transactions = await (prisma as any).financeTransaction.findMany({
+    const transactions = await prisma.financeTransaction.findMany({
       where,
       include: { category: true, account: { select: { id: true, name: true, currency: true } } },
       orderBy: { date: "desc" },
@@ -59,7 +64,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const result = await prisma.$transaction(async (tx: any) => {
+    if (isTransfer && !targetAccountId) {
+      return NextResponse.json({ error: "Le compte de destination est requis pour un transfert" }, { status: 400 });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
       const transaction = await tx.financeTransaction.create({
         data: {
           amount,

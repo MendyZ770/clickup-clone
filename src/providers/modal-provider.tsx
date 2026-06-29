@@ -3,6 +3,10 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { PinDialog } from "@/components/task/pin-dialog";
+import { CreateSpaceDialog } from "@/components/space/create-space-dialog";
+import { CreateWorkspaceDialog } from "@/components/workspace/create-workspace-dialog";
+import { CreateTaskDialog } from "@/components/task/create-task-dialog";
+import { useSWRConfig } from "swr";
 
 const TaskDetailModal = dynamic(
   () =>
@@ -18,6 +22,9 @@ interface ModalContextType {
   closeTaskModal: () => void;
   workspaceId: string | null;
   setWorkspaceId: (id: string) => void;
+  openCreateSpace: (workspaceId: string) => void;
+  openCreateWorkspace: () => void;
+  openCreateTask: (workspaceId: string, defaultListId?: string, onCreated?: () => void) => void;
 }
 
 const ModalContext = createContext<ModalContextType>({
@@ -26,6 +33,9 @@ const ModalContext = createContext<ModalContextType>({
   closeTaskModal: () => {},
   workspaceId: null,
   setWorkspaceId: () => {},
+  openCreateSpace: () => {},
+  openCreateWorkspace: () => {},
+  openCreateTask: () => {},
 });
 
 interface ModalProviderProps {
@@ -35,8 +45,15 @@ interface ModalProviderProps {
 export function ModalProvider({ children }: ModalProviderProps) {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  // PIN state
   const [pinTaskId, setPinTaskId] = useState<string | null>(null);
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+  const [createSpaceWsId, setCreateSpaceWsId] = useState<string | null>(null);
+  const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [createTaskWsId, setCreateTaskWsId] = useState<string | null>(null);
+  const [createTaskListId, setCreateTaskListId] = useState<string | undefined>(undefined);
+  const [createTaskCallback, setCreateTaskCallback] = useState<(() => void) | undefined>(undefined);
+  const { mutate } = useSWRConfig();
 
   const openTaskModal = useCallback((id: string, locked = false) => {
     if (locked) {
@@ -61,13 +78,37 @@ export function ModalProvider({ children }: ModalProviderProps) {
     setPinTaskId(null);
   }, []);
 
+  const openCreateSpace = useCallback((wsId: string) => {
+    setCreateSpaceWsId(wsId);
+    setCreateSpaceOpen(true);
+  }, []);
+
+  const openCreateWorkspace = useCallback(() => {
+    setCreateWorkspaceOpen(true);
+  }, []);
+
+  const openCreateTask = useCallback((wsId: string, defaultListId?: string, onCreated?: () => void) => {
+    setCreateTaskWsId(wsId);
+    setCreateTaskListId(defaultListId);
+    setCreateTaskCallback(() => onCreated);
+    setCreateTaskOpen(true);
+  }, []);
+
   return (
     <ModalContext.Provider
-      value={{ taskId, openTaskModal, closeTaskModal, workspaceId, setWorkspaceId }}
+      value={{
+        taskId,
+        openTaskModal,
+        closeTaskModal,
+        workspaceId,
+        setWorkspaceId,
+        openCreateSpace,
+        openCreateWorkspace,
+        openCreateTask,
+      }}
     >
       {children}
 
-      {/* PIN dialog — affiché avant la modal quand la tâche est verrouillée */}
       {pinTaskId && (
         <PinDialog
           open={!!pinTaskId}
@@ -82,6 +123,30 @@ export function ModalProvider({ children }: ModalProviderProps) {
           taskId={taskId}
           workspaceId={workspaceId ?? ""}
           onClose={closeTaskModal}
+        />
+      )}
+
+      {createSpaceWsId && (
+        <CreateSpaceDialog
+          open={createSpaceOpen}
+          onOpenChange={setCreateSpaceOpen}
+          workspaceId={createSpaceWsId}
+          onCreated={() => mutate(`/api/spaces?workspaceId=${createSpaceWsId}`)}
+        />
+      )}
+
+      <CreateWorkspaceDialog
+        open={createWorkspaceOpen}
+        onOpenChange={setCreateWorkspaceOpen}
+      />
+
+      {createTaskWsId && (
+        <CreateTaskDialog
+          open={createTaskOpen}
+          onOpenChange={setCreateTaskOpen}
+          workspaceId={createTaskWsId}
+          defaultListId={createTaskListId}
+          onCreated={createTaskCallback}
         />
       )}
     </ModalContext.Provider>

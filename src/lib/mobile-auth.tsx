@@ -1,6 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { storageGet, storageRemove, storageSet } from "@/lib/storage";
+
+export const MOBILE_TOKEN_KEY = "mobile_auth_token";
 
 interface MobileUser {
   id: string;
@@ -29,33 +32,39 @@ export function MobileAuthProvider({ children }: { children: React.ReactNode }) 
   const [status, setStatus] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("mobile_auth_token");
-    if (!storedToken) {
-      setStatus("unauthenticated");
-      return;
-    }
+    async function init() {
+      const storedToken = await storageGet(MOBILE_TOKEN_KEY);
+      if (!storedToken) {
+        setStatus("unauthenticated");
+        return;
+      }
 
-    fetch("/api/mobile-me", {
-      headers: { Authorization: `Bearer ${storedToken}` },
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data) {
+      try {
+        const r = await fetch("/api/mobile-me", {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
+        if (r.ok) {
+          const data = await r.json();
           setUser(data);
           setToken(storedToken);
           setStatus("authenticated");
         } else {
-          localStorage.removeItem("mobile_auth_token");
+          await storageRemove(MOBILE_TOKEN_KEY);
           setStatus("unauthenticated");
         }
-      })
-      .catch(() => {
+      } catch {
+        // Réseau indisponible — on garde le token et on reste "loading"
+        // pour réessayer au prochain montage
         setStatus("unauthenticated");
-      });
+      }
+    }
+
+    init();
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem("mobile_auth_token");
+  const logout = async () => {
+    await storageRemove(MOBILE_TOKEN_KEY);
+    fetch("/api/mobile-logout", { method: "POST" }).catch(() => {});
     setUser(null);
     setToken(null);
     setStatus("unauthenticated");

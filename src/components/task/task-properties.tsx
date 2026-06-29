@@ -16,7 +16,8 @@ import {
 import { useState } from "react";
 import { StatusBadge } from "./status-badge";
 import { PriorityBadge } from "./priority-badge";
-import { AssigneeSelector } from "./assignee-selector";
+// import { AssigneeSelector } from "./assignee-selector";
+import { MultiAssigneeSelector } from "./multi-assignee-selector";
 import { DueDatePicker } from "./due-date-picker";
 import { TagSelector } from "./tag-selector";
 import { Separator } from "@/components/ui/separator";
@@ -85,11 +86,9 @@ export function TaskProperties({
           <User className="h-4 w-4" />
           <span>Assigné à</span>
         </div>
-        <AssigneeSelector
-          assignee={task.assignee}
+        <MultiAssigneeSelector
+          taskId={task.id}
           workspaceId={workspaceId}
-          onChange={(assigneeId) => onUpdate({ assigneeId })}
-          size="md"
         />
       </div>
 

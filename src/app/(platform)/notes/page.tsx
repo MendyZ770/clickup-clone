@@ -425,24 +425,24 @@ function NoteItem({
           {note.content || "Vide"}
         </p>
       </div>
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         <button
           onClick={onPin}
-          className="p-0.5 rounded hover:bg-muted-foreground/20"
+          className="p-1.5 rounded hover:bg-muted-foreground/20"
           title={note.pinned ? "Désépingler" : "Épingler"}
         >
           {note.pinned ? (
-            <PinOff className="h-3 w-3 text-amber-500" />
+            <PinOff className="h-3.5 w-3.5 text-amber-500" />
           ) : (
-            <Pin className="h-3 w-3 text-muted-foreground" />
+            <Pin className="h-3.5 w-3.5 text-muted-foreground" />
           )}
         </button>
         <button
           onClick={onDelete}
-          className="p-0.5 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-500"
+          className="p-1.5 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-500"
           title="Supprimer"
         >
-          <Trash2 className="h-3 w-3" />
+          <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
     </button>

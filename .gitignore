@@ -28,6 +28,7 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+.env.vercel.*
 
 # prisma sqlite (legacy)
 prisma/dev.db
@@ -49,3 +50,7 @@ next-env.d.ts
 *.jks
 apk/
 android/app/build/
+
+# Kiro — local secrets and per-workspace MCP config (contain API tokens)
+.kiro/settings/mcp.json
+.kiro/secrets/

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499684129935",
+    "project_id": "done-85aeb",
+    "storage_bucket": "done-85aeb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499684129935:android:caa06ac6ffcb96af6684fa",
+        "android_client_info": {
+          "package_name": "com.done.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYvDO4gFeHVcR_djL0lihceVcOcYJ48Yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -38,7 +38,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
   const [targetAccountId, setTargetAccountId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [recurringFrequency, setRecurringFrequency] = useState("");
+  const [recurringFrequency, setRecurringFrequency] = useState("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reset = () => {
@@ -49,7 +49,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
     setTargetAccountId("");
     setCategoryId("");
     setDate(new Date().toISOString().slice(0, 10));
-    setRecurringFrequency("");
+    setRecurringFrequency("none");
   };
 
   const filteredCategories = categories.filter((c) => {
@@ -75,8 +75,8 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
           date,
           isTransfer: type === "transfer",
           targetAccountId: type === "transfer" ? targetAccountId : undefined,
-          isRecurring: !!recurringFrequency,
-          recurringFrequency: recurringFrequency || undefined,
+          isRecurring: recurringFrequency !== "none",
+          recurringFrequency: recurringFrequency !== "none" ? recurringFrequency : undefined,
         }),
       });
       if (!res.ok) {
@@ -183,7 +183,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
                   <SelectValue placeholder="Pas récurrente" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Pas récurrente</SelectItem>
+                  <SelectItem value="none">Pas récurrente</SelectItem>
                   <SelectItem value="weekly">Hebdomadaire</SelectItem>
                   <SelectItem value="monthly">Mensuelle</SelectItem>
                   <SelectItem value="yearly">Annuelle</SelectItem>

@@ -1,4 +1,22 @@
 {
   "buildCommand": "npx prisma generate && next build",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/daily-tasks",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/upcoming-deadlines",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/budget-alerts",
+      "schedule": "0 10 * * *"
+    }
+  ]
 }

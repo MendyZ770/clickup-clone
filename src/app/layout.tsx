@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,15 @@ import { SWRProvider } from "@/lib/swr-config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+};
+
 export const metadata: Metadata = {
   title: "Done",
   description: "Outil de gestion de projets pour développeurs web",
@@ -28,32 +37,26 @@ export const metadata: Metadata = {
     title: "Done",
     statusBarStyle: "black-translucent",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
 };
 
 // Script exécuté avant le rendu React pour éviter le flash de couleur au chargement
 const themeInitScript = `
 (function() {
   try {
-    var t = localStorage.getItem('done-theme');
-    if (t === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
+    var mode = localStorage.getItem('done-theme') || 'system';
+    var dark = false;
+    if (mode === 'dark') dark = true;
+    else if (mode === 'light') dark = false;
+    else dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (dark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
   } catch (e) {
     document.documentElement.classList.add('dark');
   }
 })();
 `;
 
-// Intercepte fetch pour injecter le token mobile auth
+// Intercepte fetch pour injecter le token mobile auth (web uniquement — sur Capacitor, géré par SWRProvider)
 const fetchInterceptorScript = `
 (function() {
   var origFetch = window.fetch;
@@ -73,9 +76,14 @@ const fetchInterceptorScript = `
 })();
 `;
 
-// Enregistre le Service Worker PWA
+// Enregistre le Service Worker PWA (désactivé dans Capacitor — casse la WebView)
 const swRegisterScript = `
 (function() {
+  try {
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      return;
+    }
+  } catch (e) {}
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('/sw.js')
@@ -102,7 +110,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: fetchInterceptorScript }} />
         <script dangerouslySetInnerHTML={{ __html: swRegisterScript }} />
       </head>
-      <body className={`${inter.variable} font-sans bg-background text-foreground antialiased`}>
+      <body className={`${inter.variable} font-sans bg-background text-foreground antialiased overflow-x-hidden`}>
         <ThemeProvider>
           <SWRProvider>
             <AuthProvider>

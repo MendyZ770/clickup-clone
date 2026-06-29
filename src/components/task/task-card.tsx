@@ -1,4 +1,4 @@
-"use client";
+import { memo } from "react";
 
 import { format, isToday, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -22,7 +22,7 @@ interface TaskCardProps {
   onAction?: () => void;
 }
 
-export function TaskCard({ task, className, onAction }: TaskCardProps) {
+function TaskCardComponent({ task, className, onAction }: TaskCardProps) {
   const { openTaskModal } = useModal();
   const dateObj = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dateObj ? isPast(dateObj) && !isToday(dateObj) : false;
@@ -104,18 +104,27 @@ export function TaskCard({ task, className, onAction }: TaskCardProps) {
             )}
           </div>
 
-          {task.assignee && (
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={task.assignee.image ?? undefined} />
-              <AvatarFallback className="text-[10px]">
-                {(task.assignee.name ?? task.assignee.email)
-                  .slice(0, 2)
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+          {task.assignees && task.assignees.length > 0 && (
+            <div className="flex -space-x-2 overflow-hidden">
+              {task.assignees.slice(0, 3).map((a) => (
+                <Avatar key={a.userId} className="h-6 w-6 border-2 border-background">
+                  <AvatarImage src={a.user.image ?? undefined} />
+                  <AvatarFallback className="text-[10px]">
+                    {(a.user.name ?? a.user.email).slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {task.assignees.length > 3 && (
+                <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium">
+                  +{task.assignees.length - 3}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
+
+export const TaskCard = memo(TaskCardComponent);

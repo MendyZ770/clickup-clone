@@ -11,6 +11,7 @@ interface EmptyStateProps {
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -20,6 +21,7 @@ export function EmptyState({
   actionLabel,
   onAction,
   className,
+  children,
 }: EmptyStateProps) {
   return (
     <div
@@ -40,6 +42,7 @@ export function EmptyState({
           {actionLabel}
         </Button>
       )}
+      {children && <div className="mt-4">{children}</div>}
     </div>
   );
 }

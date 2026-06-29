@@ -92,41 +92,46 @@ L'APK se trouve dans :
 
 > **Ne jamais commiter le keystore ni ses mots de passe dans Git.**
 
-### 1. Générer un keystore fort (une seule fois)
+### 1. Keystore canonique (déjà généré)
 
+Le keystore de production est situé à :
+```
+android/app/done.keystore
+```
+- Alias : `done`
+- Algorithme : RSA 2048 bits, validité 10 000 jours
+- **Sauvegarde obligatoire** hors du repo (1Password, Bitwarden, clé USB chiffrée).
+  Sans ce fichier + son mot de passe, impossible de publier des mises à jour sur Play Store.
+
+Si tu dois le recréer (perte du fichier) :
 ```bash
-keytool -genkeypair \
-  -v \
-  -keystore done-release.keystore \
+keytool -genkey -v \
+  -keystore android/app/done.keystore \
   -alias done \
   -keyalg RSA \
-  -keysize 4096 \
+  -keysize 2048 \
   -validity 10000 \
-  -storepass "$(openssl rand -base64 32)" \
-  -keypass "$(openssl rand -base64 32)"
+  -dname "CN=Done App, OU=Development, O=Done, L=Paris, ST=France, C=FR"
 ```
-
-- Conserve le keystore (`done-release.keystore`) dans un endroit sécurisé hors du repo.
-- Note les mots de passe générés dans un gestionnaire de mots de passe.
 
 ### 2. Stocker les secrets de signing
 
 Dans `~/.gradle/gradle.properties` (hors du repo) :
 
 ```properties
-RELEASE_STORE_FILE=/chemin/absolu/done-release.keystore
-RELEASE_STORE_PASSWORD=ton-store-password
+RELEASE_STORE_FILE=/Users/zerbib/clickup-clone/android/app/done.keystore
+RELEASE_STORE_PASSWORD=<ton-mot-de-passe>
 RELEASE_KEY_ALIAS=done
-RELEASE_KEY_PASSWORD=ton-key-password
+RELEASE_KEY_PASSWORD=<ton-mot-de-passe>
 ```
 
-Alternative en CI (GitHub Actions, etc.) :
+Alternative en variables d'environnement (terminal / CI) :
 
 ```bash
-export RELEASE_STORE_FILE=/chemin/absolu/done-release.keystore
-export RELEASE_STORE_PASSWORD=...
+export RELEASE_STORE_FILE=/Users/zerbib/clickup-clone/android/app/done.keystore
+export RELEASE_STORE_PASSWORD=<ton-mot-de-passe>
 export RELEASE_KEY_ALIAS=done
-export RELEASE_KEY_PASSWORD=...
+export RELEASE_KEY_PASSWORD=<ton-mot-de-passe>
 ```
 
 ### 3. Compiler et signer en release

@@ -14,7 +14,7 @@ import { staggerContainer, staggerItem } from "@/components/ui/animated-containe
 
 import type { FinanceTransactionWithCategory } from "@/hooks/use-finance";
 
-export function FinanceTransactionList({ transactions, accounts, onMutate }: { transactions: FinanceTransactionWithCategory[]; accounts: import("@prisma/client").FinanceAccount[]; onMutate?: () => void }) {
+export function FinanceTransactionList({ transactions, accounts, onMutate, onAddTransaction }: { transactions: FinanceTransactionWithCategory[]; accounts: import("@prisma/client").FinanceAccount[]; onMutate?: () => void; onAddTransaction?: () => void }) {
   const [editing, setEditing] = useState<FinanceTransactionWithCategory | null>(null);
 
   if (transactions.length === 0) {
@@ -24,8 +24,16 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
         animate={{ opacity: 1, y: 0 }}
       >
         <Card className="border-border/50">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Aucune transaction. Ajoutez votre première transaction.
+          <CardContent className="py-12 flex flex-col items-center justify-center text-center text-muted-foreground gap-4">
+            <p>Aucune transaction. Ajoutez votre première transaction.</p>
+            {onAddTransaction && (
+              <button
+                onClick={onAddTransaction}
+                className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow transition-colors"
+              >
+                + Nouvelle transaction
+              </button>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -105,11 +113,9 @@ export function FinanceTransactionList({ transactions, accounts, onMutate }: { t
                         : "text-blue-600"
                     }`}
                   >
-                    {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""}
-                    {t.amount.toLocaleString("fr-FR", {
-                      style: "currency",
-                      currency: t.account?.currency || "EUR",
-                    })}
+                    <span className="font-semibold tabular-nums text-right block">
+                      {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""} {formatCurrency(t.amount, t.account?.currency || "EUR")}
+                    </span>
                   </p>
                   <p className="text-base text-muted-foreground">
                     {new Date(t.date).toLocaleDateString("fr-FR")}

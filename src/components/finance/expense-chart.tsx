@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 const COLORS = [
   "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#3B82F6",
@@ -63,9 +64,7 @@ export function ExpenseChart({ data }: { data: Array<{ amount: number; category?
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value) =>
-                    Number(value).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
-                  }
+                  formatter={(value) => formatCurrency(Number(value), "EUR")}
                   contentStyle={{
                     borderRadius: "12px",
                     border: "1px solid hsl(var(--border))",

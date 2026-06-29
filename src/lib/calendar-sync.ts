@@ -5,7 +5,8 @@
 export function triggerCalendarSync() {
   if (typeof fetch === "undefined") return;
 
-  fetch("/api/calendar/google/sync", { method: "POST" }).catch(() => {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  fetch(`${baseUrl}/api/calendar/google/sync`, { method: "POST" }).catch(() => {
     // Silently ignore — calendar sync is best-effort
   });
 }
