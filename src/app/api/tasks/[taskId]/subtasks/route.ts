@@ -21,8 +21,10 @@ export async function GET(request: Request, context: RouteContext) {
       where: { parentId: taskId },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
         _count: {
           select: { subtasks: true, comments: true },

@@ -46,7 +46,7 @@ export async function GET(request: Request) {
         priority: true,
         dueDate: true,
         status: { select: { id: true, name: true, color: true } },
-        assignee: { select: { id: true, name: true, email: true, image: true } },
+        assignees: { include: { user: { select: { id: true, name: true, email: true, image: true } } } },
         list: { select: { id: true, name: true } },
       },
       orderBy: { dueDate: "asc" },
