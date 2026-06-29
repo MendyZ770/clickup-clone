@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Lock, Unlock, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { SetPinDialog } from "./set-pin-dialog";
+import { StatusBadge } from "./status-badge";
 
 interface TaskDetailContentProps {
   taskId: string;
@@ -155,6 +156,15 @@ export function TaskDetailContent({
 
           {/* Title + Favorite */}
           <div className="flex items-start gap-2">
+            {!task.locked && (
+              <div className="pt-1.5 shrink-0">
+                <StatusBadge 
+                  status={task.status} 
+                  listId={task.listId} 
+                  onChange={(statusId) => handleUpdate({ statusId })} 
+                />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               {editingTitle && !task.locked ? (
                 <input
