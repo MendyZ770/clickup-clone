@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import useSWR from "swr";
 import { useTask, useUpdateTask } from "@/hooks/use-tasks";
 import { TaskProperties } from "./task-properties";
 import { SubtaskList } from "./subtask-list";
@@ -15,6 +16,7 @@ import { MultiAssigneeSelector } from "./multi-assignee-selector";
 import { TaskAttachments } from "./task-attachments";
 import { FavoriteButton } from "@/components/shared/favorite-button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,6 +36,10 @@ export function TaskDetailContent({
   workspaceId,
 }: TaskDetailContentProps) {
   const { task, isLoading, mutate } = useTask(taskId);
+  const { data: statuses } = useSWR(
+    task?.listId ? `/api/lists/${task.listId}/statuses` : null,
+    (url) => fetch(url).then((r) => r.json())
+  );
   const { updateTask } = useUpdateTask();
   const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
@@ -157,7 +163,22 @@ export function TaskDetailContent({
           {/* Title + Favorite */}
           <div className="flex items-start gap-2">
             {!task.locked && (
-              <div className="pt-1.5 shrink-0">
+              <div className="pt-1.5 shrink-0 flex items-center gap-2">
+                <Checkbox
+                  checked={task.status.type === "done" || task.status.type === "closed"}
+                  onCheckedChange={async (checked) => {
+                    if (!statuses) return;
+                    if (checked) {
+                      const doneStatus = statuses.find((s: any) => s.type === "done");
+                      if (doneStatus) await handleUpdate({ statusId: doneStatus.id });
+                    } else {
+                      const todoStatus = statuses.find((s: any) => s.type === "todo") ?? statuses[0];
+                      if (todoStatus) await handleUpdate({ statusId: todoStatus.id });
+                    }
+                  }}
+                  className="h-6 w-6 rounded-md transition-all shrink-0"
+                  aria-label="Marquer comme terminée"
+                />
                 <StatusBadge 
                   status={task.status} 
                   listId={task.listId} 
