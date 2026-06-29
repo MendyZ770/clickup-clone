@@ -42,7 +42,7 @@ export async function GET(
           },
         },
         OR: [
-          { assigneeId: userId },
+          { assignees: { some: { userId } } },
           { creatorId: userId },
         ],
       },

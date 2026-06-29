@@ -118,14 +118,18 @@ export async function POST(request: Request, context: RouteContext) {
         position: lastSubtask ? lastSubtask.position + 65536 : 65536,
         listId: parentTask.listId,
         statusId: taskStatusId,
-        assigneeId: assigneeId ?? null,
+        assignees: assigneeId ? {
+          create: [{ userId: assigneeId }]
+        } : undefined,
         creatorId: user.id,
         parentId: taskId,
       },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
       },
     });

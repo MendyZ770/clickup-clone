@@ -34,6 +34,7 @@ export async function POST(request: Request, context: RouteContext) {
           include: { items: { orderBy: { order: "asc" } } },
         },
         taskTags: true,
+        assignees: true,
       },
     });
 
@@ -58,14 +59,18 @@ export async function POST(request: Request, context: RouteContext) {
         position: lastTask ? lastTask.position + 65536 : 65536,
         listId: targetListId,
         statusId: task.statusId,
-        assigneeId: task.assigneeId,
         creatorId: user.id,
+        assignees: {
+          create: task.assignees.map((a) => ({ userId: a.userId }))
+        },
         parentId: task.parentId,
       },
       include: {
         status: true,
-        assignee: {
-          select: { id: true, name: true, email: true, image: true },
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, image: true } }
+          }
         },
       },
     });

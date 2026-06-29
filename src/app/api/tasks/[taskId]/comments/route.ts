@@ -99,7 +99,6 @@ export async function POST(request: Request, context: RouteContext) {
 
     // Notify task assignee + multi-assignees if different from commenter
     const notifyIds = new Set<string>();
-    if (task.assigneeId && task.assigneeId !== user.id) notifyIds.add(task.assigneeId);
     // Also notify multi-assignees
     const assignees = await prisma.taskAssignee.findMany({ where: { taskId }, select: { userId: true } });
     for (const a of assignees) {

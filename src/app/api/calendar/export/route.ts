@@ -27,7 +27,7 @@ export async function GET() {
           },
         },
         OR: [
-          { assigneeId: user.id },
+          { assignees: { some: { userId: user.id } } },
           { creatorId: user.id },
         ],
       },

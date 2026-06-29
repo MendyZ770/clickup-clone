@@ -128,7 +128,7 @@ export async function POST() {
           },
         },
         OR: [
-          { assigneeId: user.id },
+          { assignees: { some: { userId: user.id } } },
           { creatorId: user.id },
         ],
       },

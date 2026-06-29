@@ -31,14 +31,6 @@ export async function GET(request: Request) {
 
     const userTaskMap = new Map<string, typeof tasks>();
 
-    for (const task of tasks) {
-      if (task.assigneeId) {
-        const existing = userTaskMap.get(task.assigneeId) ?? [];
-        existing.push(task);
-        userTaskMap.set(task.assigneeId, existing);
-      }
-    }
-
     const multiAssignees = await prisma.taskAssignee.findMany({
       where: { taskId: { in: tasks.map((t) => t.id) } },
       select: { userId: true, taskId: true },
