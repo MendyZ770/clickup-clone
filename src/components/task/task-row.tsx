@@ -4,6 +4,7 @@ import { memo, useCallback, useMemo } from "react";
 import { MessageSquare, GitBranch, Lock, User as UserIcon } from "lucide-react";
 import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PriorityBadge } from "./priority-badge";
 import { StatusBadge } from "./status-badge";
 // import { AssigneeSelector } from "./assignee-selector";

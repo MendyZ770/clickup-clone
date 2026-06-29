@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TrendingUp, TrendingDown, ArrowRightLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
+import { formatCurrency } from "@/lib/utils";
 
 import type { FinanceTransactionWithCategory } from "@/hooks/use-finance";
 

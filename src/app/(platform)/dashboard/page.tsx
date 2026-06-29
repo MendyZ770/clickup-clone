@@ -54,12 +54,14 @@ interface DashboardData {
     priority: string;
     dueDate: string;
     status: { id: string; name: string; color: string };
-    assignee: {
-      id: string;
-      name: string | null;
-      email: string;
-      image: string | null;
-    } | null;
+    assignees: {
+      user: {
+        id: string;
+        name: string | null;
+        email: string;
+        image: string | null;
+      };
+    }[];
     list: { id: string; name: string };
   }>;
 }
