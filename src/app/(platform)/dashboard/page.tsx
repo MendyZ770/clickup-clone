@@ -12,12 +12,26 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatsCards } from "@/components/dashboard/stats-cards";
-import { TasksByStatusChart } from "@/components/dashboard/tasks-by-status-chart";
-import { TasksByPriorityChart } from "@/components/dashboard/tasks-by-priority-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
-import { BudgetWidget } from "@/components/dashboard/budget-widget";
-import { FinanceWidget } from "@/components/dashboard/finance-widget";
+import dynamic from "next/dynamic";
+
+const TasksByStatusChart = dynamic(
+  () => import("@/components/dashboard/tasks-by-status-chart").then((mod) => mod.TasksByStatusChart),
+  { ssr: false, loading: () => <div className="h-[300px] rounded-lg border bg-card animate-pulse" /> }
+);
+const TasksByPriorityChart = dynamic(
+  () => import("@/components/dashboard/tasks-by-priority-chart").then((mod) => mod.TasksByPriorityChart),
+  { ssr: false, loading: () => <div className="h-[300px] rounded-lg border bg-card animate-pulse" /> }
+);
+const BudgetWidget = dynamic(
+  () => import("@/components/dashboard/budget-widget").then((mod) => mod.BudgetWidget),
+  { ssr: false, loading: () => <div className="h-[300px] rounded-lg border bg-card animate-pulse" /> }
+);
+const FinanceWidget = dynamic(
+  () => import("@/components/dashboard/finance-widget").then((mod) => mod.FinanceWidget),
+  { ssr: false, loading: () => <div className="h-[300px] rounded-lg border bg-card animate-pulse" /> }
+);
 import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) =>

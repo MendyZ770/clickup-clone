@@ -276,6 +276,12 @@ model Task {
   assignees         TaskAssignee[]
   reminders         Reminder[]
   attachments       Attachment[]
+
+  @@index([listId])
+  @@index([statusId])
+  @@index([creatorId])
+  @@index([parentId])
+  @@index([dueDate])
 }
 
 model Checklist {
@@ -337,6 +343,9 @@ model Comment {
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 model Activity {
@@ -351,6 +360,9 @@ model Activity {
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 // ─── Notifications ──────────────────────────────────────────────────────────
@@ -514,6 +526,9 @@ model Attachment {
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 // ─── Goals ────────────────────────────────────────────────────────────────
