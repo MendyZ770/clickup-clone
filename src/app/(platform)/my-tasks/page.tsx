@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ClipboardList, Calendar, AlertTriangle, CheckCircle2, Plus } from "lucide-react";
@@ -12,7 +12,10 @@ import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUpdateTask } from "@/hooks/use-tasks";
+import { StatusBadge } from "@/components/task/status-badge";
 import { cn } from "@/lib/utils";
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -50,9 +53,12 @@ export default function MyTasksPage() {
   const { currentWorkspace } = useWorkspace();
   const { openTaskModal, openCreateTask } = useModal();
   const { mutate: globalMutate } = useSWRConfig();
+  const { updateTask } = useUpdateTask();
+
+  const [mode, setMode] = useState<"me" | "team">("me");
 
   const { data: tasks, isLoading } = useSWR<MyTask[]>(
-    currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}` : null,
+    currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}&mode=${mode}` : null,
     fetcher,
     { refreshInterval: 30000 }
   );
@@ -86,15 +92,29 @@ export default function MyTasksPage() {
   const handleTaskCreated = () => {
     if (currentWorkspace) {
       globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}`);
+      globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}&mode=${mode}`);
     }
   };
 
   if (isLoading || !tasks) {
     return (
       <div className="h-full overflow-y-auto">
-        <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-4 md:space-y-6">
-          <PageHeader icon={ClipboardList} title="Mes tâches" description="Chargement..." />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <PageHeader
+            icon={ClipboardList}
+            title={mode === "me" ? "Mes tâches" : "Tâches de l'équipe"}
+            description={mode === "me" ? "Tâches qui vous sont assignées" : "Tâches assignées aux autres membres"}
+          />
+          <Tabs value={mode} onValueChange={(val) => setMode(val as "me" | "team")} className="w-full sm:w-auto">
+            <TabsList className="w-full sm:w-auto grid grid-cols-2">
+              <TabsTrigger value="me">Mes tâches</TabsTrigger>
+              <TabsTrigger value="team">Équipe</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} className="border-border/50">
                 <CardContent className="p-4 space-y-2">
@@ -138,27 +158,31 @@ export default function MyTasksPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-4 md:space-y-6">
-        <PageHeader
-          icon={ClipboardList}
-          title="Mes tâches"
-          description={
-            tasks
-              ? `${tasks.length} tâche${tasks.length > 1 ? "s" : ""} assignée${tasks.length > 1 ? "s" : ""}`
-              : "Chargement..."
-          }
-          actions={
-            currentWorkspace ? (
-              <Button
-                size="sm"
-                onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
-              >
-                <Plus className="h-5 w-5 mr-1.5" />
-                Nouvelle tâche
-              </Button>
-            ) : undefined
-          }
-        />
+      <div className="mx-auto max-w-5xl p-4 md:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <PageHeader
+            icon={ClipboardList}
+            title={mode === "me" ? "Mes tâches" : "Tâches de l'équipe"}
+            description={mode === "me" ? "Tâches qui vous sont assignées" : "Tâches assignées aux autres membres"}
+            actions={
+              currentWorkspace ? (
+                <Button
+                  size="sm"
+                  onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
+                >
+                  <Plus className="h-5 w-5 mr-1.5" />
+                  Nouvelle tâche
+                </Button>
+              ) : undefined
+            }
+          />
+          <Tabs value={mode} onValueChange={(val) => setMode(val as "me" | "team")} className="w-full sm:w-auto">
+            <TabsList className="w-full sm:w-auto grid grid-cols-2">
+              <TabsTrigger value="me">Mes tâches</TabsTrigger>
+              <TabsTrigger value="team">Équipe</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -200,16 +224,29 @@ export default function MyTasksPage() {
               </div>
               <div className="rounded-lg border divide-y">
                 {sectionTasks.map((task) => (
-                  <button
+                  <div
                     key={task.id}
-                    onClick={() => openTaskModal(task.id, false)}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+                    className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors group"
                   >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: task.status?.color ?? "#6B7280" }}
-                    />
-                    <div className="flex-1 min-w-0">
+                    {task.status && task.list ? (
+                      <StatusBadge
+                        status={task.status}
+                        listId={task.list.id}
+                        onChange={async (statusId) => {
+                          await updateTask(task.id, { statusId });
+                          globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace?.id}&mode=${mode}`);
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: task.status?.color ?? "#6B7280" }}
+                      />
+                    )}
+                    <button
+                      onClick={() => openTaskModal(task.id, false)}
+                      className="flex-1 min-w-0 text-left"
+                    >
                       <p
                         className={cn(
                           "text-sm font-medium truncate",
@@ -221,7 +258,7 @@ export default function MyTasksPage() {
                       <p className="text-[10px] text-muted-foreground truncate">
                         {task.list?.space?.name ?? "—"} / {task.list?.name ?? "—"}
                       </p>
-                    </div>
+                    </button>
                     <div className="flex items-center gap-2 shrink-0">
                       {task.taskTags.slice(0, 2).map((tt) => (
                         <span
@@ -242,7 +279,7 @@ export default function MyTasksPage() {
                         </span>
                       )}
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>

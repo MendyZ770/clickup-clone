@@ -11,29 +11,27 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const workspaceId = searchParams.get("workspaceId");
+    const mode = searchParams.get("mode") || "me";
     if (!workspaceId) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
+    const whereClause = mode === "team" ? {
+      assignees: { some: {} },
+      NOT: { assignees: { some: { userId: user.id } } },
+      list: { space: { workspaceId } },
+      parentId: null,
+    } : {
+      OR: [
+        { assignees: { some: { userId: user.id } } },
+        { assignees: { none: {} } }
+      ],
+      list: { space: { workspaceId } },
+      parentId: null,
+    };
+
     const tasks = await prisma.task.findMany({
-      where: {
-        OR: [
-          {
-            assignees: {
-              some: { userId: user.id }
-            }
-          },
-          {
-            assignees: {
-              none: {}
-            }
-          }
-        ],
-        list: {
-          space: { workspaceId },
-        },
-        parentId: null,
-      },
+      where: whereClause,
       include: {
         status: true,
         assignees: {

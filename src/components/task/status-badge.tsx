@@ -38,13 +38,18 @@ export function StatusBadge({
   const badge = (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-sm font-medium",
-        onChange && "cursor-pointer hover:opacity-80",
+        "inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-all duration-200 border",
+        onChange && "cursor-pointer hover:shadow-sm hover:brightness-110 active:scale-95",
         className
       )}
+      style={{
+        backgroundColor: `${status.color}1A`, // 10% opacity background
+        borderColor: `${status.color}33`,     // 20% opacity border
+        color: status.color,                  // text matches dot
+      }}
     >
       <span
-        className="h-2.5 w-2.5 rounded-full shrink-0"
+        className="h-2 w-2 rounded-full shrink-0 shadow-sm"
         style={{ backgroundColor: status.color }}
       />
       <span className="truncate">{status.name}</span>
