@@ -59,58 +59,58 @@ export function TasksOverviewWidget() {
 // 2. Stat Cards (Premium Cards)
 export function StatCardsWidget() {
   return (
-    <div className="grid grid-cols-3 gap-6 h-full items-center px-2">
-      <div className="flex flex-col justify-center p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <CheckCircle2 className="w-24 h-24 text-emerald-500 -mt-8 -mr-8" />
+    <div className="grid grid-cols-3 gap-4 h-full items-center px-1">
+      <div className="flex flex-col justify-center p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+          <CheckCircle2 className="w-20 h-20 text-emerald-500 -mt-6 -mr-6" />
         </div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="bg-emerald-500/20 p-2 rounded-lg">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="bg-emerald-500/20 p-1.5 rounded-md">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Tâches terminées</span>
+          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Tâches terminées</span>
         </div>
-        <div className="flex items-end gap-3 z-10">
-          <span className="text-5xl font-light tracking-tight text-foreground">45</span>
-          <div className="flex items-center text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full text-xs font-medium mb-1">
+        <div className="flex items-end gap-2 z-10">
+          <span className="text-4xl font-light tracking-tight text-foreground">45</span>
+          <div className="flex items-center text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full text-[10px] font-medium mb-1">
             <TrendingUp className="w-3 h-3 mr-1" />
             +12%
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col justify-center p-5 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <Clock className="w-24 h-24 text-blue-500 -mt-8 -mr-8" />
+      <div className="flex flex-col justify-center p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Clock className="w-20 h-20 text-blue-500 -mt-6 -mr-6" />
         </div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="bg-blue-500/20 p-2 rounded-lg">
-            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="bg-blue-500/20 p-1.5 rounded-md">
+            <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">Temps pointé</span>
+          <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">Temps pointé</span>
         </div>
-        <div className="flex items-end gap-3 z-10">
-          <span className="text-5xl font-light tracking-tight text-foreground">12h</span>
-          <div className="flex items-center text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full text-xs font-medium mb-1">
+        <div className="flex items-end gap-2 z-10">
+          <span className="text-4xl font-light tracking-tight text-foreground">12h</span>
+          <div className="flex items-center text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-full text-[10px] font-medium mb-1">
             <TrendingUp className="w-3 h-3 mr-1" />
             +4h
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col justify-center p-5 rounded-2xl bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <ListTodo className="w-24 h-24 text-rose-500 -mt-8 -mr-8" />
+      <div className="flex flex-col justify-center p-4 rounded-xl bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+          <ListTodo className="w-20 h-20 text-rose-500 -mt-6 -mr-6" />
         </div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="bg-rose-500/20 p-2 rounded-lg">
-            <ListTodo className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="bg-rose-500/20 p-1.5 rounded-md">
+            <ListTodo className="h-4 w-4 text-rose-600 dark:text-rose-400" />
           </div>
-          <span className="text-sm font-semibold text-rose-700 dark:text-rose-400">En retard</span>
+          <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">En retard</span>
         </div>
-        <div className="flex items-end gap-3 z-10">
-          <span className="text-5xl font-light tracking-tight text-foreground">5</span>
-          <div className="flex items-center text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full text-xs font-medium mb-1">
+        <div className="flex items-end gap-2 z-10">
+          <span className="text-4xl font-light tracking-tight text-foreground">5</span>
+          <div className="flex items-center text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full text-[10px] font-medium mb-1">
             <TrendingDown className="w-3 h-3 mr-1" />
             -2
           </div>
@@ -167,7 +167,7 @@ export function WorkloadChartWidget() {
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 20 }}>
         <defs>
           <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>

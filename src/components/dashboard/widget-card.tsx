@@ -23,7 +23,7 @@ export function WidgetCard({ title, children, onDelete, isEditing }: WidgetCardP
       {/* Subtle top gradient line for premium feel */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      <CardHeader className="py-4 px-6 flex flex-row items-center justify-between space-y-0 border-b border-border/40 shrink-0">
+      <CardHeader className="py-3 px-5 flex flex-row items-center justify-between space-y-0 border-b border-border/40 shrink-0">
         <div className="flex items-center gap-3">
           {isEditing && (
             <div className="cursor-move drag-handle text-muted-foreground/50 hover:text-primary transition-colors p-1 -ml-2 rounded-md hover:bg-primary/5">
@@ -56,7 +56,7 @@ export function WidgetCard({ title, children, onDelete, isEditing }: WidgetCardP
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-6 flex-1 overflow-auto">
+      <CardContent className="p-4 flex-1 overflow-auto">
         {children}
       </CardContent>
     </Card>
