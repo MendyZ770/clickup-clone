@@ -1,7 +1,7 @@
 "use client";
 
-import { memo } from "react";
-import { motion } from "framer-motion";
+import { memo, useEffect, useState } from "react";
+import { motion, animate } from "framer-motion";
 import {
   CheckSquare,
   Target,
@@ -58,6 +58,23 @@ const cards = [
   },
 ];
 
+function AnimatedCounter({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 1.5,
+      ease: [0.16, 1, 0.3, 1], // Custom sleek ease-out
+      onUpdate(v) {
+        setDisplayValue(Math.round(v));
+      },
+    });
+    return () => controls.stop();
+  }, [value]);
+
+  return <>{displayValue.toLocaleString("fr-FR")}</>;
+}
+
 export const StatsCards = memo(function StatsCards({
   totalTasks,
   completedTasks,
@@ -68,7 +85,6 @@ export const StatsCards = memo(function StatsCards({
 }: StatsCardsProps) {
   const values = { totalTasks, completedTasks, overdueTasks, tasksDueThisWeek };
 
-  // Compute completion rate trend
   const completionRate = totalTasks > 0
     ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
@@ -82,12 +98,11 @@ export const StatsCards = memo(function StatsCards({
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
       >
         {cards.map((c, i) => (
-          <motion.div key={i} variants={staggerItem} className="rounded-2xl border bg-card p-4 md:p-5 space-y-3">
+          <motion.div key={i} variants={staggerItem} className="rounded-3xl border border-border/40 bg-card p-4 md:p-5 space-y-3 shadow-sm">
             <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-xl" />
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-12 w-12 rounded-2xl" />
             </div>
-            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-8 w-16 mt-4" />
             <Skeleton className="h-3 w-24" />
           </motion.div>
         ))}
@@ -111,56 +126,55 @@ export const StatsCards = memo(function StatsCards({
           <motion.button
             key={card.key}
             variants={staggerItem}
-            whileHover={{ y: -3, transition: { type: "spring", stiffness: 400, damping: 17 } }}
+            whileHover={{ y: -4, scale: 1.01, transition: { type: "spring", stiffness: 400, damping: 17 } }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onCardClick?.(card.key)}
             className={cn(
-              "group relative overflow-hidden rounded-2xl border bg-card p-4 md:p-5 w-full text-left",
-              "hover:shadow-lg transition-shadow duration-300",
+              "group relative overflow-hidden rounded-3xl border border-border/40 bg-card p-4 md:p-5 w-full text-left",
+              "shadow-sm hover:shadow-lg transition-all duration-300",
               "bg-gradient-to-br cursor-pointer",
               card.gradient
             )}
           >
-            <div className="flex items-center justify-between">
+            {/* Glassmorphism subtle overlay */}
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="flex items-center justify-between relative z-10">
               <motion.div
-                className={cn("rounded-xl p-2.5", card.iconBg)}
-                whileHover={{ rotate: 5, scale: 1.05 }}
+                className={cn("rounded-2xl p-3 shadow-sm", card.iconBg)}
+                whileHover={{ rotate: 8, scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
                 <Icon className="h-6 w-6" />
               </motion.div>
               {card.key === "completedTasks" && (
-                <div className="flex items-center gap-1 text-sm font-medium text-green-600">
-                  <TrendingUp className="h-6 w-6" />
+                <div className="flex items-center gap-1 text-sm font-bold text-green-600 bg-green-500/10 px-2 py-1 rounded-full">
+                  <TrendingUp className="h-4 w-4" />
                   {completionRate}%
                 </div>
               )}
               {isOverdue && (
-                <div className="flex items-center gap-1 text-sm font-medium text-red-600">
-                  <TrendingDown className="h-6 w-6" />
+                <div className="flex items-center gap-1 text-sm font-bold text-red-600 bg-red-500/10 px-2 py-1 rounded-full animate-pulse">
+                  <TrendingDown className="h-4 w-4" />
                   Attention
                 </div>
               )}
             </div>
 
-            <div className="mt-3">
+            <div className="mt-4 relative z-10">
               <motion.p
-                key={value}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="text-2xl md:text-3xl font-bold tracking-tight"
+                className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground"
               >
-                {value.toLocaleString("fr-FR")}
+                <AnimatedCounter value={value} />
               </motion.p>
-              <p className="text-sm md:text-base text-muted-foreground mt-0.5">
+              <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
                 {card.label}
               </p>
             </div>
 
             <div
               className={cn(
-                "absolute inset-0 rounded-2xl ring-1 ring-inset opacity-0 group-hover:opacity-100 transition-opacity",
+                "absolute inset-0 rounded-3xl ring-1 ring-inset opacity-0 group-hover:opacity-100 transition-opacity duration-300",
                 card.ring
               )}
             />

@@ -22,9 +22,9 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
   if (isLoading) {
     return (
       <Card className="overflow-hidden border-border/50">
-        <div className="p-5 space-y-4">
-          <Skeleton className="h-5 w-32" />
-          <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm">
+        <Skeleton className="h-5 w-32" />
+        <div className="grid grid-cols-2 gap-4 mt-4">
             <Skeleton className="h-20 rounded-xl" />
             <Skeleton className="h-20 rounded-xl" />
           </div>
@@ -74,9 +74,9 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
   ];
 
   return (
-    <Card className="overflow-hidden border-border/50 bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
+    <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="flex items-center justify-between mb-4 relative z-10">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <Landmark className="h-5 w-5 text-white" />
@@ -92,7 +92,7 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 relative z-10">
           {cards.map((card, i) => (
             <motion.div
               key={card.label}

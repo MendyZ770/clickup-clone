@@ -51,7 +51,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="rounded-2xl border bg-card p-5 space-y-4"
+        className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm"
       >
         <Skeleton className="h-5 w-40" />
         {[1, 2, 3, 4, 5].map((i) => (
@@ -73,7 +73,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="rounded-2xl border bg-card p-5 flex flex-col items-center justify-center min-h-[280px]"
+        className="rounded-3xl border border-border/40 bg-card p-5 flex flex-col items-center justify-center h-full shadow-sm"
       >
         <motion.div
           animate={{ y: [0, -8, 0] }}
@@ -91,9 +91,10 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="rounded-2xl border bg-card p-5 hover:shadow-sm transition-shadow"
+      className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span className="h-4 w-4 rounded-full bg-primary" />
           Échéances prochaines

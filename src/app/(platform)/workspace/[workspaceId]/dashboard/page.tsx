@@ -333,75 +333,82 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Quick Actions + Productivity Score (Always visible at top, not a widget) */}
+      {/* Quick Actions + Productivity Score */}
       {currentWorkspace && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
-          <div className="md:col-span-1 rounded-2xl border bg-gradient-to-br from-primary/5 via-primary/2 to-transparent p-4 md:p-5 flex items-center gap-4 hover:shadow-sm transition-shadow">
-            <div className="relative h-14 w-14 shrink-0">
-              <svg viewBox="0 0 36 36" className="h-14 w-14 -rotate-90">
+          {/* Productivity Bento Card */}
+          <div className="md:col-span-1 relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 flex items-center gap-5 shadow-sm hover:shadow-md transition-all duration-300 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
+            <div className="relative h-16 w-16 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 36 36" className="absolute inset-0 h-16 w-16 -rotate-90">
                 <path
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
                   stroke="hsl(var(--muted))"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                 />
                 <path
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
                   stroke="hsl(var(--primary))"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeDasharray={`${productivityScore}, 100`}
                   strokeLinecap="round"
-                  className="transition-all duration-1000"
+                  className="transition-all duration-1000 ease-out"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold">{productivityScore}%</span>
+                <span className="text-base font-bold bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">{productivityScore}%</span>
               </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold">Productivité</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="relative z-10">
+              <p className="text-sm font-semibold tracking-tight">Productivité</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {data?.completedTasks ?? 0} sur {data?.totalTasks ?? 0} tâches terminées
               </p>
             </div>
           </div>
-          <div className="md:col-span-2 grid grid-cols-3 gap-3">
+
+          {/* Quick Actions Bento */}
+          <div className="md:col-span-2 grid grid-cols-3 gap-3 md:gap-4">
             <Link
               href="/my-tasks"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "relative overflow-hidden flex flex-col items-center justify-center gap-3 rounded-3xl border border-border/40 bg-card p-4 shadow-sm",
+                "hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ListTodo className="h-5 w-5 text-blue-600" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-300">
+                <ListTodo className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-xs font-medium">Mes tâches</span>
+              <span className="relative z-10 text-xs font-semibold tracking-tight text-foreground/80 group-hover:text-foreground transition-colors">Mes tâches</span>
             </Link>
             <Link
               href="/calendar"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "relative overflow-hidden flex flex-col items-center justify-center gap-3 rounded-3xl border border-border/40 bg-card p-4 shadow-sm",
+                "hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Calendar className="h-5 w-5 text-amber-600" />
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-500/20 transition-all duration-300">
+                <Calendar className="h-6 w-6 text-amber-600" />
               </div>
-              <span className="text-xs font-medium">Calendrier</span>
+              <span className="relative z-10 text-xs font-semibold tracking-tight text-foreground/80 group-hover:text-foreground transition-colors">Calendrier</span>
             </Link>
             <Link
               href="/reminders"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "relative overflow-hidden flex flex-col items-center justify-center gap-3 rounded-3xl border border-border/40 bg-card p-4 shadow-sm",
+                "hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap className="h-5 w-5 text-purple-600" />
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative h-12 w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-500/20 transition-all duration-300">
+                <Zap className="h-6 w-6 text-purple-600" />
               </div>
-              <span className="text-xs font-medium">Rappels</span>
+              <span className="relative z-10 text-xs font-semibold tracking-tight text-foreground/80 group-hover:text-foreground transition-colors">Rappels</span>
             </Link>
           </div>
         </div>

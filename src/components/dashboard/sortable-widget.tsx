@@ -44,10 +44,13 @@ export function SortableWidget({
     <div
       ref={setNodeRef}
       style={style}
-      className={`h-full ${isDragging ? "shadow-2xl ring-2 ring-primary relative z-50 rounded-xl" : "relative group"}`}
+      className={cn(
+        "h-full relative group transition-all duration-300",
+        isDragging ? "shadow-2xl ring-2 ring-primary z-50 rounded-xl scale-[1.02]" : "hover:shadow-lg rounded-2xl"
+      )}
     >
       {isEditing && (
-        <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm p-1 rounded-md border shadow-sm">
+        <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-background/80 backdrop-blur-md p-1 rounded-lg border border-border/40 shadow-sm">
           <div
             className="cursor-move p-1.5 hover:bg-muted rounded-md touch-none"
             {...attributes}
@@ -66,9 +69,10 @@ export function SortableWidget({
         </div>
       )}
       <div className={cn(
-        "h-full w-full transition-all",
+        "h-full w-full transition-all duration-300",
         isEditing ? "pointer-events-none" : "",
-        "[&>div]:h-full [&>div]:overflow-y-auto"
+        "[&>div]:h-full [&>div]:overflow-y-auto [&>div]:custom-scrollbar",
+        "[&>div]:border-border/40 [&>div]:shadow-sm hover:[&>div]:shadow-md"
       )}>
         {children}
       </div>

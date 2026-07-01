@@ -18,19 +18,17 @@ export function BudgetWidget({ budgets, isLoading }: BudgetWidgetProps) {
   if (isLoading) {
     return (
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm">
+          <Skeleton className="h-5 w-32" />
+          <div className="space-y-4 mt-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-2 w-full" />
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   }
@@ -44,26 +42,26 @@ export function BudgetWidget({ budgets, isLoading }: BudgetWidgetProps) {
       whileHover={{ y: -2 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
-      <Card className="hover:shadow-md transition-shadow duration-300">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <motion.div whileHover={{ rotate: 10 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}>
-              <Wallet className="h-5 w-5 text-muted-foreground" />
-            </motion.div>
+      <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="flex items-center justify-between mb-4 relative z-10">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-muted-foreground" />
             Budgets actifs
-          </CardTitle>
+          </h3>
           <Link
             href="/budget"
             className="text-sm text-primary hover:underline"
           >
             Voir tout
           </Link>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        </div>
+        <div className="space-y-4 relative z-10">
           {topBudgets.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Aucun budget
-            </p>
+            <div className="rounded-3xl border border-border/40 bg-card p-5 flex flex-col items-center justify-center h-full shadow-sm">
+              <Wallet className="h-9 w-9 text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground font-medium">Aucun budget</p>
+            </div>
           ) : (
             <motion.div
               variants={staggerContainer}
