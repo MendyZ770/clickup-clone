@@ -19,10 +19,10 @@ import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import type { TaskSummary } from "@/types";
 
-const DAY_WIDTH = 40;
-const ROW_HEIGHT = 36;
-const HEADER_HEIGHT = 50;
-const TOTAL_DAYS = 42;
+const DAY_WIDTH = 50;
+const ROW_HEIGHT = 40;
+const HEADER_HEIGHT = 60;
+const TOTAL_DAYS = 60; // 2 months view
 
 interface GanttViewProps {
   listId: string;
@@ -57,11 +57,11 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
   }, [startDate]);
 
   const tasksWithDates = useMemo(() => {
-    return tasks.filter((t) => t.dueDate);
+    return tasks.filter((t) => t.dueDate || t.startDate);
   }, [tasks]);
 
   const tasksWithoutDates = useMemo(() => {
-    return tasks.filter((t) => !t.dueDate);
+    return tasks.filter((t) => !t.dueDate && !t.startDate);
   }, [tasks]);
 
   useEffect(() => {
@@ -78,13 +78,15 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
   }
 
   const getBarStyle = (task: TaskSummary) => {
-    const due = startOfDay(new Date(task.dueDate!));
-    const created = startOfDay(new Date(task.createdAt));
-    const taskStart = isBefore(created, startDate) ? startDate : created;
-    const left = Math.max(0, differenceInDays(taskStart, startDate)) * DAY_WIDTH;
+    const taskStart = task.startDate ? startOfDay(new Date(task.startDate)) : startOfDay(new Date(task.createdAt));
+    const due = task.dueDate ? startOfDay(new Date(task.dueDate)) : addDays(taskStart, 1);
+    
+    // We allow negative left if the task starts before the current visible timeline
+    const left = differenceInDays(taskStart, startDate) * DAY_WIDTH;
     const duration = Math.max(1, differenceInDays(due, taskStart) + 1);
-    const width = duration * DAY_WIDTH - 4;
-    return { left, width: Math.max(DAY_WIDTH - 4, width) };
+    const width = duration * DAY_WIDTH - 8;
+    
+    return { left, width: Math.max(DAY_WIDTH - 8, width) };
   };
 
   return (
@@ -128,19 +130,26 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
           <div className="overflow-x-auto flex-1" ref={scrollRef}>
             <div style={{ width: TOTAL_DAYS * DAY_WIDTH, minWidth: "100%" }}>
               {/* Day headers */}
-              <div className="flex border-b" style={{ height: HEADER_HEIGHT }}>
+              <div className="flex border-b bg-muted/30" style={{ height: HEADER_HEIGHT }}>
                 {days.map((day) => (
                   <div
                     key={day.toISOString()}
                     className={cn(
-                      "shrink-0 flex flex-col items-center justify-center border-r text-[10px]",
-                      isToday(day) && "bg-primary/10",
-                      day.getDay() === 0 || day.getDay() === 6 ? "bg-muted/20" : ""
+                      "shrink-0 flex flex-col items-center justify-center border-r text-xs transition-colors",
+                      isToday(day) && "bg-primary/20",
+                      (day.getDay() === 0 || day.getDay() === 6) && !isToday(day) ? "bg-muted/50" : ""
                     )}
                     style={{ width: DAY_WIDTH }}
                   >
-                    <span className="text-muted-foreground">{format(day, "EEE")}</span>
-                    <span className={cn("font-medium", isToday(day) && "text-primary")}>{format(day, "d")}</span>
+                    <span className="text-muted-foreground uppercase text-[10px] tracking-wider mb-1">
+                      {format(day, "EEE")}
+                    </span>
+                    <span className={cn(
+                      "font-semibold w-6 h-6 flex items-center justify-center rounded-full",
+                      isToday(day) ? "bg-primary text-primary-foreground" : "text-foreground"
+                    )}>
+                      {format(day, "d")}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -149,7 +158,7 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
               {tasksWithDates.map((task) => {
                 const { left, width } = getBarStyle(task);
                 return (
-                  <div key={task.id} className="relative border-b" style={{ height: ROW_HEIGHT }}>
+                  <div key={task.id} className="relative border-b hover:bg-muted/10 transition-colors" style={{ height: ROW_HEIGHT }}>
                     {/* Grid lines */}
                     {days.map((day) => (
                       <div
@@ -157,23 +166,24 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
                         className={cn(
                           "absolute top-0 bottom-0 border-r",
                           isToday(day) && "bg-primary/5",
-                          day.getDay() === 0 || day.getDay() === 6 ? "bg-muted/10" : ""
+                          (day.getDay() === 0 || day.getDay() === 6) && !isToday(day) ? "bg-muted/20" : ""
                         )}
                         style={{ left: differenceInDays(day, startDate) * DAY_WIDTH, width: DAY_WIDTH }}
                       />
                     ))}
                     {/* Bar */}
                     <div
-                      className="absolute top-1.5 rounded-md cursor-pointer hover:brightness-110 transition-all flex items-center px-1.5 text-[9px] text-white font-medium truncate"
+                      className="absolute top-2 rounded-md cursor-pointer hover:brightness-110 hover:shadow-md transition-all flex items-center px-2 text-xs text-white font-medium truncate shadow-sm z-10"
                       style={{
-                        left: left + 2,
+                        left: left + 4,
                         width,
-                        height: ROW_HEIGHT - 12,
+                        height: ROW_HEIGHT - 16,
                         backgroundColor: task.status.color,
+                        opacity: left + width < 0 || left > TOTAL_DAYS * DAY_WIDTH ? 0 : 1, // Hide if completely out of bounds
                       }}
                       onClick={() => openTaskModal(task.id)}
                     >
-                      {width > 60 && <span className="truncate">{task.title}</span>}
+                      {width > 60 && <span className="truncate drop-shadow-sm">{task.title}</span>}
                     </div>
                   </div>
                 );

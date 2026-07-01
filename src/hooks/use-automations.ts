@@ -36,7 +36,7 @@ export function useAutomations(listId?: string) {
   };
 
   return {
-    automations: data || [],
+    automations: Array.isArray(data) ? data : [],
     isLoading,
     isError: error,
     createAutomation,
