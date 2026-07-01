@@ -26,9 +26,7 @@ import "react-resizable/css/styles.css";
 
 // Dynamic import of ResponsiveGridLayout to avoid SSR issues
 const ResponsiveGridLayout = dynamic(
-  () => import("react-grid-layout").then((mod: any) => {
-    return mod.WidthProvider(mod.Responsive);
-  }),
+  () => import("@/components/dashboard/grid-wrapper"),
   { ssr: false }
 );
 
