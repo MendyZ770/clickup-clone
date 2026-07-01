@@ -197,7 +197,7 @@ export function TaskForm({
         {/* Assignee picker */}
         <MultiAssigneePicker
           assigneeIds={assigneeIds}
-          workspaceId={workspaceId}
+          workspaceId={currentWorkspace?.id ?? ""}
           onChange={setAssigneeIds}
           size="sm"
           className="rounded-full border border-border bg-background"
