@@ -24,6 +24,7 @@ import { CategoryManager } from "@/components/finance/category-manager";
 import { ExpenseChart } from "@/components/finance/expense-chart";
 import { IncomeExpenseChart } from "@/components/finance/income-expense-chart";
 import { PeriodFilter, type PeriodFilter as PeriodFilterType } from "@/components/finance/period-filter";
+import { PlaidLinkButton } from "@/components/finance/plaid-link-button";
 import {
   TrendingUp,
   CreditCard,
@@ -217,9 +218,10 @@ export default function FinancePage() {
         </TabsList>
 
         <TabsContent value="accounts" className="space-y-4">
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={() => setShowAddAccount(true)}>
-              + Ajouter un compte
+          <div className="flex justify-end gap-2">
+            <PlaidLinkButton workspaceId={workspaceId} onSuccess={handleMutate} variant="outline" />
+            <Button variant="default" onClick={() => setShowAddAccount(true)}>
+              + Ajouter manuel
             </Button>
           </div>
           <FinanceAccountList accounts={accounts} onMutate={handleMutate} />
