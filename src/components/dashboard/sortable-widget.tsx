@@ -3,7 +3,8 @@
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { WidgetCard } from "./widget-card";
+import { GripHorizontal, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SortableWidgetProps {
   id: string;
@@ -42,16 +43,30 @@ export function SortableWidget({
     <div
       ref={setNodeRef}
       style={style}
-      className={`h-full ${isDragging ? "shadow-2xl ring-2 ring-primary relative z-50" : "relative"}`}
+      className={`h-full ${isDragging ? "shadow-2xl ring-2 ring-primary relative z-50 rounded-xl" : "relative group"}`}
     >
-      <WidgetCard
-        title={title}
-        isEditing={isEditing}
-        onDelete={onDelete}
-        dragHandleProps={isEditing ? { ...attributes, ...listeners } : undefined}
-      >
+      {isEditing && (
+        <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm p-1 rounded-md border shadow-sm">
+          <div
+            className="cursor-move p-1.5 hover:bg-muted rounded-md touch-none"
+            {...attributes}
+            {...listeners}
+          >
+            <GripHorizontal className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+      <div className={isEditing ? "pointer-events-none" : ""}>
         {children}
-      </WidgetCard>
+      </div>
     </div>
   );
 }

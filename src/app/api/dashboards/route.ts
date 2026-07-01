@@ -47,9 +47,13 @@ export async function GET(request: Request) {
           workspaceId,
           widgets: {
             create: [
-              { type: "tasks-overview", x: 0, y: 0, w: 4, h: 2 },
-              { type: "stat-cards", x: 4, y: 0, w: 8, h: 1 },
-              { type: "activity-feed", x: 4, y: 1, w: 4, h: 2 },
+              { type: "stats-cards", x: 0, y: 0, w: 2, h: 1 },
+              { type: "tasks-status", x: 0, y: 0, w: 1, h: 1 },
+              { type: "tasks-priority", x: 0, y: 0, w: 1, h: 1 },
+              { type: "finance", x: 0, y: 0, w: 1, h: 1 },
+              { type: "budget", x: 0, y: 0, w: 1, h: 1 },
+              { type: "recent-activity", x: 0, y: 0, w: 1, h: 1 },
+              { type: "upcoming-deadlines", x: 0, y: 0, w: 1, h: 1 },
             ],
           },
         },
