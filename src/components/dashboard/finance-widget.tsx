@@ -145,7 +145,6 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
             </span>
           </span>
         </motion.div>
-      </div>
-    </Card>
+    </div>
   );
 }

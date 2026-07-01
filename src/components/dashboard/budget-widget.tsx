@@ -128,8 +128,8 @@ export function BudgetWidget({ budgets, isLoading }: BudgetWidgetProps) {
               })}
             </motion.div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }
