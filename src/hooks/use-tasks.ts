@@ -57,7 +57,7 @@ export function useCreateTask() {
       dueDate?: string | null;
       listId: string;
       statusId?: string;
-      assigneeId?: string | null;
+      assigneeIds?: string[];
     }) => {
       const res = await fetch("/api/tasks", {
         method: "POST",
@@ -90,7 +90,6 @@ export function useUpdateTask() {
         startDate?: string | null;
         timeEstimate?: number | null;
         statusId?: string;
-        assigneeId?: string | null;
         position?: number;
         listId?: string;
       }

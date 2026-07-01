@@ -58,9 +58,12 @@ export async function GET(request: Request) {
     if (statusId) where.statusId = statusId;
     if (priority) where.priority = priority;
     if (assigneeId) {
-      where.assignees = {
-        some: { userId: assigneeId }
-      };
+      const assigneeIds = assigneeId.split(",").filter(Boolean);
+      if (assigneeIds.length > 0) {
+        where.assignees = {
+          some: { userId: { in: assigneeIds } }
+        };
+      }
     }
     if (search) {
       where.OR = [
@@ -138,7 +141,7 @@ export async function POST(request: Request) {
       timeEstimate,
       listId,
       statusId,
-      assigneeId,
+      assigneeIds,
       parentId,
       position,
     } = parsed.data;
@@ -197,8 +200,8 @@ export async function POST(request: Request) {
         statusId: taskStatusId,
         creatorId: user.id,
         parentId: parentId ?? null,
-        assignees: assigneeId ? {
-          create: [{ userId: assigneeId }]
+        assignees: assigneeIds && assigneeIds.length > 0 ? {
+          create: assigneeIds.map(id => ({ userId: id }))
         } : undefined,
       },
       include: {

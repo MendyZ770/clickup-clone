@@ -91,7 +91,7 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const { title, description, priority, dueDate, statusId, assigneeId } =
+    const { title, description, priority, dueDate, statusId, assigneeIds } =
       parsed.data;
 
     // Default to first status
@@ -120,8 +120,8 @@ export async function POST(request: Request, context: RouteContext) {
         position: lastSubtask ? lastSubtask.position + 65536 : 65536,
         listId: parentTask.listId,
         statusId: taskStatusId,
-        assignees: assigneeId ? {
-          create: [{ userId: assigneeId }]
+        assignees: assigneeIds && assigneeIds.length > 0 ? {
+          create: assigneeIds.map(id => ({ userId: id }))
         } : undefined,
         creatorId: user.id,
         parentId: taskId,

@@ -9,7 +9,7 @@ export const createTaskSchema = z.object({
   timeEstimate: z.number().int().min(0).optional().nullable(),
   listId: z.string().min(1, "List ID is required"),
   statusId: z.string().optional(),
-  assigneeId: z.string().optional().nullable(),
+  assigneeIds: z.array(z.string()).optional(),
   parentId: z.string().optional().nullable(),
   position: z.number().optional(),
 });
@@ -22,7 +22,7 @@ export const updateTaskSchema = z.object({
   startDate: z.string().datetime().optional().nullable(),
   timeEstimate: z.number().int().min(0).optional().nullable(),
   statusId: z.string().optional(),
-  assigneeId: z.string().optional().nullable(),
+  assigneeIds: z.array(z.string()).optional(),
   position: z.number().optional(),
   listId: z.string().optional(),
   locked: z.boolean().optional(),

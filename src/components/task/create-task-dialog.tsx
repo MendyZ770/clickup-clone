@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -23,7 +22,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useCreateTask } from "@/hooks/use-tasks";
-import useSWR from "swr";
+import { MultiAssigneePicker } from "./multi-assignee-picker";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -48,13 +47,8 @@ export function CreateTaskDialog({
   const [description, setDescription] = useState("");
   const [listId, setListId] = useState(defaultListId ?? "");
   const [priority, setPriority] = useState("normal");
-  const [assigneeId, setAssigneeId] = useState("unassigned");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-
-  const { data: members } = useSWR<{ user: { id: string, name: string | null, email: string, image: string | null } }[]>(
-    workspaceId ? `/api/workspaces/${workspaceId}/members` : null,
-    (url: string) => fetch(url).then((r) => r.json())
-  );
 
   const allLists = useMemo(() => {
     const lists: { id: string; name: string; spaceName: string }[] = [];
@@ -79,7 +73,7 @@ export function CreateTaskDialog({
     setTitle("");
     setDescription("");
     setPriority("normal");
-    setAssigneeId("unassigned");
+    setAssigneeIds([]);
     setListId(defaultListId ?? "");
   };
 
@@ -95,7 +89,7 @@ export function CreateTaskDialog({
         listId,
         priority,
         description: description.trim() || undefined,
-        assigneeId: assigneeId !== "unassigned" ? assigneeId : undefined,
+        assigneeIds: assigneeIds.length > 0 ? assigneeIds : undefined,
       });
       toast({ title: "Tâche créée" });
       reset();
@@ -182,20 +176,15 @@ export function CreateTaskDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Assigné à</Label>
-                <Select value={assigneeId} onValueChange={setAssigneeId} disabled={submitting}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Non assigné" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Non assigné</SelectItem>
-                    {members?.map((m) => (
-                      <SelectItem key={m.user.id} value={m.user.id}>
-                        {m.user.name ?? m.user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Assigné(s)</Label>
+                <div className="pt-1">
+                  <MultiAssigneePicker
+                    assigneeIds={assigneeIds}
+                    workspaceId={workspaceId!}
+                    onChange={setAssigneeIds}
+                    size="md"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

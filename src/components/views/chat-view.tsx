@@ -1,15 +1,28 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { format } from "date-fns";
-import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useChat } from "@/hooks/use-chat";
+import useSWR from "swr";
 import { useSession } from "next-auth/react";
-import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Send, User as UserIcon, Loader2, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface ChatViewProps {
   listId: string;
@@ -17,11 +30,16 @@ interface ChatViewProps {
 
 export function ChatView({ listId }: ChatViewProps) {
   const { data: session } = useSession();
-  const { messages, isLoading, sendMessage } = useChat(listId);
-  const [text, setText] = useState("");
+  const [inputText, setInputText] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom
+  const { data: messages, error, isLoading, mutate } = useSWR<ChatMessage[]>(
+    `/api/lists/${listId}/chat`,
+    fetcher,
+    { refreshInterval: 3000 } // Poll every 3 seconds for real-time feel
+  );
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -30,93 +48,158 @@ export function ChatView({ listId }: ChatViewProps) {
     scrollToBottom();
   }, [messages]);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    const currentText = text;
-    setText("");
-    await sendMessage(currentText);
+  const handleSend = async () => {
+    if (!inputText.trim() || isSending) return;
+
+    setIsSending(true);
+    try {
+      const res = await fetch(`/api/lists/${listId}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      if (res.ok) {
+        setInputText("");
+        mutate(); // Optimistic update could be added here, but mutate is fine for now
+      }
+    } catch (error) {
+      console.error("Failed to send message", error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-20"><LoadingSpinner size="lg" /></div>;
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  const currentUserId = session?.user?.id;
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center text-muted-foreground">
+        Erreur lors du chargement du chat.
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)]">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/10">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground flex-col gap-2">
-            <span className="text-4xl">👋</span>
-            <p>Soyez le premier à lancer la discussion !</p>
+    <div className="flex flex-col h-full bg-background rounded-b-2xl max-w-4xl mx-auto w-full border-x border-b shadow-sm overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+        {messages?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-60">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <MessageSquare className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">Aucun message pour le moment</p>
+            <p className="text-xs text-muted-foreground">
+              Soyez le premier à démarrer la discussion !
+            </p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isMe = message.userId === currentUserId || message.userId === "temp-user-id";
-            
-            return (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex gap-3 max-w-[80%] animate-in fade-in slide-in-from-bottom-2",
-                  isMe ? "ml-auto flex-row-reverse" : "mr-auto"
-                )}
-              >
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarImage src={message.user.image || ""} />
-                  <AvatarFallback>{message.user.name?.charAt(0) || "?"}</AvatarFallback>
-                </Avatar>
-                
-                <div className={cn(
-                  "flex flex-col gap-1",
-                  isMe ? "items-end" : "items-start"
-                )}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {isMe ? "Vous" : message.user.name}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/70">
-                      {format(new Date(message.createdAt), "HH:mm")}
-                    </span>
+          <AnimatePresence initial={false}>
+            {messages?.map((msg) => {
+              const isMe = msg.user.id === session?.user?.id;
+              
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className={cn(
+                    "flex gap-3",
+                    isMe ? "flex-row-reverse" : "flex-row"
+                  )}
+                >
+                  {/* Avatar */}
+                  <div className="shrink-0 mt-auto mb-1">
+                    {msg.user.image ? (
+                      <img
+                        src={msg.user.image}
+                        alt={msg.user.name ?? ""}
+                        className="h-8 w-8 rounded-full object-cover shadow-sm border border-border/50"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shadow-sm border border-border/50">
+                        <UserIcon className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
                   </div>
-                  
-                  <div className={cn(
-                    "px-4 py-2 rounded-2xl text-sm break-words",
-                    isMe 
-                      ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                      : "bg-muted text-foreground border rounded-tl-sm"
-                  )}>
-                    {message.text}
+
+                  {/* Message Bubble */}
+                  <div
+                    className={cn(
+                      "flex flex-col max-w-[75%]",
+                      isMe ? "items-end" : "items-start"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1 px-1">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {isMe ? "Moi" : msg.user.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/60">
+                        {format(new Date(msg.createdAt), "HH:mm", { locale: fr })}
+                      </span>
+                    </div>
+                    <div
+                      className={cn(
+                        "px-4 py-2.5 rounded-2xl text-sm shadow-sm",
+                        isMe
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-muted/50 text-foreground border border-border/40 rounded-bl-sm"
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}
       <div className="p-4 bg-background border-t">
-        <form onSubmit={onSubmit} className="flex gap-2 max-w-4xl mx-auto">
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Écrivez votre message..."
-            className="flex-1 rounded-full px-4"
+        <div className="relative flex items-end gap-2 max-w-4xl mx-auto">
+          <Textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Écrire un message..."
+            className="min-h-[50px] max-h-[200px] resize-none pr-12 rounded-2xl border-border/40 bg-muted/20 focus-visible:ring-primary/20 custom-scrollbar"
+            rows={1}
           />
-          <Button 
-            type="submit" 
-            size="icon" 
-            className="rounded-full shrink-0"
-            disabled={!text.trim()}
+          <Button
+            size="icon"
+            onClick={handleSend}
+            disabled={!inputText.trim() || isSending}
+            className="shrink-0 h-[50px] w-[50px] rounded-2xl shadow-sm transition-all hover:scale-105 active:scale-95"
           >
-            <Send className="h-4 w-4" />
+            {isSending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
-        </form>
+        </div>
+        <div className="text-center mt-2">
+          <span className="text-[10px] text-muted-foreground">
+            Appuyez sur <kbd className="px-1 py-0.5 rounded-md bg-muted font-mono">Entrée</kbd> pour envoyer
+          </span>
+        </div>
       </div>
     </div>
   );
