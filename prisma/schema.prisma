@@ -53,6 +53,7 @@ model User {
   financeGoalContributions FinanceGoalContribution[]
   automations              Automation[]
   chatMessages             ChatMessage[]
+  documents                Document[]
 }
 
 model Account {
@@ -117,6 +118,7 @@ model Workspace {
   financeAccounts   FinanceAccount[]
   financeCategories FinanceCategory[]
   financeGoals      FinanceGoal[]
+  documents         Document[]
 }
 
 model WorkspaceMember {
@@ -949,4 +951,23 @@ model ChatMessage {
 
   @@index([userId])
   @@index([listId])
+}
+
+// ─── Documents ──────────────────────────────────────────────────────────────
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String   @default("Document sans titre")
+  content     String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
 }

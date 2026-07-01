@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { useMobileAuth } from "@/lib/mobile-auth";
 import {
@@ -27,6 +28,7 @@ import {
   PanelLeft,
   PanelLeftClose,
   Landmark,
+  FileText,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
@@ -258,6 +260,26 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
         </div>
 
         <Separator className="bg-sidebar-border" />
+
+        {/* Docs */}
+        {currentWorkspace && (
+          <div className="px-2 pt-2">
+            <button
+              onClick={() => router.push(`/workspace/${currentWorkspace.id}/docs`)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors",
+                pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`)
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
+              )}
+            >
+              <FileText className="h-[22px] w-[22px]" />
+              {!collapsed && <span className="flex-1 text-left">Docs</span>}
+            </button>
+          </div>
+        )}
+
+        <Separator className="bg-sidebar-border mt-2" />
 
         {/* Favorites */}
         {favorites.length > 0 && !collapsed && (
