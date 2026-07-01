@@ -56,7 +56,7 @@ export function WidgetCard({ title, children, onDelete, isEditing }: WidgetCardP
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4 flex-1 overflow-auto">
+      <CardContent className="p-4 flex-1 overflow-auto @container">
         {children}
       </CardContent>
     </Card>

@@ -18,6 +18,8 @@ import {
   StatCardsWidget,
   ActivityFeedWidget,
   WorkloadChartWidget,
+  FinanceOverviewWidget,
+  GoalsProgressWidget,
 } from "@/components/dashboard/widgets";
 
 // Import CSS for react-grid-layout
@@ -107,8 +109,22 @@ export default function DashboardPage() {
     }
   };
 
-  const addWidget = async (type: string, title: string) => {
+  const addWidget = async (type: string) => {
     if (!dashboardId) return;
+    
+    const getDefaultSize = (type: string) => {
+        switch (type) {
+            case 'stat-cards': return { w: 4, h: 1 };
+            case 'tasks-overview': return { w: 2, h: 2 };
+            case 'workload': return { w: 2, h: 2 };
+            case 'activity-feed': return { w: 2, h: 2 };
+            case 'finance-overview': return { w: 1, h: 1 };
+            case 'goals-progress': return { w: 1, h: 1 };
+            default: return { w: 2, h: 2 };
+        }
+    };
+    const size = getDefaultSize(type);
+
     try {
       const res = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
         method: "POST",
@@ -116,15 +132,15 @@ export default function DashboardPage() {
         body: JSON.stringify({
           type,
           x: 0,
-          y: Infinity, // puts it at the bottom
-          w: type === "stat-cards" ? 4 : 2,
-          h: type === "stat-cards" ? 1 : 2,
+          y: Infinity,
+          w: size.w,
+          h: size.h,
         }),
       });
       if (res.ok) {
         const newWidget = await res.json();
         setWidgets([...widgets, newWidget]);
-        setIsEditing(true); // automatically enter edit mode so they can place it
+        setIsEditing(true); 
       }
     } catch (error) {
       console.error(error);
@@ -153,6 +169,10 @@ export default function DashboardPage() {
         return <ActivityFeedWidget />;
       case "workload":
         return <WorkloadChartWidget />;
+      case "finance-overview":
+        return <FinanceOverviewWidget />;
+      case "goals-progress":
+        return <GoalsProgressWidget />;
       default:
         return <div>Widget Inconnu</div>;
     }
@@ -168,6 +188,10 @@ export default function DashboardPage() {
         return "Activité Récente";
       case "workload":
         return "Charge de Travail";
+      case "finance-overview":
+        return "Finances";
+      case "goals-progress":
+        return "Objectifs";
       default:
         return "Widget";
     }
@@ -181,21 +205,13 @@ export default function DashboardPage() {
     );
   }
 
-  // Map widgets to react-grid-layout format
-  const layout = widgets.map((w) => {
-    // Force clean sizes
-    const cleanW = w.type === "stat-cards" ? 4 : 2;
-    const cleanH = w.type === "stat-cards" ? 1 : 2;
-
-    return {
+  const layout = widgets.map((w) => ({
       i: w.id,
       x: w.x,
       y: w.y,
-      w: cleanW,
-      h: cleanH,
-      isResizable: false, // Force no resize
-    };
-  });
+      w: w.w,
+      h: w.h,
+  }));
 
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
@@ -235,16 +251,25 @@ export default function DashboardPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => addWidget("stat-cards", "Vue d'ensemble")}>
+              <DropdownMenuItem onClick={() => addWidget("stat-cards")}>
                 Compteurs / Statistiques
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget("tasks-overview", "Répartition")}>
+              <DropdownMenuItem onClick={() => addWidget("tasks-overview")}>
                 Graphique (Tâches)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget("workload", "Charge de Travail")}>
-                Graphique (Charge)
+              <DropdownMenuItem onClick={() => addWidget('workload')}>
+                <BarChart3 className="mr-2 h-4 w-4 text-muted-foreground" />
+                <span>Charge de travail</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget("activity-feed", "Activité Récente")}>
+              <DropdownMenuItem onClick={() => addWidget('finance-overview')}>
+                <Wallet className="mr-2 h-4 w-4 text-muted-foreground" />
+                <span>Finances</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => addWidget('goals-progress')}>
+                <Target className="mr-2 h-4 w-4 text-muted-foreground" />
+                <span>Objectifs</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => addWidget("activity-feed")}>
                 Flux d'activité
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -269,10 +294,10 @@ export default function DashboardPage() {
               layouts={{ lg: layout }}
               breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
               cols={{ lg: 4, md: 2, sm: 1, xs: 1, xxs: 1 }}
-              rowHeight={180}
+              rowHeight={160}
               onLayoutChange={handleLayoutChange}
               isDraggable={isEditing}
-              isResizable={false}
+              isResizable={isEditing}
               draggableHandle=".drag-handle"
               compactType="vertical"
               margin={[20, 20]}
