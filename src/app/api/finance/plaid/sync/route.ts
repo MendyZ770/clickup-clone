@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing account ID" }, { status: 400 });
     }
 
-    const account = await prisma.account.findUnique({
+    const account = await prisma.financeAccount.findUnique({
       where: { id: accountId },
       include: { workspace: { include: { members: true } } },
     });
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const plaidAccount = accountsResponse.data.accounts[0];
     
     if (plaidAccount?.balances?.current !== undefined) {
-      await prisma.account.update({
+      await prisma.financeAccount.update({
         where: { id: account.id },
         data: { balance: plaidAccount.balances.current },
       });
@@ -77,7 +77,10 @@ export async function POST(req: Request) {
             description: txn.name,
             date: new Date(txn.date),
             accountId: account.id,
+            workspaceId: account.workspaceId,
+            userId: session.user.id,
             plaidTransactionId: txn.transaction_id,
+            type: mappedAmount > 0 ? "income" : "expense",
           },
           update: {
             amount: mappedAmount,

@@ -39,14 +39,16 @@ export async function POST(req: Request) {
 
     // Save each account returned by Plaid link into our DB
     for (const account of metadata.accounts) {
-      await prisma.account.create({
+      await prisma.financeAccount.create({
         data: {
           name: account.name,
+          type: "bank",
           balance: 0, // Will be updated on sync
           workspaceId,
+          userId: session.user.id,
           plaidAccessToken: accessToken,
           plaidItemId: itemId,
-          icon: "Building2",
+          color: "#3B82F6",
         },
       });
     }
