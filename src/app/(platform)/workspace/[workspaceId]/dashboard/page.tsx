@@ -1,9 +1,24 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import dynamic from "next/dynamic";
 import { Plus, Save, Edit3, Loader2 } from "lucide-react";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,34 +27,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { WidgetCard } from "@/components/dashboard/widget-card";
+import { SortableWidget } from "@/components/dashboard/sortable-widget";
 import {
   TasksOverviewWidget,
   StatCardsWidget,
   ActivityFeedWidget,
   WorkloadChartWidget,
-  FinanceOverviewWidget,
-  GoalsProgressWidget,
 } from "@/components/dashboard/widgets";
-
-// Import CSS for react-grid-layout
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-
-// Dynamic import of ResponsiveGridLayout to avoid SSR issues
-const ResponsiveGridLayout = dynamic(
-  () => import("@/components/dashboard/grid-wrapper"),
-  { ssr: false }
-);
-
-// We have to wait for dynamic import to give us the wrapped component
-let Grid: any = ResponsiveGridLayout;
 
 interface Widget {
   id: string;
   type: string;
-  x: number;
-  y: number;
   w: number;
   h: number;
 }
@@ -51,6 +49,17 @@ export default function DashboardPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -72,34 +81,14 @@ export default function DashboardPage() {
     fetchDashboard();
   }, [params.workspaceId]);
 
-  const handleLayoutChange = (newLayout: any[]) => {
-    if (!isEditing) return;
-    
-    setWidgets((prev) =>
-      prev.map((widget) => {
-        const layoutItem = newLayout.find((l) => l.i === widget.id);
-        if (layoutItem) {
-          return {
-            ...widget,
-            x: layoutItem.x,
-            y: layoutItem.y,
-            w: layoutItem.w,
-            h: layoutItem.h,
-          };
-        }
-        return widget;
-      })
-    );
-  };
-
-  const saveLayout = async () => {
+  const saveLayout = async (currentWidgets = widgets) => {
     if (!dashboardId) return;
     setIsSaving(true);
     try {
       await fetch(`/api/dashboards/${dashboardId}/widgets`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ layout: widgets }),
+        body: JSON.stringify({ layout: currentWidgets }),
       });
       setIsEditing(false);
     } catch (error) {
@@ -109,22 +98,8 @@ export default function DashboardPage() {
     }
   };
 
-  const addWidget = async (type: string) => {
+  const addWidget = async (type: string, title: string) => {
     if (!dashboardId) return;
-    
-    const getDefaultSize = (type: string) => {
-        switch (type) {
-            case 'stat-cards': return { w: 4, h: 1 };
-            case 'tasks-overview': return { w: 2, h: 2 };
-            case 'workload': return { w: 2, h: 2 };
-            case 'activity-feed': return { w: 2, h: 2 };
-            case 'finance-overview': return { w: 1, h: 1 };
-            case 'goals-progress': return { w: 1, h: 1 };
-            default: return { w: 2, h: 2 };
-        }
-    };
-    const size = getDefaultSize(type);
-
     try {
       const res = await fetch(`/api/dashboards/${dashboardId}/widgets`, {
         method: "POST",
@@ -132,15 +107,15 @@ export default function DashboardPage() {
         body: JSON.stringify({
           type,
           x: 0,
-          y: Infinity,
-          w: size.w,
-          h: size.h,
+          y: 0,
+          w: type === "stat-cards" ? 2 : 1,
+          h: 1,
         }),
       });
       if (res.ok) {
         const newWidget = await res.json();
-        setWidgets([...widgets, newWidget]);
-        setIsEditing(true); 
+        setWidgets((prev) => [...prev, newWidget]);
+        setIsEditing(true);
       }
     } catch (error) {
       console.error(error);
@@ -149,13 +124,25 @@ export default function DashboardPage() {
 
   const removeWidget = async (widgetId: string) => {
     if (!dashboardId) return;
-    setWidgets(widgets.filter((w) => w.id !== widgetId));
+    setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
     try {
       await fetch(`/api/dashboards/${dashboardId}/widgets?widgetId=${widgetId}`, {
         method: "DELETE",
       });
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setWidgets((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
   };
 
@@ -169,10 +156,6 @@ export default function DashboardPage() {
         return <ActivityFeedWidget />;
       case "workload":
         return <WorkloadChartWidget />;
-      case "finance-overview":
-        return <FinanceOverviewWidget />;
-      case "goals-progress":
-        return <GoalsProgressWidget />;
       default:
         return <div>Widget Inconnu</div>;
     }
@@ -188,16 +171,12 @@ export default function DashboardPage() {
         return "Activité Récente";
       case "workload":
         return "Charge de Travail";
-      case "finance-overview":
-        return "Finances";
-      case "goals-progress":
-        return "Objectifs";
       default:
         return "Widget";
     }
   };
 
-  if (isLoading || !Grid) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -205,21 +184,13 @@ export default function DashboardPage() {
     );
   }
 
-  const layout = widgets.map((w) => ({
-      i: w.id,
-      x: w.x,
-      y: w.y,
-      w: w.w,
-      h: w.h,
-  }));
-
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b shrink-0 bg-background z-10">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Bonjour Mendy 👋
+            Bonjour 👋
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Voici ce qui se passe dans ton espace de travail aujourd'hui.
@@ -228,7 +199,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3">
           {isEditing ? (
-            <Button onClick={saveLayout} disabled={isSaving}>
+            <Button onClick={() => saveLayout()} disabled={isSaving}>
               {isSaving ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -251,25 +222,16 @@ export default function DashboardPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => addWidget("stat-cards")}>
+              <DropdownMenuItem onClick={() => addWidget("stat-cards", "Vue d'ensemble")}>
                 Compteurs / Statistiques
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget("tasks-overview")}>
+              <DropdownMenuItem onClick={() => addWidget("tasks-overview", "Répartition")}>
                 Graphique (Tâches)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget('workload')}>
-                <BarChart3 className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Charge de travail</span>
+              <DropdownMenuItem onClick={() => addWidget("workload", "Charge de Travail")}>
+                Graphique (Charge)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget('finance-overview')}>
-                <Wallet className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Finances</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget('goals-progress')}>
-                <Target className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Objectifs</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => addWidget("activity-feed")}>
+              <DropdownMenuItem onClick={() => addWidget("activity-feed", "Activité Récente")}>
                 Flux d'activité
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -288,53 +250,37 @@ export default function DashboardPage() {
             <p className="text-sm mt-1">Ajoute des widgets depuis le menu en haut à droite.</p>
           </div>
         ) : (
-          <div className={isEditing ? "dashboard-editing" : ""}>
-            <Grid
-              className="layout"
-              layouts={{ lg: layout }}
-              breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-              cols={{ lg: 4, md: 2, sm: 1, xs: 1, xxs: 1 }}
-              rowHeight={160}
-              onLayoutChange={handleLayoutChange}
-              isDraggable={isEditing}
-              isResizable={isEditing}
-              draggableHandle=".drag-handle"
-              compactType="vertical"
-              margin={[20, 20]}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={widgets.map((w) => w.id)}
+              strategy={rectSortingStrategy}
             >
-              {widgets.map((widget) => (
-                <div key={widget.id}>
-                  <WidgetCard
-                    title={getWidgetTitle(widget.type)}
-                    isEditing={isEditing}
-                    onDelete={() => removeWidget(widget.id)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-[minmax(350px,auto)]">
+                {widgets.map((widget) => (
+                  <div
+                    key={widget.id}
+                    className={widget.type === "stat-cards" ? "md:col-span-2 h-fit" : ""}
                   >
-                    {renderWidgetContent(widget.type)}
-                  </WidgetCard>
-                </div>
-              ))}
-            </Grid>
-          </div>
+                    <SortableWidget
+                      id={widget.id}
+                      title={getWidgetTitle(widget.type)}
+                      type={widget.type}
+                      isEditing={isEditing}
+                      onDelete={() => removeWidget(widget.id)}
+                    >
+                      {renderWidgetContent(widget.type)}
+                    </SortableWidget>
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
-
-      {/* Global styles for editing mode */}
-      <style jsx global>{`
-        .dashboard-editing .react-grid-item {
-          border: 2px dashed hsl(var(--primary) / 0.4);
-          border-radius: 1rem;
-          transition: border-color 0.2s, background-color 0.2s;
-        }
-        .dashboard-editing .react-grid-item:hover {
-          border-color: hsl(var(--primary));
-          background-color: hsl(var(--primary) / 0.05);
-        }
-        .react-grid-item.react-grid-placeholder {
-          background: hsl(var(--primary));
-          opacity: 0.15;
-          border-radius: 1rem;
-        }
-      `}</style>
     </div>
   );
 }
