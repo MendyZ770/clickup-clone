@@ -117,7 +117,7 @@ export default function DashboardPage() {
           type,
           x: 0,
           y: Infinity, // puts it at the bottom
-          w: type === "stat-cards" ? 8 : 4,
+          w: type === "stat-cards" ? 4 : 2,
           h: type === "stat-cards" ? 1 : 2,
         }),
       });
@@ -182,15 +182,20 @@ export default function DashboardPage() {
   }
 
   // Map widgets to react-grid-layout format
-  const layout = widgets.map((w) => ({
-    i: w.id,
-    x: w.x,
-    y: w.y,
-    w: w.w,
-    h: w.h,
-    minW: 2,
-    minH: 1,
-  }));
+  const layout = widgets.map((w) => {
+    // Force clean sizes
+    const cleanW = w.type === "stat-cards" ? 4 : 2;
+    const cleanH = w.type === "stat-cards" ? 1 : 2;
+
+    return {
+      i: w.id,
+      x: w.x,
+      y: w.y,
+      w: cleanW,
+      h: cleanH,
+      isResizable: false, // Force no resize
+    };
+  });
 
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
@@ -261,11 +266,11 @@ export default function DashboardPage() {
               className="layout"
               layouts={{ lg: layout }}
               breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-              cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+              cols={{ lg: 4, md: 2, sm: 1, xs: 1, xxs: 1 }}
               rowHeight={150}
               onLayoutChange={handleLayoutChange}
               isDraggable={isEditing}
-              isResizable={isEditing}
+              isResizable={false}
               draggableHandle=".drag-handle"
               compactType="vertical"
               margin={[20, 20]}
