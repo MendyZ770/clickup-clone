@@ -102,7 +102,8 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     { 
       icon: LayoutDashboard, 
       label: "Tableau de bord", 
-      href: currentWorkspace ? `/workspace/${currentWorkspace.id}/dashboard` : "/dashboard" 
+      href: currentWorkspace ? `/workspace/${currentWorkspace.id}/dashboard` : "/dashboard",
+      special: true
     },
     { icon: ClipboardList, label: "Mes tâches", href: "/my-tasks" },
     { icon: Calendar, label: "Calendrier", href: "/calendar" },
@@ -216,7 +217,9 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                       "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
                       active
                         ? "bg-primary/10 text-primary shadow-sm"
-                        : "text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
+                        : item.special
+                          ? "bg-primary/5 text-sidebar-foreground border border-primary/10 shadow-sm hover:bg-primary/10 hover:text-primary"
+                          : "text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
                     )}
                   >
                     <span className="relative flex items-center justify-center shrink-0">
