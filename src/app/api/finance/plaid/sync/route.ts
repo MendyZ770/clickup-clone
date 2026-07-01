@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     // For simplicity, if we connected one account, we just take the first one or sum them.
     const plaidAccount = accountsResponse.data.accounts[0];
     
-    if (plaidAccount?.balances?.current !== undefined) {
+    if (plaidAccount?.balances?.current !== undefined && plaidAccount.balances.current !== null) {
       await prisma.financeAccount.update({
         where: { id: account.id },
         data: { balance: plaidAccount.balances.current },
@@ -64,6 +64,7 @@ export async function POST(req: Request) {
     let importedCount = 0;
 
     for (const txn of transactions) {
+      if (txn.amount === null || txn.amount === undefined) continue;
       // Upsert transaction to avoid duplicates
       // Plaid amounts are positive for expenses, negative for income.
       // Our DB expects: amount > 0 for income, amount < 0 for expenses.
