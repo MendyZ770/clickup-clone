@@ -112,23 +112,23 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
         <div className="group flex items-center">
           <CollapsibleTrigger asChild>
             <motion.button
-              whileHover={{ x: 1 }}
+              whileHover={{ x: 2 }}
               whileTap={{ scale: 0.98 }}
-              className="flex flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-sidebar-accent"
+              className="flex flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition-all duration-200 hover:bg-primary/5 hover:text-primary outline-none ring-primary focus-visible:ring-2"
             >
               <motion.div
                 animate={{ rotate: isOpen ? 90 : 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/70" />
               </motion.div>
               <motion.div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md shadow-sm"
                 style={{ backgroundColor: space.color ?? "#3B82F6" }}
                 whileHover={{ scale: 1.05, rotate: 3 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <SpaceIcon className="h-5 w-5 text-white" />
+                <SpaceIcon className="h-4 w-4 text-white" />
               </motion.div>
               <span className="flex-1 truncate font-medium text-sidebar-foreground/90">
                 {space.name}
@@ -141,10 +141,10 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="mr-1 rounded p-0.5 text-muted-foreground opacity-40 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground group-hover:opacity-100"
+                className="mr-1 rounded-md p-1.5 text-muted-foreground opacity-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary group-hover:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Plus className="h-6 w-6" />
+                <Plus className="h-4 w-4" />
               </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="right">

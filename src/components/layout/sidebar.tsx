@@ -121,19 +121,23 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     return pathname?.startsWith(href);
   };
 
+  const sectionHeaderClass = "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-3 mb-1.5 flex items-center h-6";
+
   return (
     <TooltipProvider delayDuration={0}>
       <aside
-        className="group/sidebar flex h-screen flex-col bg-sidebar text-sidebar-foreground/80 border-r border-sidebar-border transition-[width] duration-300 ease-in-out relative overflow-hidden"
-        style={{ width: collapsed ? 72 : 300, minWidth: collapsed ? 72 : 300 }}
+        className="group/sidebar flex h-screen flex-col bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground/80 border-r border-sidebar-border transition-all duration-300 ease-out relative z-40"
+        style={{ width: collapsed ? 72 : 280, minWidth: collapsed ? 72 : 280 }}
       >
-        {/* Workspace Switcher */}
-        <div className="flex items-center px-2 pt-3 pb-2">
+        {/* =========================================
+            FIXED HEADER: Workspace Switcher 
+        ========================================= */}
+        <div className={cn("shrink-0 pb-2 pt-4 transition-all duration-300", collapsed ? "px-2" : "px-4")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent">
+              <button className="w-full flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/10 hover:shadow-sm group/ws-btn outline-none ring-primary focus-visible:ring-2">
                 <div
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-sm font-bold text-white"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm transition-transform duration-200 group-hover/ws-btn:scale-105"
                   style={{
                     backgroundColor: currentWorkspace?.color ?? "#7C3AED",
                   }}
@@ -141,308 +145,322 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                   {currentWorkspace?.name?.[0]?.toUpperCase() ?? "W"}
                 </div>
                 {!collapsed && (
-                  <>
-                    <span className="flex-1 truncate text-left">
-                      {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
-                    </span>
-                    <ChevronsUpDown className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  </>
+                  <div className="flex flex-1 items-center justify-between min-w-0">
+                    <div className="flex flex-col text-left truncate pr-2">
+                      <span className="truncate text-[13px] font-medium text-foreground leading-tight">
+                        {isLoading ? "Chargement..." : currentWorkspace?.name ?? "Choisir un espace"}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
+                        Espace de travail
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-colors group-hover/ws-btn:text-primary" />
+                  </div>
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel>Espaces de travail</DropdownMenuLabel>
+            <DropdownMenuContent align="start" className="w-64 rounded-xl shadow-lg border-sidebar-border/50">
+              <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">Espaces de travail</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {workspaces.map((ws) => (
                 <DropdownMenuItem
                   key={ws.id}
                   onClick={() => setCurrentWorkspace(ws)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-3 cursor-pointer py-2 rounded-md"
                 >
                   <div
-                    className="flex h-6 w-6 items-center justify-center rounded text-[11px] font-bold text-white"
+                    className="flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold text-white shadow-sm"
                     style={{ backgroundColor: ws.color ?? "#7C3AED" }}
                   >
                     {ws.name[0]?.toUpperCase()}
                   </div>
-                  <span className="flex-1 truncate">{ws.name}</span>
+                  <span className="flex-1 truncate font-medium">{ws.name}</span>
                   {ws.id === currentWorkspace?.id && (
-                    <Check className="h-5 w-5 text-primary" />
+                    <Check className="h-4 w-4 text-primary" />
                   )}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleCreateWorkspace(); }}>
-                <Plus className="mr-2 h-5 w-5" />
-                Créer un espace de travail
+              <DropdownMenuItem 
+                onSelect={(e) => { e.preventDefault(); handleCreateWorkspace(); }}
+                className="cursor-pointer text-primary py-2 font-medium"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Créer un espace
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <Separator className="bg-sidebar-border" />
-
-        {/* Quick Actions */}
-        <div className="space-y-0.5 px-2 pt-3 pb-2">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            const content = (
-              <button
-                onClick={() => {
-                  if (item.label === "Rechercher") {
-                    const event = new KeyboardEvent("keydown", {
-                      key: "k",
-                      metaKey: true,
-                    });
-                    document.dispatchEvent(event);
-                    return;
-                  }
-                  router.push(item.href);
-                }}
-                className={
-                  "relative flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-all duration-200 " +
-                  (active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground")
+        {/* =========================================
+            SCROLLABLE MIDDLE: Nav, Docs, Favs, Spaces 
+        ========================================= */}
+        <ScrollArea className="flex-1 w-full overflow-hidden">
+          <div className={cn("flex flex-col gap-6 py-4", collapsed ? "px-2" : "px-4")}>
+            
+            {/* 1. Quick Actions */}
+            <div className="flex flex-col gap-[2px]">
+              {navItems.map((item) => {
+                const active = isActive(item.href);
+                const content = (
+                  <button
+                    onClick={() => {
+                      if (item.label === "Rechercher") {
+                        const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });
+                        document.dispatchEvent(event);
+                        return;
+                      }
+                      router.push(item.href);
+                    }}
+                    className={cn(
+                      "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
+                      active
+                        ? "bg-primary/10 text-primary shadow-sm"
+                        : "text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
+                    )}
+                  >
+                    <span className="relative flex items-center justify-center shrink-0">
+                      <item.icon className={cn("h-[18px] w-[18px] transition-transform duration-200", active ? "scale-110" : "group-hover:scale-110")} />
+                      {item.badge !== undefined && item.badge > 0 && collapsed && (
+                        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-sidebar" />
+                      )}
+                    </span>
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left truncate">{item.label}</span>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white shadow-sm">
+                            {item.badge > 99 ? "99+" : item.badge}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                );
+                
+                if (collapsed) {
+                  return (
+                    <Tooltip key={item.href}>
+                      <TooltipTrigger asChild>{content}</TooltipTrigger>
+                      <TooltipContent side="right" className="flex items-center gap-2 rounded-lg text-xs font-medium">
+                        {item.label}
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
                 }
-              >
-                {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-r-full bg-primary" />
-                )}
-                <span className="relative flex items-center justify-center shrink-0" style={{ width: 24, height: 24 }}>
-                  <item.icon className="h-[22px] w-[22px]" />
-                  {item.badge !== undefined && item.badge > 0 && collapsed && (
-                    <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-primary ring-2 ring-sidebar" />
-                  )}
-                </span>
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left truncate">{item.label}</span>
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-medium text-white">
-                        {item.badge > 99 ? "99+" : item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </button>
-            );
-            if (collapsed) {
-              return (
-                <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>{content}</TooltipTrigger>
-                  <TooltipContent side="right" className="flex items-center gap-2">
-                    {item.label}
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-white">
-                        {item.badge}
-                      </span>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-            return <div key={item.href}>{content}</div>;
-          })}
-          {!collapsed && (
-            <button
-              onClick={() => {
-                const event = new KeyboardEvent("keydown", {
-                  key: "k",
-                  metaKey: true,
-                });
-                document.dispatchEvent(event);
-              }}
-              className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
-            >
-              <Search className="h-[22px] w-[22px]" />
-              <span className="flex-1 text-left">Rechercher</span>
-              <kbd className="pointer-events-none rounded bg-sidebar-accent px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                ⌘K
-              </kbd>
-            </button>
-          )}
-        </div>
+                return <div key={item.href}>{content}</div>;
+              })}
 
-        <Separator className="bg-sidebar-border" />
-
-        {/* Docs */}
-        {currentWorkspace && (
-          <div className="px-2 pt-2">
-            <button
-              onClick={() => router.push(`/workspace/${currentWorkspace.id}/docs`)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors",
-                pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`)
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
-              )}
-            >
-              <FileText className="h-[22px] w-[22px]" />
-              {!collapsed && <span className="flex-1 text-left">Docs</span>}
-            </button>
-          </div>
-        )}
-
-        <Separator className="bg-sidebar-border mt-2" />
-
-        {/* Favorites */}
-        {favorites.length > 0 && !collapsed && (
-          <>
-            <div className="px-5 pt-3 pb-1">
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Favoris
-              </span>
-            </div>
-            <div className="space-y-0.5 px-2 pb-2">
-              {favorites.map((fav: FavoriteItem) => (
+              {/* Search Button */}
+              {!collapsed && (
                 <button
-                  key={fav.id}
                   onClick={() => {
-                    if (fav.type === "space" && currentWorkspace) {
-                      router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}`);
-                    } else if (fav.type === "list" && currentWorkspace) {
-                      router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}/list/${fav.targetId}/list-view`);
-                    } else if (fav.type === "task") {
-                      router.push(`/task/${fav.targetId}`);
-                    }
+                    const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });
+                    document.dispatchEvent(event);
                   }}
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground text-sidebar-foreground/70"
+                  className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary outline-none ring-primary focus-visible:ring-2"
                 >
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 shrink-0" />
-                  <span className="truncate">{fav.name}</span>
+                  <span className="flex items-center justify-center shrink-0">
+                    <Search className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110" />
+                  </span>
+                  <span className="flex-1 text-left">Rechercher</span>
+                  <kbd className="pointer-events-none flex h-5 items-center gap-1 rounded bg-muted/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
                 </button>
-              ))}
+              )}
             </div>
-            <Separator className="bg-sidebar-border" />
-          </>
-        )}
 
-        {/* Spaces Header */}
-        <div className="flex items-center justify-between px-3 pt-3 pb-1">
-          {!collapsed && (
-            <span className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Espaces
-            </span>
-          )}
-          <button
-            onClick={handleCreateSpace}
-            className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            title="Ajouter un espace"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
+            {/* 2. Docs (Workspace Level) */}
+            {currentWorkspace && (
+              <div className="flex flex-col gap-[2px]">
+                {!collapsed && <div className={sectionHeaderClass}>Connaissances</div>}
+                <button
+                  onClick={() => router.push(`/workspace/${currentWorkspace.id}/docs`)}
+                  className={cn(
+                    "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
+                    pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`)
+                      ? "bg-primary/10 text-primary shadow-sm"
+                      : "text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
+                  )}
+                  title={collapsed ? "Docs" : undefined}
+                >
+                  <span className="flex items-center justify-center shrink-0">
+                    <FileText className={cn("h-[18px] w-[18px] transition-transform duration-200", pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`) ? "scale-110" : "group-hover:scale-110")} />
+                  </span>
+                  {!collapsed && <span className="flex-1 text-left truncate">Documents</span>}
+                </button>
+              </div>
+            )}
 
-        {/* Scrollable Navigation Tree */}
-        <ScrollArea className="flex-1 px-1">
-          <div className="py-1">
-            {spacesLoading ? (
-              <div className="space-y-2 px-2 py-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-7 animate-pulse rounded bg-sidebar-accent/50"
-                  />
+            {/* 3. Favorites */}
+            {favorites.length > 0 && (
+              <div className="flex flex-col gap-[2px]">
+                {!collapsed && <div className={sectionHeaderClass}>Favoris</div>}
+                {favorites.map((fav: FavoriteItem) => (
+                  <button
+                    key={fav.id}
+                    onClick={() => {
+                      if (fav.type === "space" && currentWorkspace) {
+                        router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}`);
+                      } else if (fav.type === "list" && currentWorkspace) {
+                        router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}/list/${fav.targetId}/list-view`);
+                      } else if (fav.type === "task") {
+                        router.push(`/task/${fav.targetId}`);
+                      }
+                    }}
+                    className="group flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200 text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
+                    title={collapsed ? fav.name : undefined}
+                  >
+                    <span className="flex items-center justify-center shrink-0">
+                      <Star className="h-[16px] w-[16px] fill-yellow-400 text-yellow-400 transition-transform duration-200 group-hover:scale-110" />
+                    </span>
+                    {!collapsed && <span className="flex-1 text-left truncate">{fav.name}</span>}
+                  </button>
                 ))}
               </div>
-            ) : spaces.length === 0 ? (
-              !collapsed && (
-                <div className="px-2 py-4 text-center">
-                  <p className="text-xs text-muted-foreground">Aucun espace</p>
+            )}
+
+            {/* 4. Spaces */}
+            <div className="flex flex-col">
+              <div className="group/spaces flex items-center justify-between px-3 mb-1.5 h-6">
+                {!collapsed && <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Espaces</span>}
+                {!collapsed && (
                   <button
                     onClick={handleCreateSpace}
-                    className="mt-1 text-xs text-primary hover:underline"
+                    className="rounded-md p-1 opacity-0 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 group-hover/spaces:opacity-100"
+                    title="Ajouter un espace"
                   >
-                    Créer votre premier espace
+                    <Plus className="h-3.5 w-3.5" />
                   </button>
-                </div>
-              )
-            ) : (
-              <SidebarNav spaces={spaces} workspaceId={currentWorkspace!.id} mutateSpaces={mutateSpaces} collapsed={collapsed} />
-            )}
+                )}
+                {collapsed && (
+                  <button onClick={handleCreateSpace} className="mx-auto rounded-md p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200" title="Ajouter un espace">
+                    <Plus className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="min-h-[100px] pb-6">
+                {spacesLoading ? (
+                  <div className="space-y-1.5 px-2 py-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-8 animate-pulse rounded-lg bg-muted/50" />
+                    ))}
+                  </div>
+                ) : spaces.length === 0 ? (
+                  !collapsed && (
+                    <div className="px-3 py-6 text-center bg-muted/20 rounded-xl border border-dashed border-sidebar-border/50 mx-2">
+                      <p className="text-xs text-muted-foreground font-medium mb-2">Aucun espace de travail</p>
+                      <button
+                        onClick={handleCreateSpace}
+                        className="text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-3 py-1.5 rounded-full"
+                      >
+                        Créer le premier
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <div className={collapsed ? "px-1" : "px-0"}>
+                    <SidebarNav spaces={spaces} workspaceId={currentWorkspace?.id || ""} mutateSpaces={mutateSpaces} collapsed={collapsed} />
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </ScrollArea>
 
-        <Separator className="bg-sidebar-border" />
-
-        {/* Collapse Toggle */}
-        <div className="px-2 py-1.5">
-          <button
-            onClick={toggle}
-            className="flex w-full items-center justify-center rounded-md px-2 py-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-            title={collapsed ? "Développer" : "Réduire"}
-          >
-            {collapsed ? (
-              <PanelLeft className="h-5 w-5" />
-            ) : (
-              <>
-                <PanelLeftClose className="h-5 w-5 mr-2" />
-                <span className="text-xs">Réduire</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <Separator className="bg-sidebar-border" />
-
-        {/* User Section */}
-        <div className="p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-sidebar-accent">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarImage src={user?.image ?? undefined} />
-                  <AvatarFallback className="bg-primary/20 text-[12px] text-primary">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                {!collapsed && (
-                  <>
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="truncate text-sm font-medium text-sidebar-foreground">
-                        {user?.name ?? "User"}
-                      </p>
-                    </div>
-                    <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
-                  </>
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="w-56">
-              <DropdownMenuLabel>
-                <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/settings")}>
-                <Settings className="mr-2 h-5 w-5" />
-                Paramètres
-              </DropdownMenuItem>
-              {currentWorkspace && (
-                <DropdownMenuItem
-                  onClick={() => router.push(`/workspace/${currentWorkspace.id}/settings`)}
-                >
-                  <Building2 className="mr-2 h-5 w-5" />
-                  Paramètres de l&apos;espace
-                </DropdownMenuItem>
+        {/* =========================================
+            FIXED FOOTER: Collapse & User 
+        ========================================= */}
+        <div className="mt-auto shrink-0 bg-sidebar/95 backdrop-blur-xl border-t border-sidebar-border/30">
+          {/* Collapse Toggle */}
+          <div className="px-3 py-2">
+            <button
+              onClick={toggle}
+              className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-muted-foreground transition-all duration-200 hover:bg-primary/5 hover:text-primary group/collapse"
+              title={collapsed ? "Développer la barre latérale" : "Réduire la barre latérale"}
+            >
+              {collapsed ? (
+                <PanelLeft className="h-[18px] w-[18px] transition-transform duration-200 group-hover/collapse:scale-110" />
+              ) : (
+                <>
+                  <PanelLeftClose className="h-[18px] w-[18px] mr-2.5 transition-transform duration-200 group-hover/collapse:scale-110" />
+                  <span className="text-xs font-medium">Réduire</span>
+                </>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  signOut({ callbackUrl: "/login" }).catch(() => {});
-                  mobileLogout();
-                }}
-                className="text-red-400 focus:text-red-400"
-              >
-                <LogOut className="mr-2 h-5 w-5" />
-                Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </button>
+          </div>
+
+          <Separator className="bg-sidebar-border/30" />
+
+          {/* User Section */}
+          <div className="p-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex w-full items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/5 hover:shadow-sm group/user-btn outline-none">
+                  <Avatar className="h-8 w-8 shrink-0 border border-primary/10 shadow-sm transition-transform duration-200 group-hover/user-btn:scale-105">
+                    <AvatarImage src={user?.image ?? undefined} />
+                    <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!collapsed && (
+                    <>
+                      <div className="flex-1 text-left min-w-0 pr-2">
+                        <p className="truncate text-[13px] font-semibold text-foreground leading-tight">
+                          {user?.name ?? "Utilisateur"}
+                        </p>
+                        <p className="truncate text-[11px] text-muted-foreground leading-tight mt-0.5">
+                          Mon compte
+                        </p>
+                      </div>
+                      <Settings className="h-4 w-4 text-muted-foreground/50 shrink-0 transition-colors group-hover/user-btn:text-primary group-hover/user-btn:rotate-45" />
+                    </>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="right" sideOffset={12} className="w-64 rounded-xl shadow-xl border-sidebar-border/50 p-2">
+                <DropdownMenuLabel className="p-2">
+                  <p className="text-sm font-semibold text-foreground">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 font-medium">{user?.email}</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer rounded-lg py-2">
+                  <Settings className="mr-2.5 h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">Paramètres du compte</span>
+                </DropdownMenuItem>
+                {currentWorkspace && (
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/workspace/${currentWorkspace.id}/settings`)}
+                    className="cursor-pointer rounded-lg py-2"
+                  >
+                    <Building2 className="mr-2.5 h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Paramètres de l&apos;espace</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem
+                  onClick={() => {
+                    signOut({ callbackUrl: "/login" }).catch(() => {});
+                    mobileLogout();
+                  }}
+                  className="cursor-pointer rounded-lg py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                >
+                  <LogOut className="mr-2.5 h-4 w-4" />
+                  <span className="font-semibold">Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </aside>
-
     </TooltipProvider>
   );
 }

@@ -24,23 +24,23 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
       whileHover={{ x: 2 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "group relative flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-sm transition-all duration-150",
+        "group relative flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[13px] transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
         isActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+          ? "bg-primary/10 text-primary font-medium shadow-sm"
+          : "text-sidebar-foreground/70 hover:bg-primary/5 hover:text-primary"
       )}
     >
       {isActive && (
         <motion.span
           layoutId="active-indicator"
-          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sidebar-accent-foreground"
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         />
       )}
       <motion.div
         animate={isActive ? { scale: 1.25 } : { scale: 1 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        className="h-4 w-4 shrink-0 rounded-full"
+        className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: list.color ?? "#6B7280" }}
       />
       <span className="flex-1 truncate text-left">{list.name}</span>
