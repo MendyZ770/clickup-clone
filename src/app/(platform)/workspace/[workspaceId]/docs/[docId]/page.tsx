@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // Import styles
-import "react-quill/dist/quill.snow.css";
-// or import "react-quill/dist/quill.bubble.css";
+import "react-quill-new/dist/quill.snow.css";
 
 // Dynamic import for react-quill to avoid SSR issues with "document is not defined"
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false, loading: () => <div className="h-96 flex items-center justify-center border rounded-md"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> });
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false, loading: () => <div className="h-96 flex items-center justify-center border rounded-md"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> });
 
 export default function DocEditorPage() {
   const router = useRouter();
