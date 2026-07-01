@@ -202,9 +202,11 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b shrink-0 bg-background z-10">
         <div>
-          <h1 className="text-2xl font-bold">Tableau de bord</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Vue d'ensemble de ton espace de travail
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Bonjour Mendy 👋
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Voici ce qui se passe dans ton espace de travail aujourd'hui.
           </p>
         </div>
 
@@ -227,7 +229,7 @@ export default function DashboardPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary">
+              <Button variant="default" className="shadow-md hover:shadow-lg transition-all">
                 <Plus className="mr-2 h-4 w-4" />
                 Ajouter un widget
               </Button>
@@ -251,7 +253,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Dashboard Grid */}
-      <div className="flex-1 overflow-y-auto bg-muted/10 p-6">
+      <div className="flex-1 overflow-y-auto bg-muted/5 p-6 md:p-8">
         {widgets.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
             <div className="p-4 bg-muted rounded-full mb-4">
@@ -294,17 +296,18 @@ export default function DashboardPage() {
       {/* Global styles for editing mode */}
       <style jsx global>{`
         .dashboard-editing .react-grid-item {
-          border: 2px dashed hsl(var(--primary) / 0.3);
-          border-radius: 0.5rem;
-          transition: border-color 0.2s;
+          border: 2px dashed hsl(var(--primary) / 0.4);
+          border-radius: 1rem;
+          transition: border-color 0.2s, background-color 0.2s;
         }
         .dashboard-editing .react-grid-item:hover {
           border-color: hsl(var(--primary));
+          background-color: hsl(var(--primary) / 0.05);
         }
         .react-grid-item.react-grid-placeholder {
           background: hsl(var(--primary));
-          opacity: 0.2;
-          border-radius: 0.5rem;
+          opacity: 0.15;
+          border-radius: 1rem;
         }
       `}</style>
     </div>
