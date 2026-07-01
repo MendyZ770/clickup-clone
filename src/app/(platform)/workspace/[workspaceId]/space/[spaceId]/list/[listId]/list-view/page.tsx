@@ -5,6 +5,7 @@ import { ViewSwitcher } from "@/components/layout/view-switcher";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { ListView } from "@/components/views/list-view";
 import { TemplatePicker } from "@/components/task/template-picker";
+import { AutomationModal } from "@/components/automations/automation-modal";
 
 export default function ListViewPage() {
   const params = useParams<{
@@ -19,7 +20,10 @@ export default function ListViewPage() {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between gap-2 px-2 md:px-4 py-2 border-b overflow-x-auto">
         <ViewSwitcher basePath={basePath} />
-        <TemplatePicker workspaceId={workspaceId} listId={listId} />
+        <div className="flex items-center gap-2">
+          <AutomationModal listId={listId} />
+          <TemplatePicker workspaceId={workspaceId} listId={listId} />
+        </div>
       </div>
       <div className="px-2 md:px-4 py-2 border-b overflow-x-auto">
         <FilterBar listId={listId} workspaceId={workspaceId} />

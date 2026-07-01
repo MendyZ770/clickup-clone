@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { evaluateAutomations } from "@/lib/automation-engine";
 import { createTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";

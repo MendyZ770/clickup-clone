@@ -51,6 +51,7 @@ model User {
   financeTransactions      FinanceTransaction[]
   financeGoals             FinanceGoal[]
   financeGoalContributions FinanceGoalContribution[]
+  automations              Automation[]
 }
 
 model Account {
@@ -223,6 +224,7 @@ model List {
   statuses    Status[]
   tasks       Task[]
   goalTargets GoalTarget[]
+  automations Automation[]
 }
 
 // ─── Task Models ────────────────────────────────────────────────────────────
@@ -564,6 +566,34 @@ model GoalTarget {
   goal   Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
   listId String?
   list   List?   @relation(fields: [listId], references: [id], onDelete: SetNull)
+}
+
+// ─── Automations ──────────────────────────────────────────────────────────
+
+model Automation {
+  id               String   @id @default(cuid())
+  name             String
+  description      String?  @db.Text
+  isActive         Boolean  @default(true)
+  
+  // Trigger
+  triggerType      String   // "STATUS_CHANGED", "TASK_CREATED", "PRIORITY_CHANGED"
+  triggerCondition Json     // e.g., {"statusId": "xyz"}
+  
+  // Action
+  actionType       String   // "SET_ASSIGNEE", "SET_STATUS", "SET_PRIORITY"
+  actionPayload    Json     // e.g., {"assigneeId": "abc"}
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  listId           String
+  list             List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  creatorId        String
+  creator          User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@index([isActive])
 }
 
 // ─── Reminders ─────────────────────────────────────────────────────────────
