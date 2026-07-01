@@ -1,6 +1,6 @@
 "use client";
 
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
