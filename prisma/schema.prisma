@@ -119,6 +119,7 @@ model Workspace {
   financeCategories FinanceCategory[]
   financeGoals      FinanceGoal[]
   documents         Document[]
+  dashboards        Dashboard[]
 }
 
 model WorkspaceMember {
@@ -970,4 +971,34 @@ model Document {
 
   @@index([workspaceId])
   @@index([userId])
+}
+
+// ─── Dashboards & Widgets ───────────────────────────────────────────────────
+
+model Dashboard {
+  id          String   @id @default(cuid())
+  name        String   @default("Tableau de bord")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  widgets     Widget[]
+
+  @@index([workspaceId])
+}
+
+model Widget {
+  id          String   @id @default(cuid())
+  type        String   // "tasks-overview", "activity-feed", "stat-cards"
+  x           Int      @default(0)
+  y           Int      @default(0)
+  w           Int      @default(3)
+  h           Int      @default(2)
+  
+  dashboardId String
+  dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
 }

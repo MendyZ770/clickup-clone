@@ -99,7 +99,11 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     : user?.email?.slice(0, 2).toUpperCase() || "?";
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Tableau de bord", href: "/dashboard" },
+    { 
+      icon: LayoutDashboard, 
+      label: "Tableau de bord", 
+      href: currentWorkspace ? `/workspace/${currentWorkspace.id}/dashboard` : "/dashboard" 
+    },
     { icon: ClipboardList, label: "Mes tâches", href: "/my-tasks" },
     { icon: Calendar, label: "Calendrier", href: "/calendar" },
     { icon: Timer, label: "Suivi du temps", href: "/time-tracking" },
@@ -113,6 +117,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href.endsWith("/dashboard")) return pathname?.endsWith("/dashboard");
     return pathname?.startsWith(href);
   };
 
