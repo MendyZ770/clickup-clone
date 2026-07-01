@@ -5,6 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface SortableWidgetProps {
   id: string;
@@ -64,7 +65,11 @@ export function SortableWidget({
           </Button>
         </div>
       )}
-      <div className={isEditing ? "pointer-events-none" : ""}>
+      <div className={cn(
+        "h-full w-full transition-all",
+        isEditing ? "pointer-events-none" : "",
+        "[&>div]:h-full [&>div]:overflow-y-auto"
+      )}>
         {children}
       </div>
     </div>

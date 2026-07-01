@@ -414,7 +414,7 @@ export default function DashboardPage() {
             {widgets.map((widget) => (
               <div
                 key={widget.id}
-                className={(widget.type === "stats-cards" || widget.type === "stat-cards") ? "lg:col-span-2 h-fit" : "h-full"}
+                className={(widget.type === "stats-cards" || widget.type === "stat-cards") ? "lg:col-span-2 h-fit" : "h-[400px]"}
               >
                 <SortableWidget
                   id={widget.id}
