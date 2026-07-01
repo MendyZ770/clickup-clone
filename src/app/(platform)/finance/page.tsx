@@ -219,7 +219,7 @@ export default function FinancePage() {
 
         <TabsContent value="accounts" className="space-y-4">
           <div className="flex justify-end gap-2">
-            <PlaidLinkButton workspaceId={workspaceId} onSuccess={handleMutate} variant="outline" />
+            <PlaidLinkButton workspaceId={workspaceId!} onSuccess={handleMutate} variant="outline" />
             <Button variant="default" onClick={() => setShowAddAccount(true)}>
               + Ajouter manuel
             </Button>
