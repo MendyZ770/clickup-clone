@@ -52,6 +52,7 @@ model User {
   financeGoals             FinanceGoal[]
   financeGoalContributions FinanceGoalContribution[]
   automations              Automation[]
+  chatMessages             ChatMessage[]
 }
 
 model Account {
@@ -225,6 +226,9 @@ model List {
   tasks       Task[]
   goalTargets GoalTarget[]
   automations Automation[]
+  messages    ChatMessage[]
+
+  @@index([spaceId])
 }
 
 // ─── Task Models ────────────────────────────────────────────────────────────
@@ -928,4 +932,21 @@ model FinanceGoalContribution {
 
   @@index([goalId])
   @@index([userId])
+}
+
+// ─── Chat ───────────────────────────────────────────────────────────────────
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listId    String
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([listId])
 }
