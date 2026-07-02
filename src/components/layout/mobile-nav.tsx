@@ -44,20 +44,6 @@ export function MobileNav() {
             >
               <item.icon className={cn("h-5 w-5 transition-transform duration-300", isActive && "stroke-[2.5] scale-110")} />
               <span className={cn("text-[10px] font-semibold leading-tight transition-all duration-300", isActive ? "opacity-100" : "opacity-70")}>{item.label}</span>
-              {isActive && (
-                <motion.span
-                  layoutId="mobile-nav-indicator"
-                  className="absolute -bottom-1 h-1 w-8 rounded-full bg-primary/80 blur-[2px]"
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                />
-              )}
-              {isActive && (
-                <motion.span
-                  layoutId="mobile-nav-indicator-solid"
-                  className="absolute -bottom-1 h-1 w-6 rounded-full bg-primary"
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                />
-              )}
             </motion.button>
           );
         })}
