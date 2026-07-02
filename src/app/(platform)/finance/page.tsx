@@ -26,6 +26,7 @@ import { IncomeExpenseChart } from "@/components/finance/income-expense-chart";
 import { PeriodFilter, type PeriodFilter as PeriodFilterType } from "@/components/finance/period-filter";
 import { EnableBankingLinkButton } from "@/components/finance/enablebanking-link-button";
 import { EnableBankingCallback } from "@/components/finance/enablebanking-callback";
+import { SyncAccountsButton } from "@/components/finance/sync-accounts-button";
 import { Suspense } from "react";
 import {
   TrendingUp,
@@ -234,6 +235,7 @@ export default function FinancePage() {
 
         <TabsContent value="accounts" className="space-y-4">
           <div className="flex justify-end gap-2">
+            <SyncAccountsButton accounts={accounts} onSync={handleMutate} />
             <EnableBankingLinkButton workspaceId={workspaceId!} onSuccess={handleMutate} variant="outline" />
             <Button variant="default" onClick={() => setShowAddAccount(true)}>
               + Ajouter manuel
