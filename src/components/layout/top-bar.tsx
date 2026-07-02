@@ -19,7 +19,7 @@ import { AccountSwitcher } from "./account-switcher";
 export function TopBar() {
   const router = useRouter();
   const { unreadCount } = useNotifications();
-  const { mode, theme, setMode } = useTheme();
+
 
   const openSearch = () => {
     const event = new KeyboardEvent("keydown", {
@@ -29,13 +29,9 @@ export function TopBar() {
     document.dispatchEvent(event);
   };
 
-  const themeIcon = mode === "system" ? <Monitor className="h-5 w-5" /> :
-    theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />;
-
-  const themeLabel = mode === "light" ? "Thème clair" : mode === "dark" ? "Thème sombre" : "Thème système";
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 px-3 pt-[env(safe-area-inset-top)] md:static md:px-4 md:pt-0">
+    <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 px-3 pt-[env(safe-area-inset-top)] md:static md:h-16 md:px-4 md:pt-0">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />
@@ -46,42 +42,7 @@ export function TopBar() {
       <div className="flex items-center gap-0.5 sm:gap-1">
         <TimerButton />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11 md:h-9 md:w-9 text-muted-foreground hover:text-foreground"
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem
-              onClick={() => setMode("light")}
-              className={mode === "light" ? "bg-accent" : ""}
-            >
-              <Sun className="mr-2 h-4 w-4" />
-              Clair
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setMode("dark")}
-              className={mode === "dark" ? "bg-accent" : ""}
-            >
-              <Moon className="mr-2 h-4 w-4" />
-              Sombre
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setMode("system")}
-              className={mode === "system" ? "bg-accent" : ""}
-            >
-              <Monitor className="mr-2 h-4 w-4" />
-              Système
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+
 
         <Button
           variant="ghost"

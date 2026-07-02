@@ -29,12 +29,16 @@ import {
   PanelLeftClose,
   Landmark,
   FileText,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useFavorites, type FavoriteItem } from "@/hooks/use-favorites";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useTheme } from "@/providers/theme-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -51,6 +55,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { SidebarNav } from "./sidebar-nav";
 import { useModal } from "@/providers/modal-provider";
@@ -68,6 +76,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
   const { unreadCount } = useNotifications();
   const { collapsed, toggle } = useSidebar();
   const { openCreateSpace, openCreateWorkspace } = useModal();
+  const { mode, theme, setMode } = useTheme();
 
   const handleCreateSpace = () => {
     if (!currentWorkspace) return;
@@ -448,6 +457,28 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                     <span className="font-medium">Paramètres de l&apos;espace</span>
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="cursor-pointer rounded-lg py-2">
+                    {mode === "system" ? <Monitor className="mr-2.5 h-4 w-4 text-muted-foreground" /> :
+                      theme === "dark" ? <Moon className="mr-2.5 h-4 w-4 text-muted-foreground" /> :
+                        <Sun className="mr-2.5 h-4 w-4 text-muted-foreground" />}
+                    <span className="font-medium">Thème</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent className="w-40 rounded-xl">
+                      <DropdownMenuItem onClick={() => setMode("light")} className={mode === "light" ? "bg-accent" : ""}>
+                        <Sun className="mr-2 h-4 w-4" /> Clair
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMode("dark")} className={mode === "dark" ? "bg-accent" : ""}>
+                        <Moon className="mr-2 h-4 w-4" /> Sombre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMode("system")} className={mode === "system" ? "bg-accent" : ""}>
+                        <Monitor className="mr-2 h-4 w-4" /> Système
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
                 <DropdownMenuSeparator className="my-1" />
                 <DropdownMenuItem
                   onClick={() => {
