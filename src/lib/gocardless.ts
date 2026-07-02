@@ -1,3 +1,4 @@
+// @ts-ignore
 import NordigenClient from "nordigen-node";
 
 let _client: any = null;
