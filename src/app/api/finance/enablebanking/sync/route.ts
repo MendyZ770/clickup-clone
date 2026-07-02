@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
     // Fetch balance
     try {
-      const balancesRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts/${ebAccId}/balances`);
+      const balancesRes = await fetchEnableBanking(`/accounts/${ebAccId}/balances`);
       if (balancesRes.balances && balancesRes.balances.length > 0) {
         // En général, le premier solde est le plus pertinent
         const balance = balancesRes.balances[0].balanceAmount?.amount;
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     // Fetch transactions
     let importedCount = 0;
     try {
-      const txRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts/${ebAccId}/transactions`);
+      const txRes = await fetchEnableBanking(`/accounts/${ebAccId}/transactions`);
       const transactions = [
         ...(txRes.transactions?.booked || []),
         ...(txRes.transactions?.pending || [])
