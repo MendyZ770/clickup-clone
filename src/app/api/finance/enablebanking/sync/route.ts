@@ -37,9 +37,13 @@ export async function POST(req: Request) {
     // Fetch balance
     try {
       const balancesRes = await fetchEnableBanking(`/accounts/${ebAccId}/balances`);
-      if (balancesRes.balances && balancesRes.balances.length > 0) {
-        // En général, le premier solde est le plus pertinent
-        const balance = balancesRes.balances[0].balanceAmount?.amount;
+      // Handle both { balances: [...] } and direct array formats
+      const balances = balancesRes.balances || (Array.isArray(balancesRes) ? balancesRes : []);
+      if (balances.length > 0) {
+        // Try different balance amount field formats
+        const balance = balances[0].balance_amount?.amount 
+          || balances[0].balanceAmount?.amount 
+          || balances[0].amount;
         if (balance) {
           await prisma.financeAccount.update({
             where: { id: dbAccount.id },
@@ -55,14 +59,17 @@ export async function POST(req: Request) {
     // Fetch transactions
     let importedCount = 0;
     let skippedCount = 0;
-    let rawTransactions: any[] = [];
+    let rawApiResponse: any = null;
     try {
       const txRes = await fetchEnableBanking(`/accounts/${ebAccId}/transactions`);
-      const transactions = [
-        ...(txRes.transactions?.booked || []),
-        ...(txRes.transactions?.pending || [])
-      ];
-      rawTransactions = transactions;
+      rawApiResponse = txRes;
+      
+      // Enable Banking API can return transactions in different formats:
+      // Format 1: { transactions: { booked: [...], pending: [...] } }
+      // Format 2: { booked: [...], pending: [...] }
+      const booked = txRes.transactions?.booked || txRes.booked || [];
+      const pending = txRes.transactions?.pending || txRes.pending || [];
+      const transactions = [...booked, ...pending];
 
       for (const txn of transactions) {
         const txnId = txn.transactionId || txn.internalTransactionId || txn.entryReference;
@@ -112,7 +119,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to fetch transactions: " + e.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, importedCount, skippedCount, rawTransactions });
+    return NextResponse.json({ success: true, importedCount, skippedCount, rawApiResponse });
   } catch (error: any) {
     console.error("Error syncing with Enable Banking:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
