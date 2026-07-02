@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getGoCardlessClient } from "@/lib/gocardless";
+import { fetchEnableBanking } from "@/lib/enablebanking";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -22,8 +22,8 @@ export async function POST(req: Request) {
       include: { workspace: { include: { members: true } } },
     });
 
-    if (!dbAccount || !dbAccount.gcAccountId) {
-      return NextResponse.json({ error: "Account not found or not connected to GoCardless" }, { status: 404 });
+    if (!dbAccount || !dbAccount.ebAccountId) {
+      return NextResponse.json({ error: "Account not found or not connected to Enable Banking" }, { status: 404 });
     }
 
     const isMember = dbAccount.workspace.members.some(m => m.userId === session.user.id);
@@ -31,33 +31,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const client = await getGoCardlessClient();
-    const accountObj = client.account(dbAccount.gcAccountId);
+    // L'ID sauvegardé est de la forme "sessionId:accountId"
+    const [sessionId, ebAccId] = dbAccount.ebAccountId.split(":");
 
     // Fetch balance
     try {
-      const balances = await accountObj.getBalances();
-      // Look for expected or interim balance
-      const balanceObj = balances.balances?.[0]?.balanceAmount;
-      if (balanceObj && balanceObj.amount) {
-        await prisma.financeAccount.update({
-          where: { id: dbAccount.id },
-          data: { balance: parseFloat(balanceObj.amount) },
-        });
+      const balancesRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts/${ebAccId}/balances`);
+      if (balancesRes.balances && balancesRes.balances.length > 0) {
+        // En général, le premier solde est le plus pertinent
+        const balance = balancesRes.balances[0].balanceAmount?.amount;
+        if (balance) {
+          await prisma.financeAccount.update({
+            where: { id: dbAccount.id },
+            data: { balance: parseFloat(balance) },
+          });
+        }
       }
     } catch (e) {
       console.error("Could not fetch balance", e);
     }
 
-    // Fetch recent transactions
+    // Fetch transactions
     let importedCount = 0;
     try {
-      const transactionsData = await accountObj.getTransactions();
-      const booked = transactionsData.transactions?.booked || [];
-      const pending = transactionsData.transactions?.pending || [];
-      const allTxns = [...booked, ...pending];
+      const txRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts/${ebAccId}/transactions`);
+      
+      const transactions = txRes.transactions?.booked || [];
 
-      for (const txn of allTxns) {
+      for (const txn of transactions) {
         const txnId = txn.transactionId || txn.internalTransactionId;
         if (!txnId) continue;
         
@@ -70,18 +71,14 @@ export async function POST(req: Request) {
 
         try {
           await prisma.financeTransaction.upsert({
-            where: { gcTransactionId: txnId },
+            where: { ebTransactionId: txnId },
             create: {
-              amount: Math.abs(amount), // DB expects absolute value generally, but wait, the previous code mapped positive to expense
-              // Let's use positive for income, negative for expense to be safe, or check original code
-              // The original manual entry logic usually is: amount > 0 for income, < 0 for expense?
-              // Wait, previous code used type: mappedAmount > 0 ? "income" : "expense" and absolute amount?
-              // Let's just use absolute amount and set type properly.
+              amount: Math.abs(amount),
               description,
               date: new Date(dateStr),
               accountId: dbAccount.id,
               userId: session.user.id,
-              gcTransactionId: txnId,
+              ebTransactionId: txnId,
               type: amount > 0 ? "income" : "expense",
             },
             update: {
@@ -93,7 +90,7 @@ export async function POST(req: Request) {
           });
           importedCount++;
         } catch (err) {
-          // Ignore duplicates
+          // Ignorer les doublons exacts
         }
       }
     } catch (e) {
@@ -102,7 +99,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, importedCount });
   } catch (error: any) {
-    console.error("Error syncing with GoCardless:", error);
+    console.error("Error syncing with Enable Banking:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
