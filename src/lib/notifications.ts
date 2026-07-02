@@ -10,7 +10,8 @@ export type NotificationType =
   | "dailySummary"
   | "reminder"
   | "teamActivity"
-  | "budgetAlert";
+  | "budgetAlert"
+  | "mention";
 
 interface NotificationPayload {
   type: NotificationType;

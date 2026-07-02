@@ -15,19 +15,39 @@ const fetcher = (url: string) =>
 
 interface CommentListProps {
   taskId: string;
+  workspaceId?: string;
 }
 
-export function CommentList({ taskId }: CommentListProps) {
-  const { data: comments, isLoading, mutate } = useSWR<CommentWithUser[]>(
-    `/api/tasks/${taskId}/comments`,
-    fetcher
+/** Parse @mentions in text and wrap them in a styled span */
+function renderWithMentions(text: string) {
+  const parts = text.split(/(@\w+)/g);
+  return parts.map((part, i) =>
+    /^@\w+$/.test(part) ? (
+      <span key={i} className="text-primary font-semibold">
+        {part}
+      </span>
+    ) : (
+      part
+    )
   );
+}
+
+export function CommentList({ taskId, workspaceId }: CommentListProps) {
+  const {
+    data: comments,
+    isLoading,
+    mutate,
+  } = useSWR<CommentWithUser[]>(`/api/tasks/${taskId}/comments`, fetcher);
 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold">Comments</h3>
 
-      <CommentForm taskId={taskId} onCommentAdded={() => mutate()} />
+      <CommentForm
+        taskId={taskId}
+        workspaceId={workspaceId}
+        onCommentAdded={() => mutate()}
+      />
 
       {isLoading ? (
         <div className="space-y-3">
@@ -65,7 +85,7 @@ export function CommentList({ taskId }: CommentListProps) {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
-                  {comment.content}
+                  {renderWithMentions(comment.content)}
                 </p>
               </div>
             </div>

@@ -54,3 +54,7 @@ android/app/build/
 # Kiro — local secrets and per-workspace MCP config (contain API tokens)
 .kiro/settings/mcp.json
 .kiro/secrets/
+
+# Local file uploads (keep directory tracked via .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep

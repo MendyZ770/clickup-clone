@@ -73,9 +73,11 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
+    const { content, mentionedUserIds = [] } = parsed.data;
+
     const comment = await prisma.comment.create({
       data: {
-        content: parsed.data.content,
+        content,
         taskId,
         userId: user.id,
       },
@@ -114,6 +116,26 @@ export async function POST(request: Request, context: RouteContext) {
         },
         user.id
       );
+    }
+
+    // Notifier les mentions @
+    if (mentionedUserIds.length > 0) {
+      const { sendNotificationToUsers } = await import("@/lib/notifications");
+      const uniqueMentioned = [...new Set(mentionedUserIds)].filter(id => id !== user.id);
+      if (uniqueMentioned.length > 0) {
+        await sendNotificationToUsers(
+          uniqueMentioned,
+          {
+            type: "mention",
+            message: `${user.name ?? "Quelqu'un"} vous a mentionné dans "${task.title}"`,
+            link: `/task/${taskId}`,
+            title: "Vous avez été mentionné",
+            body: `${user.name ?? "Quelqu'un"} : ${comment.content.slice(0, 80)}`,
+            tag: "mention",
+          },
+          user.id
+        );
+      }
     }
 
     return NextResponse.json(comment, { status: 201 });

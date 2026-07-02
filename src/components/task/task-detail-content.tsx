@@ -378,7 +378,7 @@ export function TaskDetailContent({
           <Separator />
 
           {/* Comments */}
-          <CommentList taskId={task.id} />
+          <CommentList taskId={task.id} workspaceId={workspaceId} />
 
           <Separator />
 

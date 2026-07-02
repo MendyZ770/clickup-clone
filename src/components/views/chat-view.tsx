@@ -9,7 +9,8 @@ import { Send, User as UserIcon, Loader2, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionTextarea } from "@/components/shared/mention-textarea";
+import { useMentionMembers } from "@/hooks/use-mention-members";
 
 interface ChatMessage {
   id: string;
@@ -26,13 +27,30 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface ChatViewProps {
   listId: string;
+  workspaceId?: string;
 }
 
-export function ChatView({ listId }: ChatViewProps) {
+/** Parse @mentions and wrap them in a styled span */
+function renderWithMentions(text: string) {
+  const parts = text.split(/(@\w+)/g);
+  return parts.map((part, i) =>
+    /^@\w+$/.test(part) ? (
+      <span key={i} className="text-primary-foreground/80 font-semibold underline decoration-dotted">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
+export function ChatView({ listId, workspaceId }: ChatViewProps) {
   const { data: session } = useSession();
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const members = useMentionMembers(workspaceId);
 
   const { data: messages, error, isLoading, mutate } = useSWR<ChatMessage[]>(
     `/api/lists/${listId}/chat`,
@@ -56,24 +74,18 @@ export function ChatView({ listId }: ChatViewProps) {
       const res = await fetch(`/api/lists/${listId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text: inputText, mentionedUserIds }),
       });
 
       if (res.ok) {
         setInputText("");
+        setMentionedUserIds([]);
         mutate(); // Optimistic update could be added here, but mutate is fine for now
       }
     } catch (error) {
       console.error("Failed to send message", error);
     } finally {
       setIsSending(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
     }
   };
 
@@ -110,7 +122,7 @@ export function ChatView({ listId }: ChatViewProps) {
           <AnimatePresence initial={false}>
             {messages?.map((msg) => {
               const isMe = msg.user.id === session?.user?.id;
-              
+
               return (
                 <motion.div
                   key={msg.id}
@@ -149,7 +161,9 @@ export function ChatView({ listId }: ChatViewProps) {
                         {isMe ? "Moi" : msg.user.name}
                       </span>
                       <span className="text-[10px] text-muted-foreground/60">
-                        {format(new Date(msg.createdAt), "HH:mm", { locale: fr })}
+                        {format(new Date(msg.createdAt), "HH:mm", {
+                          locale: fr,
+                        })}
                       </span>
                     </div>
                     <div
@@ -160,7 +174,9 @@ export function ChatView({ listId }: ChatViewProps) {
                           : "bg-muted/50 text-foreground border border-border/40 rounded-bl-sm"
                       )}
                     >
-                      <p className="whitespace-pre-wrap break-words leading-relaxed">{msg.text}</p>
+                      <p className="whitespace-pre-wrap break-words leading-relaxed">
+                        {renderWithMentions(msg.text)}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -174,13 +190,21 @@ export function ChatView({ listId }: ChatViewProps) {
       {/* Input Area */}
       <div className="p-4 bg-background border-t">
         <div className="relative flex items-end gap-2 max-w-4xl mx-auto">
-          <Textarea
+          <MentionTextarea
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Écrire un message..."
-            className="min-h-[50px] max-h-[200px] resize-none pr-12 rounded-2xl border-border/40 bg-muted/20 focus-visible:ring-primary/20 custom-scrollbar"
+            onChange={setInputText}
+            onMentionedUsers={setMentionedUserIds}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Écrire un message... (@ pour mentionner)"
+            className="min-h-[50px] max-h-[200px] pr-12 rounded-2xl border-border/40 bg-muted/20 focus-visible:ring-primary/20 custom-scrollbar"
             rows={1}
+            members={members}
+            disabled={isSending}
           />
           <Button
             size="icon"
@@ -197,7 +221,11 @@ export function ChatView({ listId }: ChatViewProps) {
         </div>
         <div className="text-center mt-2">
           <span className="text-[10px] text-muted-foreground">
-            Appuyez sur <kbd className="px-1 py-0.5 rounded-md bg-muted font-mono">Entrée</kbd> pour envoyer
+            Appuyez sur{" "}
+            <kbd className="px-1 py-0.5 rounded-md bg-muted font-mono">
+              Entrée
+            </kbd>{" "}
+            pour envoyer · <kbd className="px-1 py-0.5 rounded-md bg-muted font-mono">@</kbd> pour mentionner
           </span>
         </div>
       </div>

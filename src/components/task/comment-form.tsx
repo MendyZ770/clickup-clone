@@ -2,17 +2,21 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { MentionTextarea } from "@/components/shared/mention-textarea";
+import { useMentionMembers } from "@/hooks/use-mention-members";
 
 interface CommentFormProps {
   taskId: string;
+  workspaceId?: string;
   onCommentAdded?: () => void;
 }
 
-export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
+export function CommentForm({ taskId, workspaceId, onCommentAdded }: CommentFormProps) {
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
+  const members = useMentionMembers(workspaceId);
 
   const handleSubmit = async () => {
     const trimmed = content.trim();
@@ -23,10 +27,11 @@ export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
       const res = await fetch(`/api/tasks/${taskId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: trimmed }),
+        body: JSON.stringify({ content: trimmed, mentionedUserIds }),
       });
       if (res.ok) {
         setContent("");
+        setMentionedUserIds([]);
         onCommentAdded?.();
       }
     } finally {
@@ -36,12 +41,14 @@ export function CommentForm({ taskId, onCommentAdded }: CommentFormProps) {
 
   return (
     <div className="space-y-2">
-      <Textarea
+      <MentionTextarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Écrire un commentaire..."
-        className="min-h-[80px] text-sm resize-none"
+        onChange={setContent}
+        onMentionedUsers={setMentionedUserIds}
+        placeholder="Écrire un commentaire... (@ pour mentionner)"
         disabled={isSubmitting}
+        members={members}
+        rows={3}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
