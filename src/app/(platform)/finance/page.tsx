@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { revalidateFinance } from "@/lib/swr-config";
@@ -14,6 +14,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import { FinanceAccountList } from "@/components/finance/account-list";
 import { FinanceTransactionList } from "@/components/finance/transaction-list";
 import { FinanceGoalList } from "@/components/finance/goal-list";
@@ -68,6 +69,8 @@ function filterByPeriod<T extends { date: Date | string }>(data: T[], period: Pe
 export default function FinancePage() {
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id;
+  const { toast } = useToast();
+  const hasAutoSynced = useRef(false);
 
   const { accounts } = useFinanceAccounts(workspaceId);
   const { transactions } = useFinanceTransactions(workspaceId);
@@ -87,6 +90,54 @@ export default function FinancePage() {
       </div>
     );
   }
+
+  // Auto-sync on page load
+  useEffect(() => {
+    const autoSync = async () => {
+      if (hasAutoSynced.current || !accounts || accounts.length === 0) return;
+      
+      const linkedAccounts = accounts.filter((a: any) => a.ebAccountId);
+      if (linkedAccounts.length === 0) return;
+
+      // Only auto-sync once per session to avoid spamming the bank API
+      const sessionKey = `finance_synced_${workspaceId}`;
+      if (sessionStorage.getItem(sessionKey)) return;
+
+      hasAutoSynced.current = true;
+      sessionStorage.setItem(sessionKey, "true");
+
+      let totalImported = 0;
+      
+      try {
+        for (const acc of linkedAccounts) {
+          const res = await fetch("/api/finance/enablebanking/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accountId: acc.id })
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.importedCount) {
+              totalImported += data.importedCount;
+            }
+          }
+        }
+
+        if (totalImported > 0) {
+          toast({
+            title: "Synchronisation auto réussie",
+            description: `${totalImported} nouvelle(s) transaction(s) importée(s).`,
+          });
+          await revalidateFinance(workspaceId);
+        }
+      } catch (e) {
+        console.error("Auto-sync failed", e);
+      }
+    };
+
+    autoSync();
+  }, [accounts, workspaceId, toast]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
 
