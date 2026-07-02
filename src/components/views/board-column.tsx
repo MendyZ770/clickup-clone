@@ -23,7 +23,7 @@ function BoardColumnComponent({
   onTaskAction,
 }: BoardColumnProps) {
   return (
-    <div className="flex h-full w-[260px] sm:w-64 md:w-72 shrink-0 flex-col rounded-lg bg-muted/30">
+    <div className="flex h-full w-[280px] sm:w-64 md:w-72 shrink-0 flex-col rounded-lg bg-muted/30 snap-center sm:snap-none">
       {/* Column header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b">
         <span

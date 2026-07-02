@@ -20,6 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useCreateTask } from "@/hooks/use-tasks";
@@ -107,103 +117,92 @@ export function CreateTaskDialog({
     }
   };
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(val) => {
-        onOpenChange(val);
-        if (!val) reset();
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Nouvelle tâche</DialogTitle>
-          <DialogDescription>
-            Ajoutez une tâche dans une de vos listes.
-          </DialogDescription>
-        </DialogHeader>
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-        {allLists.length === 0 ? (
-          <div className="py-2 space-y-3">
-            <p className="text-sm">Aucune liste disponible.</p>
-            <p className="text-xs text-muted-foreground">
-              Créez d&apos;abord un espace puis une liste avant d&apos;ajouter des tâches.
-            </p>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Fermer
-            </Button>
+  const FormContent = () => (
+    <>
+      {allLists.length === 0 ? (
+        <div className="py-2 space-y-3 px-4 md:px-0">
+          <p className="text-sm">Aucune liste disponible.</p>
+          <p className="text-xs text-muted-foreground">
+            Créez d&apos;abord un espace puis une liste avant d&apos;ajouter des tâches.
+          </p>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full md:w-auto">
+            Fermer
+          </Button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4 px-4 md:px-0">
+          <div className="space-y-2">
+            <Label htmlFor="task-title">Titre</Label>
+            <Input
+              id="task-title"
+              placeholder="Que faut-il faire ?"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={submitting}
+              autoFocus={isDesktop}
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          <div className="space-y-2">
+            <Label htmlFor="task-desc">Description (optionnel)</Label>
+            <Textarea
+              id="task-desc"
+              placeholder="Plus de détails..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={submitting}
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pb-4 md:pb-0">
             <div className="space-y-2">
-              <Label htmlFor="task-title">Titre</Label>
-              <Input
-                id="task-title"
-                placeholder="Que faut-il faire ?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={submitting}
-                autoFocus
-              />
+              <Label>Liste</Label>
+              <Select value={listId} onValueChange={setListId} disabled={submitting}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir une liste" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allLists.map((list) => (
+                    <SelectItem key={list.id} value={list.id}>
+                      {list.spaceName} / {list.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="task-desc">Description (optionnel)</Label>
-              <Textarea
-                id="task-desc"
-                placeholder="Plus de détails..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={submitting}
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label>Liste</Label>
-                <Select value={listId} onValueChange={setListId} disabled={submitting}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir une liste" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLists.map((list) => (
-                      <SelectItem key={list.id} value={list.id}>
-                        {list.spaceName} / {list.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Assigné(s)</Label>
-                <div className="pt-1">
-                  <MultiAssigneePicker
-                    assigneeIds={assigneeIds}
-                    workspaceId={workspaceId!}
-                    onChange={setAssigneeIds}
-                    size="md"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Priorité</Label>
-                <Select value={priority} onValueChange={setPriority} disabled={submitting}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="urgent">Urgente</SelectItem>
-                    <SelectItem value="high">Haute</SelectItem>
-                    <SelectItem value="normal">Normale</SelectItem>
-                    <SelectItem value="low">Basse</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label>Assigné(s)</Label>
+              <div className="pt-1">
+                <MultiAssigneePicker
+                  assigneeIds={assigneeIds}
+                  workspaceId={workspaceId!}
+                  onChange={setAssigneeIds}
+                  size="md"
+                />
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label>Priorité</Label>
+              <Select value={priority} onValueChange={setPriority} disabled={submitting}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="urgent">Urgente</SelectItem>
+                  <SelectItem value="high">Haute</SelectItem>
+                  <SelectItem value="normal">Normale</SelectItem>
+                  <SelectItem value="low">Basse</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {isDesktop ? (
             <DialogFooter>
               <Button
                 type="button"
@@ -217,9 +216,62 @@ export function CreateTaskDialog({
                 {submitting ? "Création..." : "Créer la tâche"}
               </Button>
             </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+          ) : (
+            <DrawerFooter className="px-0 pt-2">
+              <Button type="submit" disabled={submitting || !title.trim() || !listId} className="w-full">
+                {submitting ? "Création..." : "Créer la tâche"}
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="w-full" disabled={submitting}>
+                  Annuler
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          )}
+        </form>
+      )}
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={(val) => {
+          onOpenChange(val);
+          if (!val) reset();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nouvelle tâche</DialogTitle>
+            <DialogDescription>
+              Ajoutez une tâche dans une de vos listes.
+            </DialogDescription>
+          </DialogHeader>
+          <FormContent />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Drawer
+      open={open}
+      onOpenChange={(val) => {
+        onOpenChange(val);
+        if (!val) reset();
+      }}
+    >
+      <DrawerContent>
+        <DrawerHeader className="text-left">
+          <DrawerTitle>Nouvelle tâche</DrawerTitle>
+          <DrawerDescription>
+            Ajoutez une tâche dans une de vos listes.
+          </DrawerDescription>
+        </DrawerHeader>
+        <FormContent />
+      </DrawerContent>
+    </Drawer>
   );
 }

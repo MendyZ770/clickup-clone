@@ -24,8 +24,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-16 px-2">
+    <nav className="md:hidden fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 rounded-[2rem] border border-white/10 dark:border-white/5 bg-background/60 dark:bg-background/40 backdrop-blur-2xl shadow-2xl shadow-black/20">
+      <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -36,18 +36,25 @@ export function MobileNav() {
               onClick={() => router.push(item.href)}
               whileTap={{ scale: 0.9 }}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] rounded-lg transition-all duration-200",
+                "relative flex flex-col items-center justify-center gap-1 min-w-[60px] h-14 rounded-2xl transition-all duration-300",
                 isActive
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  ? "text-primary bg-primary/15 shadow-inner"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
               )}
             >
-              <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-              <span className="text-[10px] font-medium leading-tight">{item.label}</span>
+              <item.icon className={cn("h-5 w-5 transition-transform duration-300", isActive && "stroke-[2.5] scale-110")} />
+              <span className={cn("text-[10px] font-semibold leading-tight transition-all duration-300", isActive ? "opacity-100" : "opacity-70")}>{item.label}</span>
               {isActive && (
                 <motion.span
                   layoutId="mobile-nav-indicator"
-                  className="absolute bottom-0.5 h-[3px] w-5 rounded-full bg-primary"
+                  className="absolute -bottom-1 h-1 w-8 rounded-full bg-primary/80 blur-[2px]"
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                />
+              )}
+              {isActive && (
+                <motion.span
+                  layoutId="mobile-nav-indicator-solid"
+                  className="absolute -bottom-1 h-1 w-6 rounded-full bg-primary"
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 />
               )}

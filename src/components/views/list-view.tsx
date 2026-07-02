@@ -121,9 +121,10 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
               onToggle={() => toggleGroup(status.id)}
             />
             {!isCollapsed && (
-              <div className="stagger-children">
-                {/* Column headers */}
-                <div className="flex items-center gap-2 border-b px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="stagger-children overflow-x-auto hide-scrollbar pb-2">
+                <div className="min-w-[300px]">
+                  {/* Column headers */}
+                  <div className="flex items-center gap-2 border-b px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   <span className="w-4" />
                   <span className="flex-1">Titre</span>
                   <span className="hidden sm:block w-16" />
@@ -146,6 +147,7 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
                   onCreated={() => mutate()}
                   className="border-b"
                 />
+                </div>
               </div>
             )}
           </div>

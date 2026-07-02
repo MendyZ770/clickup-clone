@@ -185,29 +185,33 @@ export default function MyTasksPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card className="border-border/50">
-            <CardContent className="p-4">
-              <p className="text-[10px] uppercase tracking-wider text-red-500 font-medium">En retard</p>
-              <p className="text-2xl font-bold mt-1">{grouped.overdue.length}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Card className="border-border/30 bg-card/40 backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-red-500/5 transition-all">
+            <CardContent className="p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><AlertTriangle className="h-10 w-10 text-red-500" /></div>
+              <p className="text-[10px] uppercase tracking-wider text-red-500 font-bold">En retard</p>
+              <p className="text-3xl font-black mt-2">{grouped.overdue.length}</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-4">
-              <p className="text-[10px] uppercase tracking-wider text-orange-500 font-medium">{"Aujourd'hui"}</p>
-              <p className="text-2xl font-bold mt-1">{grouped.today.length}</p>
+          <Card className="border-border/30 bg-card/40 backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-orange-500/5 transition-all">
+            <CardContent className="p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><Calendar className="h-10 w-10 text-orange-500" /></div>
+              <p className="text-[10px] uppercase tracking-wider text-orange-500 font-bold">{"Aujourd'hui"}</p>
+              <p className="text-3xl font-black mt-2">{grouped.today.length}</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-4">
-              <p className="text-[10px] uppercase tracking-wider text-blue-500 font-medium">À venir</p>
-              <p className="text-2xl font-bold mt-1">{grouped.upcoming.length}</p>
+          <Card className="border-border/30 bg-card/40 backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-blue-500/5 transition-all">
+            <CardContent className="p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><Calendar className="h-10 w-10 text-blue-500" /></div>
+              <p className="text-[10px] uppercase tracking-wider text-blue-500 font-bold">À venir</p>
+              <p className="text-3xl font-black mt-2">{grouped.upcoming.length}</p>
             </CardContent>
           </Card>
-          <Card className="border-border/50">
-            <CardContent className="p-4">
-              <p className="text-[10px] uppercase tracking-wider text-green-500 font-medium">Terminées</p>
-              <p className="text-2xl font-bold mt-1">{grouped.done.length}</p>
+          <Card className="border-border/30 bg-card/40 backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-green-500/5 transition-all">
+            <CardContent className="p-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><CheckCircle2 className="h-10 w-10 text-green-500" /></div>
+              <p className="text-[10px] uppercase tracking-wider text-green-500 font-bold">Terminées</p>
+              <p className="text-3xl font-black mt-2">{grouped.done.length}</p>
             </CardContent>
           </Card>
         </div>

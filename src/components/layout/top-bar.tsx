@@ -35,7 +35,7 @@ export function TopBar() {
   const themeLabel = mode === "light" ? "Thème clair" : mode === "dark" ? "Thème sombre" : "Thème système";
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 pt-[env(safe-area-inset-top)] md:static md:px-4 md:pt-0">
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 px-3 pt-[env(safe-area-inset-top)] md:static md:px-4 md:pt-0">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />
@@ -51,7 +51,7 @@ export function TopBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              className="h-11 w-11 md:h-9 md:w-9 text-muted-foreground hover:text-foreground"
               aria-label={themeLabel}
               title={themeLabel}
             >
@@ -86,7 +86,7 @@ export function TopBar() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          className="h-11 w-11 md:h-9 md:w-9 text-muted-foreground hover:text-foreground"
           onClick={openSearch}
           aria-label="Rechercher (⌘K)"
           title="Rechercher (⌘K)"
@@ -97,7 +97,7 @@ export function TopBar() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+          className="relative h-11 w-11 md:h-9 md:w-9 text-muted-foreground hover:text-foreground"
           onClick={() => router.push("/notifications")}
           aria-label={
             unreadCount > 0

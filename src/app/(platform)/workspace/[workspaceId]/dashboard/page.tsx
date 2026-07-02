@@ -151,7 +151,7 @@ export default function DashboardPage() {
           
           <Button
             size="lg"
-            className="rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 font-semibold px-6"
+            className="w-full md:w-auto rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 font-semibold px-6"
             onClick={() => currentWorkspace && openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
           >
             <Plus className="mr-2 h-5 w-5" /> Nouvelle tâche
