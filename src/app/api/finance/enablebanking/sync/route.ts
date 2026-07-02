@@ -95,8 +95,9 @@ export async function POST(req: Request) {
           // Ignorer les doublons exacts
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Could not fetch transactions", e);
+      return NextResponse.json({ error: "Session bancaire expirée ou erreur API: " + e.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, importedCount });
