@@ -55,8 +55,10 @@ export async function POST(req: Request) {
     let importedCount = 0;
     try {
       const txRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts/${ebAccId}/transactions`);
-      
-      const transactions = txRes.transactions?.booked || [];
+      const transactions = [
+        ...(txRes.transactions?.booked || []),
+        ...(txRes.transactions?.pending || [])
+      ];
 
       for (const txn of transactions) {
         const txnId = txn.transactionId || txn.internalTransactionId;
