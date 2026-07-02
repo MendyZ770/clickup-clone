@@ -71,7 +71,7 @@ export function TasksByPriorityChart({
 
   if (isLoading) {
     return (
-      <div className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm">
+      <div className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 space-y-4 shadow-sm h-full flex flex-col">
         <Skeleton className="h-5 w-32" />
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="space-y-1.5">
@@ -85,20 +85,24 @@ export function TasksByPriorityChart({
 
   if (chartData.every((d) => d.count === 0)) {
     return (
-      <div className="rounded-3xl border border-border/40 bg-card p-5 flex flex-col items-center justify-center h-full shadow-sm">
+      <div className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 flex flex-col items-center justify-center h-full shadow-sm">
         <p className="text-sm text-muted-foreground font-medium">Aucune tâche</p>
       </div>
     );
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
+    <div className="relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-500 group h-full flex flex-col">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 relative z-10">
         <span className="h-2 w-2 rounded-full bg-primary" />
         Tâches par priorité
       </h3>
-      <BarChartComponent data={chartData} />
+      <div className="flex-grow min-h-0 relative z-10 flex items-center justify-center">
+        <div className="w-full h-full -ml-4">
+          <BarChartComponent data={chartData} />
+        </div>
+      </div>
     </div>
   );
 }

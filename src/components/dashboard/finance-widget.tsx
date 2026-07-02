@@ -21,9 +21,9 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
 
   if (isLoading) {
     return (
-      <Card className="overflow-hidden border-border/50">
-        <div className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm">
-        <Skeleton className="h-5 w-32" />
+      <Card className="overflow-hidden border-border/30 bg-card/40 backdrop-blur-xl h-full">
+        <div className="rounded-[2rem] p-6 space-y-4 shadow-sm h-full flex flex-col">
+          <Skeleton className="h-5 w-32" />
         <div className="grid grid-cols-2 gap-4 mt-4">
             <Skeleton className="h-20 rounded-xl" />
             <Skeleton className="h-20 rounded-xl" />
@@ -74,9 +74,9 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
+    <div className="relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-500 group h-full flex flex-col">
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      <div className="flex items-center justify-between mb-4 relative z-10">
+      <div className="flex items-center justify-between mb-6 relative z-10">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <Landmark className="h-5 w-5 text-white" />
@@ -92,16 +92,16 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 relative z-10">
+        <div className="grid grid-cols-2 gap-4 relative z-10 flex-grow">
           {cards.map((card, i) => (
             <motion.div
               key={card.label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08, duration: 0.4 }}
-              className={`relative rounded-xl bg-gradient-to-br ${card.color} border border-border/40 p-3 hover:shadow-md transition-shadow`}
+              className={`relative rounded-2xl bg-gradient-to-br ${card.color} border border-border/30 p-4 hover:shadow-lg transition-shadow flex flex-col justify-center`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
                   {card.label}
                 </span>
@@ -127,12 +127,11 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
           ))}
         </div>
 
-        {/* Mini net indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-3 flex items-center gap-2 text-sm"
+          className="mt-4 flex items-center gap-2 text-sm pt-2 border-t border-border/20"
         >
           <div
             className={`h-3 w-3 rounded-full ${monthlyNet >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}

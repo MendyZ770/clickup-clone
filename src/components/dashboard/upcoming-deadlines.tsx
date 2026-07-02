@@ -51,7 +51,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm"
+        className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 space-y-4 shadow-sm h-full flex flex-col"
       >
         <Skeleton className="h-5 w-40" />
         {[1, 2, 3, 4, 5].map((i) => (
@@ -73,7 +73,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="rounded-3xl border border-border/40 bg-card p-5 flex flex-col items-center justify-center h-full shadow-sm"
+        className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 flex flex-col items-center justify-center h-full shadow-sm"
       >
         <motion.div
           animate={{ y: [0, -8, 0] }}
@@ -91,7 +91,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group"
+      className="relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-500 group h-full flex flex-col"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <div className="flex items-center justify-between mb-6 relative z-10">
@@ -104,7 +104,7 @@ export const UpcomingDeadlines = memo(function UpcomingDeadlines({
         </span>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1 flex-grow overflow-y-auto pr-2 custom-scrollbar">
         <AnimatePresence>
         {tasks.map((task) => {
           const isUrgent =

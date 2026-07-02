@@ -102,7 +102,7 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="rounded-3xl border border-border/40 bg-card p-5 space-y-4 shadow-sm"
+        className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 space-y-4 shadow-sm h-full flex flex-col"
       >
         <Skeleton className="h-5 w-32" />
         {[1, 2, 3, 4, 5].map((i) => (
@@ -124,7 +124,7 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="rounded-3xl border border-border/40 bg-card p-5 flex flex-col items-center justify-center h-full shadow-sm"
+        className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 flex flex-col items-center justify-center h-full shadow-sm"
       >
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
@@ -142,7 +142,7 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="relative overflow-hidden rounded-3xl border border-border/40 bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-300 group"
+      className="relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-500 group h-full flex flex-col"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-6 relative z-10">
@@ -154,7 +154,7 @@ export const RecentActivity = memo(function RecentActivity({ activities, isLoadi
         Activité récente
       </h3>
 
-      <div className="relative space-y-0">
+      <div className="relative space-y-0 flex-grow overflow-y-auto pr-2 custom-scrollbar">
         {/* Timeline line */}
         <motion.div
           initial={{ scaleY: 0 }}

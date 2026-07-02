@@ -98,7 +98,7 @@ export const StatsCards = memo(function StatsCards({
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
       >
         {cards.map((c, i) => (
-          <motion.div key={i} variants={staggerItem} className="rounded-3xl border border-border/40 bg-card p-4 md:p-5 space-y-3 shadow-sm">
+          <motion.div key={i} variants={staggerItem} className="rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 space-y-3 shadow-sm">
             <div className="flex items-center gap-3">
               <Skeleton className="h-12 w-12 rounded-2xl" />
             </div>
@@ -130,9 +130,9 @@ export const StatsCards = memo(function StatsCards({
             whileTap={{ scale: 0.98 }}
             onClick={() => onCardClick?.(card.key)}
             className={cn(
-              "group relative overflow-hidden rounded-3xl border border-border/40 bg-card p-4 md:p-5 w-full text-left",
-              "shadow-sm hover:shadow-lg transition-all duration-300",
-              "bg-gradient-to-br cursor-pointer",
+              "group relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 w-full text-left",
+              "shadow-xl shadow-black/5 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500",
+              "cursor-pointer",
               card.gradient
             )}
           >
