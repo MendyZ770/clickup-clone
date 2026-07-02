@@ -62,11 +62,17 @@ export async function POST(req: Request) {
       ];
 
       for (const txn of transactions) {
-        const txnId = txn.transactionId || txn.internalTransactionId;
-        if (!txnId) continue;
+        const txnId = txn.transactionId || txn.internalTransactionId || txn.entryReference;
+        if (!txnId) {
+           console.log("Skipping transaction because no ID found:", JSON.stringify(txn));
+           continue;
+        }
         
-        const amountStr = txn.transactionAmount?.amount;
-        if (!amountStr) continue;
+        const amountStr = txn.transactionAmount?.amount || txn.amount;
+        if (!amountStr) {
+           console.log("Skipping transaction because no amount found:", JSON.stringify(txn));
+           continue;
+        }
 
         const amount = parseFloat(amountStr);
         const description = txn.remittanceInformationUnstructured || txn.creditorName || txn.debtorName || "Transaction";

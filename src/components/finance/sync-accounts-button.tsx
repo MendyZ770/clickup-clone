@@ -33,7 +33,7 @@ export function SyncAccountsButton({
     
     try {
       // Sync each account one by one
-      for (const acc of linkedAccounts) {
+      const syncPromises = linkedAccounts.map(async (acc) => {
         const res = await fetch("/api/finance/enablebanking/sync", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -43,13 +43,17 @@ export function SyncAccountsButton({
         if (res.ok) {
           const data = await res.json();
           if (data.importedCount) {
-            totalImported += data.importedCount;
+            return data.importedCount;
           }
         } else {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || `Erreur serveur (${res.status})`);
         }
-      }
+        return 0;
+      });
+
+      const results = await Promise.all(syncPromises);
+      totalImported = results.reduce((acc, count) => acc + count, 0);
 
       toast({
         title: "Synchronisation terminée",
