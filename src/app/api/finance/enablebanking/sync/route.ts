@@ -47,8 +47,9 @@ export async function POST(req: Request) {
           });
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Could not fetch balance", e);
+      return NextResponse.json({ error: "Failed to fetch balance: " + e.message }, { status: 500 });
     }
 
     // Fetch transactions
@@ -97,7 +98,7 @@ export async function POST(req: Request) {
       }
     } catch (e: any) {
       console.error("Could not fetch transactions", e);
-      return NextResponse.json({ error: "Session bancaire expirée ou erreur API: " + e.message }, { status: 400 });
+      return NextResponse.json({ error: "Failed to fetch transactions: " + e.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, importedCount });

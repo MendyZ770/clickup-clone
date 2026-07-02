@@ -46,8 +46,8 @@ export function SyncAccountsButton({
             totalImported += data.importedCount;
           }
         } else {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Erreur inconnue");
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Erreur serveur (${res.status})`);
         }
       }
 
@@ -59,11 +59,11 @@ export function SyncAccountsButton({
       });
       
       onSync();
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       toast({
         title: "Erreur de synchronisation",
-        description: error.message || "Un problème est survenu lors de la synchronisation de vos comptes.",
+        description: error instanceof Error ? error.message : "Un problème est survenu lors de la synchronisation de vos comptes.",
         variant: "destructive"
       });
     } finally {
