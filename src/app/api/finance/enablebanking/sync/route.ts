@@ -54,23 +54,28 @@ export async function POST(req: Request) {
 
     // Fetch transactions
     let importedCount = 0;
+    let skippedCount = 0;
+    let rawTransactions: any[] = [];
     try {
       const txRes = await fetchEnableBanking(`/accounts/${ebAccId}/transactions`);
       const transactions = [
         ...(txRes.transactions?.booked || []),
         ...(txRes.transactions?.pending || [])
       ];
+      rawTransactions = transactions;
 
       for (const txn of transactions) {
         const txnId = txn.transactionId || txn.internalTransactionId || txn.entryReference;
         if (!txnId) {
            console.log("Skipping transaction because no ID found:", JSON.stringify(txn));
+           skippedCount++;
            continue;
         }
         
         const amountStr = txn.transactionAmount?.amount || txn.amount;
         if (!amountStr) {
            console.log("Skipping transaction because no amount found:", JSON.stringify(txn));
+           skippedCount++;
            continue;
         }
 
@@ -107,7 +112,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to fetch transactions: " + e.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, importedCount });
+    return NextResponse.json({ success: true, importedCount, skippedCount, rawTransactions });
   } catch (error: any) {
     console.error("Error syncing with Enable Banking:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
