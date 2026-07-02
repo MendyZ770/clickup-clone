@@ -43,7 +43,7 @@ export function EnableBankingCallback({ handleMutate }: { handleMutate: () => vo
           console.error(err);
           toast({
             title: "Erreur",
-            description: "Impossible de lier le compte bancaire.",
+            description: err.message || "Impossible de lier le compte bancaire.",
             variant: "destructive",
           });
         })
