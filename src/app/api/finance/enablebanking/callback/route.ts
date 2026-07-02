@@ -46,16 +46,17 @@ export async function POST(req: Request) {
 
     const sessionId = sessionRes.session_id;
 
-    // Récupérer la liste des comptes associés à cette session
-    const accountsRes = await fetchEnableBanking(`/sessions/${sessionId}/accounts`);
+    // Récupérer la liste des comptes depuis la réponse de session
+    const accountsData = sessionRes.accounts_data || sessionRes.accounts || [];
 
-    if (!accountsRes.accounts || accountsRes.accounts.length === 0) {
+    if (accountsData.length === 0) {
       return NextResponse.json({ error: "No accounts found" }, { status: 400 });
     }
 
     // Sauvegarder chaque compte en BDD
-    for (const acc of accountsRes.accounts) {
-      const accountId = acc.account_id;
+    for (const acc of accountsData) {
+      // acc.uid is usually the unique id, fallback to acc.account_id or acc
+      const accountId = acc.uid || acc.account_id || acc.id || acc;
       // On génère un identifiant unique combinant la session et l'account pour Enable Banking
       const ebId = `${sessionId}:${accountId}`;
 
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
       let name = "Compte Bancaire";
       if (acc.iban) name = `Compte ${acc.iban.slice(-4)}`;
       else if (acc.name) name = acc.name;
+      else if (typeof acc === "string") name = `Compte ${acc.slice(-4)}`;
 
       await prisma.financeAccount.create({
         data: {
