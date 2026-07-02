@@ -833,8 +833,8 @@ model FinanceAccount {
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  plaidAccessToken String?
-  plaidItemId      String?
+  gcRequisitionId String?
+  gcAccountId     String?
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -873,7 +873,7 @@ model FinanceTransaction {
   description String?
   date        DateTime @default(now())
   createdAt   DateTime @default(now())
-  plaidTransactionId String? @unique
+  gcTransactionId String? @unique
 
   // Transfert entre comptes
   isTransfer      Boolean @default(false)

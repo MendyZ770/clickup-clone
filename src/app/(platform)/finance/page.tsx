@@ -24,7 +24,7 @@ import { CategoryManager } from "@/components/finance/category-manager";
 import { ExpenseChart } from "@/components/finance/expense-chart";
 import { IncomeExpenseChart } from "@/components/finance/income-expense-chart";
 import { PeriodFilter, type PeriodFilter as PeriodFilterType } from "@/components/finance/period-filter";
-import { PlaidLinkButton } from "@/components/finance/plaid-link-button";
+import { GoCardlessLinkButton } from "@/components/finance/gocardless-link-button";
 import {
   TrendingUp,
   CreditCard,
@@ -219,7 +219,7 @@ export default function FinancePage() {
 
         <TabsContent value="accounts" className="space-y-4">
           <div className="flex justify-end gap-2">
-            <PlaidLinkButton workspaceId={workspaceId!} onSuccess={handleMutate} variant="outline" />
+            <GoCardlessLinkButton workspaceId={workspaceId!} onSuccess={handleMutate} variant="outline" />
             <Button variant="default" onClick={() => setShowAddAccount(true)}>
               + Ajouter manuel
             </Button>
