@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { createCommentSchema } from "@/lib/validations/comment";
 import { logActivity } from "@/lib/activity-logger";
+import { verifyTaskAccess } from "@/lib/task-auth";
 
 interface RouteContext {
   params: Promise<{ taskId: string }>;
@@ -16,6 +17,10 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+
+    if (!(await verifyTaskAccess(taskId, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const comments = await prisma.comment.findMany({
       where: { taskId },
@@ -46,25 +51,16 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { taskId } = await context.params;
 
-    // Verify task exists and get assignee for notification
+    if (!(await verifyTaskAccess(taskId, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const task = await prisma.task.findUnique({
       where: { id: taskId },
-      include: {
-        list: {
-          include: {
-            space: {
-              include: {
-                workspace: {
-                  include: { members: { where: { userId: user.id } } },
-                },
-              },
-            },
-          },
-        },
-      },
+      select: { title: true }
     });
 
-    if (!task || task.list.space.workspace.members.length === 0) {
+    if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 

@@ -68,6 +68,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le compte de destination est requis pour un transfert" }, { status: 400 });
     }
 
+    // Security Check: Verify accountId belongs to the user
+    const sourceAccount = await prisma.financeAccount.findUnique({
+      where: { id: accountId },
+    });
+    if (!sourceAccount || sourceAccount.userId !== user.id) {
+      return NextResponse.json({ error: "Forbidden: Compte source invalide" }, { status: 403 });
+    }
+
+    // Security Check: Verify targetAccountId belongs to the user if it's a transfer
+    if (isTransfer && targetAccountId) {
+      const targetAccount = await prisma.financeAccount.findUnique({
+        where: { id: targetAccountId },
+      });
+      if (!targetAccount || targetAccount.userId !== user.id) {
+        return NextResponse.json({ error: "Forbidden: Compte de destination invalide" }, { status: 403 });
+      }
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const transaction = await tx.financeTransaction.create({
         data: {

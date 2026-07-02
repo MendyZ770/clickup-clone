@@ -10,6 +10,11 @@ export async function GET(req: Request) {
     const workspaceId = searchParams.get("workspaceId");
     if (!workspaceId) return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
 
+    const member = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
     const goals = await prisma.goal.findMany({
       where: { workspaceId },
       include: {
@@ -20,7 +25,7 @@ export async function GET(req: Request) {
     });
     return NextResponse.json(goals);
   } catch (error) {
-    console.error(error);
+    console.error("GET /api/goals error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -31,6 +36,11 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { name, description, color, dueDate, workspaceId } = await req.json();
     if (!name || !workspaceId) return NextResponse.json({ error: "name and workspaceId required" }, { status: 400 });
+
+    const member = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!member) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const goal = await prisma.goal.create({
       data: {
@@ -45,7 +55,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(goal, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("POST /api/goals error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

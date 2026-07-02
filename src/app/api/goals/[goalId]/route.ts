@@ -12,10 +12,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ goalId:
       include: {
         creator: { select: { id: true, name: true, image: true } },
         targets: { orderBy: { createdAt: "asc" } },
+        workspace: { include: { members: { where: { userId: user.id } } } },
       },
     });
-    if (!goal) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(goal);
+    if (!goal || goal.workspace.members.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const { workspace: _w, ...goalData } = goal;
+    void _w;
+    return NextResponse.json(goalData);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -29,8 +33,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ goalId
     const { goalId } = await params;
     const body = await req.json();
 
-    const existing = await prisma.goal.findUnique({ where: { id: goalId } });
-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const existing = await prisma.goal.findUnique({
+      where: { id: goalId },
+      include: { workspace: { include: { members: { where: { userId: user.id } } } } },
+    });
+    if (!existing || existing.workspace.members.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     // Si verrouillé, seule la modification du champ `locked` est autorisée
     if (existing.locked) {
@@ -68,8 +75,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ goal
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { goalId } = await params;
 
-    const existing = await prisma.goal.findUnique({ where: { id: goalId } });
-    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const existing = await prisma.goal.findUnique({
+      where: { id: goalId },
+      include: { workspace: { include: { members: { where: { userId: user.id } } } } },
+    });
+    if (!existing || existing.workspace.members.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     if (existing.locked) {
       return NextResponse.json(

@@ -16,6 +16,19 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!workspaceMember) {
+      return NextResponse.json({ error: "Unauthorized access to workspace tasks" }, { status: 403 });
+    }
+
     const whereClause = mode === "team" ? {
       assignees: { some: {} },
       NOT: { assignees: { some: { userId: user.id } } },

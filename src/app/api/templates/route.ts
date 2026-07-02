@@ -15,6 +15,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const templates = await prisma.taskTemplate.findMany({
       where: { workspaceId },
       include: {
@@ -44,6 +51,13 @@ export async function POST(request: Request) {
 
     if (!name?.trim() || !workspaceId) {
       return NextResponse.json({ error: "name and workspaceId required" }, { status: 400 });
+    }
+
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const template = await prisma.taskTemplate.create({
@@ -76,6 +90,15 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "id required" }, { status: 400 });
+    }
+
+    const existing = await prisma.taskTemplate.findUnique({
+      where: { id },
+      include: { workspace: { include: { members: { where: { userId: user.id } } } } },
+    });
+
+    if (!existing || existing.workspace.members.length === 0) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     await prisma.taskTemplate.delete({ where: { id } });

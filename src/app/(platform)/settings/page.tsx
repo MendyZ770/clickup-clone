@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useUnifiedSession } from "@/hooks/use-unified-session";
-import { User, Lock, Bell, Loader2 } from "lucide-react";
+import { User, Lock, Bell, Moon, Sun, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ const NOTIF_ITEMS: { key: keyof NotifPrefs; label: string; description: string }
 export default function SettingsPage() {
   const { user: sessionUser } = useUnifiedSession();
   const { toast } = useToast();
+  const { mode, setMode } = useTheme();
 
   // Profil
   const [name, setName] = useState("");
@@ -184,6 +186,42 @@ export default function SettingsPage() {
               Enregistrer
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Thème */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            {mode === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            Thème de l'application
+          </CardTitle>
+          <CardDescription>Choisissez votre thème préféré</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              variant={mode === "light" ? "default" : "outline"}
+              onClick={() => setMode("light")}
+              className="flex-1"
+            >
+              <Sun className="mr-2 h-4 w-4" /> Clair
+            </Button>
+            <Button
+              variant={mode === "dark" ? "default" : "outline"}
+              onClick={() => setMode("dark")}
+              className="flex-1"
+            >
+              <Moon className="mr-2 h-4 w-4" /> Sombre
+            </Button>
+            <Button
+              variant={mode === "system" ? "default" : "outline"}
+              onClick={() => setMode("system")}
+              className="flex-1"
+            >
+              Système
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

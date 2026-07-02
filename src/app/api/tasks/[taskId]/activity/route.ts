@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 
 interface RouteContext {
   params: Promise<{ taskId: string }>;
@@ -14,6 +15,7 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const activities = await prisma.activity.findMany({
       where: { taskId },

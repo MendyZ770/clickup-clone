@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { taskId } = await params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const recurrence = await prisma.taskRecurrence.findUnique({ where: { taskId } });
     return NextResponse.json(recurrence);
   } catch (error) {
@@ -20,6 +22,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ taskId: 
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { taskId } = await params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const body = await req.json();
     const { pattern, interval, daysOfWeek, dayOfMonth, endDate } = body;
 
@@ -40,6 +43,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ task
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { taskId } = await params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await prisma.taskRecurrence.deleteMany({ where: { taskId } });
     return NextResponse.json({ success: true });
   } catch (error) {

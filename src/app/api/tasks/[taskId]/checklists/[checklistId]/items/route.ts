@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 import { z } from "zod";
 
 const createItemSchema = z.object({

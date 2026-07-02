@@ -16,6 +16,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "listId required" }, { status: 400 });
     }
 
+    // Verify user has access to this list
+    const list = await prisma.list.findUnique({
+      where: { id: listId },
+      include: { space: { include: { workspace: { include: { members: true } } } } }
+    });
+
+    if (!list || !list.space.workspace.members.some(m => m.userId === user.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const automations = await prisma.automation.findMany({
       where: { listId },
       orderBy: { createdAt: "desc" },

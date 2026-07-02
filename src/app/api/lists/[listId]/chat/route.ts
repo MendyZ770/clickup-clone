@@ -14,6 +14,15 @@ export async function GET(
 
     const { listId } = await params;
 
+    const list = await prisma.list.findUnique({
+      where: { id: listId },
+      include: { space: { include: { workspace: { include: { members: { where: { userId: user.id } } } } } } },
+    });
+
+    if (!list || list.space.workspace.members.length === 0) {
+      return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
+    }
+
     const messages = await prisma.chatMessage.findMany({
       where: { listId },
       include: {

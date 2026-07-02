@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { taskId } = await params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const attachments = await prisma.attachment.findMany({
       where: { taskId },
       include: { user: { select: { id: true, name: true, image: true } } },
@@ -24,6 +26,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ taskId:
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { taskId } = await params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const { name, url, type, mimeType, size } = await req.json();
     if (!name || !url) return NextResponse.json({ error: "name and url required" }, { status: 400 });
 

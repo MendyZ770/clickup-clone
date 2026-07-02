@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 import { z } from "zod";
 
 const createChecklistSchema = z.object({
@@ -19,6 +20,7 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const checklists = await prisma.checklist.findMany({
       where: { taskId },
@@ -46,6 +48,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     // Verify task exists and user has access
     const task = await prisma.task.findUnique({

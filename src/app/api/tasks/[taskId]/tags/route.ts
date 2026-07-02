@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 import { logActivity } from "@/lib/activity-logger";
 import { z } from "zod";
 
@@ -20,6 +21,7 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const taskTags = await prisma.taskTag.findMany({
       where: { taskId },
@@ -44,6 +46,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const parsed = addTagSchema.safeParse(body);
@@ -105,6 +108,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const { searchParams } = new URL(request.url);
     const tagId = searchParams.get("tagId");
 

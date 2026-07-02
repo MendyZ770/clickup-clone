@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 import { createTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 
@@ -16,6 +17,7 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const subtasks = await prisma.task.findMany({
       where: { parentId: taskId },
@@ -51,6 +53,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const { taskId } = await context.params;
+    if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     // Verify parent task exists and user has access
     const parentTask = await prisma.task.findUnique({

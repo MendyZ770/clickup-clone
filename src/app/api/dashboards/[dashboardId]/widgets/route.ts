@@ -76,8 +76,8 @@ export async function PATCH(
       include: { workspace: { include: { members: true } } },
     });
 
-    if (!dashboard) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!dashboard || !dashboard.workspace.members.some((m) => m.userId === user.id)) {
+      return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
     }
 
     // Update all widgets in a transaction
@@ -128,8 +128,8 @@ export async function DELETE(
       include: { workspace: { include: { members: true } } },
     });
 
-    if (!dashboard) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!dashboard || !dashboard.workspace.members.some((m) => m.userId === user.id)) {
+      return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
     }
 
     await prisma.widget.delete({

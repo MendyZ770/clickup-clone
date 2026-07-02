@@ -16,10 +16,29 @@ export async function GET(request: Request) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
+    if (taskId) {
+      const { verifyTaskAccess } = await import("@/lib/task-auth");
+      const hasAccess = await verifyTaskAccess(taskId, user.id);
+      if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const where: Prisma.TimeEntryWhereInput = {};
 
     if (taskId) where.taskId = taskId;
     if (userId) where.userId = userId;
+
+    if (!taskId) {
+      // If no taskId is provided, only return entries for tasks the user can access
+      where.task = {
+        list: {
+          space: {
+            workspace: {
+              members: { some: { userId: user.id } },
+            },
+          },
+        },
+      };
+    }
 
     if (startDate || endDate) {
       where.startTime = {};
@@ -72,13 +91,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify the task exists
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-    });
-
-    if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    const { verifyTaskAccess } = await import("@/lib/task-auth");
+    const hasAccess = await verifyTaskAccess(taskId, user.id);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const start = new Date(startTime);

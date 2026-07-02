@@ -16,6 +16,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "workspaceId required" }, { status: 400 });
     }
 
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
     const where: Record<string, unknown> = { workspaceId };
     if (type) where.type = type;
 
@@ -42,6 +47,11 @@ export async function POST(request: Request) {
     if (!name || !type || !workspaceId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId: user.id } },
+    });
+    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const category = await prisma.financeCategory.create({
       data: {
