@@ -25,6 +25,8 @@ import { ExpenseChart } from "@/components/finance/expense-chart";
 import { IncomeExpenseChart } from "@/components/finance/income-expense-chart";
 import { PeriodFilter, type PeriodFilter as PeriodFilterType } from "@/components/finance/period-filter";
 import { EnableBankingLinkButton } from "@/components/finance/enablebanking-link-button";
+import { EnableBankingCallback } from "@/components/finance/enablebanking-callback";
+import { Suspense } from "react";
 import {
   TrendingUp,
   CreditCard,
@@ -33,6 +35,7 @@ import {
   ArrowLeftRight,
   Landmark,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 
 function getPeriodDates(period: PeriodFilterType) {
@@ -75,6 +78,14 @@ export default function FinancePage() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
+
+  if (!accounts || !transactions) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
 
@@ -196,6 +207,10 @@ export default function FinancePage() {
         <ExpenseChart data={expenseByCategory} />
         <IncomeExpenseChart transactions={filteredTransactions} />
       </div>
+
+      <Suspense fallback={null}>
+        <EnableBankingCallback handleMutate={handleMutate} />
+      </Suspense>
 
       <Tabs defaultValue="accounts" className="space-y-4">
         <TabsList className="flex w-full overflow-x-auto md:w-auto md:inline-flex bg-muted/40 border border-border/30 p-1 rounded-lg">
