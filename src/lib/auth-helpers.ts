@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export const MOBILE_SESSION_COOKIE = "mobile_session";
 
-const SECRET = new TextEncoder().encode(
+const getSecret = () => new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
 );
 
@@ -21,7 +21,7 @@ const userSelect = {
 } as const;
 
 async function getUserFromMobileToken(token: string) {
-  const { payload } = await jwtVerify(token, SECRET, { clockTolerance: 60 });
+  const { payload } = await jwtVerify(token, getSecret(), { clockTolerance: 60 });
   if (!payload.id) return null;
   return prisma.user.findUnique({
     where: { id: payload.id as string },

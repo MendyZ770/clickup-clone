@@ -5,7 +5,7 @@ import { MOBILE_SESSION_COOKIE } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-const SECRET = new TextEncoder().encode(
+const getSecret = () => new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
 );
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("30d")
-      .sign(SECRET);
+      .sign(getSecret());
 
     const response = NextResponse.json({
       token,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const SECRET = new TextEncoder().encode(
+const getSecret = () => new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
 );
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     }
 
     const token = authHeader.slice(7);
-    const { payload } = await jwtVerify(token, SECRET, {
+    const { payload } = await jwtVerify(token, getSecret(), {
       clockTolerance: 60,
     });
 
