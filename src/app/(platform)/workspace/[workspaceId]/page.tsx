@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewSwitcher } from "@/components/layout/view-switcher";
 import Link from "next/link";
 import type { WorkspaceWithSpaces } from "@/types";
 
@@ -73,13 +74,16 @@ export default function WorkspacePage() {
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight">{workspace.name}</h1>
-        {workspace.description && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {workspace.description}
-          </p>
-        )}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">{workspace.name}</h1>
+          {workspace.description && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {workspace.description}
+            </p>
+          )}
+        </div>
+        <ViewSwitcher />
       </div>
 
       {/* Stats */}

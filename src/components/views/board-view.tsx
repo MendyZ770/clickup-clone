@@ -22,11 +22,12 @@ interface StatusGroup {
 }
 
 interface BoardViewProps {
-  listId: string;
+  listId?: string;
+  spaceId?: string;
   workspaceId: string;
 }
 
-export function BoardView({ listId, workspaceId }: BoardViewProps) {
+export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
   const { getFilter } = useFilters();
   const { setWorkspaceId } = useModal();
 
@@ -34,18 +35,25 @@ export function BoardView({ listId, workspaceId }: BoardViewProps) {
     setWorkspaceId(workspaceId);
   }, [workspaceId, setWorkspaceId]);
 
-  const { data: statuses } = useSWR<StatusGroup[]>(
-    `/api/lists/${listId}/statuses`
-  );
+  const endpoint = listId
+    ? `/api/lists/${listId}/statuses`
+    : spaceId
+    ? `/api/spaces/${spaceId}/statuses`
+    : `/api/workspaces/${workspaceId}/statuses`;
 
-  const { tasks, isLoading, mutate } = useTasks(listId, {
-    statusId: getFilter("statusId") ?? undefined,
-    priority: getFilter("priority") ?? undefined,
-    assigneeId: getFilter("assigneeId") ?? undefined,
-    search: getFilter("search") ?? undefined,
-    sortBy: getFilter("sortBy") ?? undefined,
-    sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
-  });
+  const { data: statuses } = useSWR<StatusGroup[]>(endpoint);
+
+  const { tasks, isLoading, mutate } = useTasks(
+    { listId, spaceId, workspaceId },
+    {
+      statusId: getFilter("statusId") ?? undefined,
+      priority: getFilter("priority") ?? undefined,
+      assigneeId: getFilter("assigneeId") ?? undefined,
+      search: getFilter("search") ?? undefined,
+      sortBy: getFilter("sortBy") ?? undefined,
+      sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
+    }
+  );
 
   const handleDragEnd = useCallback(
     async (result: DropResult) => {

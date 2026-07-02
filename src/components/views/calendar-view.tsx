@@ -53,12 +53,17 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
     setWorkspaceId(workspaceId);
   }, [workspaceId, setWorkspaceId]);
 
-  const { tasks, isLoading, mutate } = useTasks(listId, {
-    statusId: getFilter("statusId") ?? undefined,
-    priority: getFilter("priority") ?? undefined,
-    assigneeId: getFilter("assigneeId") ?? undefined,
-    search: getFilter("search") ?? undefined,
-  });
+  const { tasks, isLoading, mutate } = useTasks(
+    { listId },
+    {
+      statusId: getFilter("statusId") ?? undefined,
+      priority: getFilter("priority") ?? undefined,
+      assigneeId: getFilter("assigneeId") ?? undefined,
+      search: getFilter("search") ?? undefined,
+      sortBy: getFilter("sortBy") ?? undefined,
+      sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
+    }
+  );
 
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentDate);

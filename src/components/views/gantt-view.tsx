@@ -45,12 +45,15 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  const { tasks, isLoading } = useTasks(listId, {
-    statusId: getFilter("statusId") ?? undefined,
-    priority: getFilter("priority") ?? undefined,
-    assigneeId: getFilter("assigneeId") ?? undefined,
-    search: getFilter("search") ?? undefined,
-  });
+  const { tasks, isLoading } = useTasks(
+    { listId },
+    {
+      statusId: getFilter("statusId") ?? undefined,
+      priority: getFilter("priority") ?? undefined,
+      assigneeId: getFilter("assigneeId") ?? undefined,
+      search: getFilter("search") ?? undefined,
+    }
+  );
 
   const days = useMemo(() => {
     return Array.from({ length: TOTAL_DAYS }, (_, i) => addDays(startDate, i));

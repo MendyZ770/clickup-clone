@@ -13,18 +13,26 @@ interface TaskFilters {
   sortOrder?: "asc" | "desc";
 }
 
-export function useTasks(listId: string | null | undefined, filters?: TaskFilters) {
-  const params = new URLSearchParams();
-  if (listId) params.set("listId", listId);
-  if (filters?.statusId) params.set("statusId", filters.statusId);
-  if (filters?.priority) params.set("priority", filters.priority);
-  if (filters?.assigneeId) params.set("assigneeId", filters.assigneeId);
-  if (filters?.search) params.set("search", filters.search);
-  if (filters?.sortBy) params.set("sortBy", filters.sortBy);
-  if (filters?.sortOrder) params.set("sortOrder", filters.sortOrder);
+export function useTasks(
+  params: { listId?: string | null; spaceId?: string | null; workspaceId?: string | null },
+  filters?: TaskFilters
+) {
+  const searchParams = new URLSearchParams();
+  if (params.listId) searchParams.set("listId", params.listId);
+  if (params.spaceId) searchParams.set("spaceId", params.spaceId);
+  if (params.workspaceId) searchParams.set("workspaceId", params.workspaceId);
+  
+  if (filters?.statusId) searchParams.set("statusId", filters.statusId);
+  if (filters?.priority) searchParams.set("priority", filters.priority);
+  if (filters?.assigneeId) searchParams.set("assigneeId", filters.assigneeId);
+  if (filters?.search) searchParams.set("search", filters.search);
+  if (filters?.sortBy) searchParams.set("sortBy", filters.sortBy);
+  if (filters?.sortOrder) searchParams.set("sortOrder", filters.sortOrder);
+
+  const hasContext = Boolean(params.listId || params.spaceId || params.workspaceId);
 
   const { data, error, isLoading, mutate } = useSWR<TaskSummary[]>(
-    listId ? `/api/tasks?${params.toString()}` : null
+    hasContext ? `/api/tasks?${searchParams.toString()}` : null
   );
 
   return {

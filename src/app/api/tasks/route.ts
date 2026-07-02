@@ -18,6 +18,8 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const listId = searchParams.get("listId");
+    const spaceId = searchParams.get("spaceId");
+    const workspaceId = searchParams.get("workspaceId");
     const statusId = searchParams.get("statusId");
     const priority = searchParams.get("priority");
     const assigneeId = searchParams.get("assigneeId");
@@ -25,37 +27,53 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get("sortBy") ?? "position";
     const sortOrder = searchParams.get("sortOrder") ?? "asc";
 
-    if (!listId) {
+    if (!listId && !spaceId && !workspaceId) {
       return NextResponse.json(
-        { error: "listId query param is required" },
+        { error: "listId, spaceId, or workspaceId query param is required" },
         { status: 400 }
       );
     }
 
-    const listAccess = await prisma.list.findUnique({
-      where: { id: listId },
-      include: {
-        space: {
-          include: {
-            workspace: {
-              include: { members: { where: { userId: user.id } } },
-            },
-          },
-        },
-      },
-    });
-
-    if (!listAccess || listAccess.space.workspace.members.length === 0) {
-      return NextResponse.json({ error: "Unauthorized access to list" }, { status: 403 });
-    }
-
     // Build where clause
     const where: Prisma.TaskWhereInput = {
-      listId,
       parentId: null, // Only top-level tasks
     };
 
-    if (statusId) where.statusId = statusId;
+    if (listId) {
+      const listAccess = await prisma.list.findUnique({
+        where: { id: listId },
+        include: { space: { include: { workspace: { include: { members: { where: { userId: user.id } } } } } } },
+      });
+      if (!listAccess || listAccess.space.workspace.members.length === 0) {
+        return NextResponse.json({ error: "Unauthorized access to list" }, { status: 403 });
+      }
+      where.listId = listId;
+    } else if (spaceId) {
+      const spaceAccess = await prisma.space.findUnique({
+        where: { id: spaceId },
+        include: { workspace: { include: { members: { where: { userId: user.id } } } } },
+      });
+      if (!spaceAccess || spaceAccess.workspace.members.length === 0) {
+        return NextResponse.json({ error: "Unauthorized access to space" }, { status: 403 });
+      }
+      where.list = { spaceId };
+    } else if (workspaceId) {
+      const workspaceAccess = await prisma.workspaceMember.findUnique({
+        where: { workspaceId_userId: { workspaceId, userId: user.id } },
+      });
+      if (!workspaceAccess) {
+        return NextResponse.json({ error: "Unauthorized access to workspace" }, { status: 403 });
+      }
+      where.list = { space: { workspaceId } };
+    }
+
+    if (statusId) {
+      // Pour le Kanban global, le statusId passé pourrait être un nom de statut. 
+      // Si c'est le cas, on doit adapter le filtre ou s'attendre à recevoir une liste de statusIds ?
+      // Dans ClickUp, le drag&drop filtre par statusId si listId, mais si global, c'est différent.
+      // Pour l'instant, gardons le where.statusId tel quel, on changera le hook pour passer un tableau ou adapter.
+      where.statusId = statusId;
+    }
     if (priority) where.priority = priority;
     if (assigneeId) {
       const assigneeIds = assigneeId.split(",").filter(Boolean);

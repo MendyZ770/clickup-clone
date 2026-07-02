@@ -34,11 +34,15 @@ export function WorkloadView({ listId, workspaceId }: WorkloadViewProps) {
 
   useEffect(() => { setWorkspaceId(workspaceId); }, [workspaceId, setWorkspaceId]);
 
-  const { tasks, isLoading } = useTasks(listId, {
-    statusId: getFilter("statusId") ?? undefined,
-    priority: getFilter("priority") ?? undefined,
-    search: getFilter("search") ?? undefined,
-  });
+  const { tasks, isLoading } = useTasks(
+    { listId },
+    {
+      statusId: getFilter("statusId") ?? undefined,
+      priority: getFilter("priority") ?? undefined,
+      assigneeId: getFilter("assigneeId") ?? undefined,
+      search: getFilter("search") ?? undefined,
+    }
+  );
 
   const days = useMemo(() => {
     return Array.from({ length: DAYS_TO_SHOW }, (_, i) => addDays(startDate, i));

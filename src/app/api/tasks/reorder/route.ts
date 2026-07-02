@@ -33,18 +33,59 @@ export async function PATCH(request: Request) {
 
     // Bulk update using a transaction
     await prisma.$transaction(
-      tasks.map((t) => {
-        const data: { position: number; statusId?: string } = {
-          position: t.position,
-        };
-        if (t.statusId) {
-          data.statusId = t.statusId;
+      async (tx) => {
+        for (const t of tasks) {
+          const data: { position: number; statusId?: string } = {
+            position: t.position,
+          };
+
+          if (t.statusId) {
+            if (t.statusId.startsWith("global:")) {
+              const statusName = t.statusId.replace("global:", "");
+              
+              // We need the task's listId to find/create the status
+              const task = await tx.task.findUnique({
+                where: { id: t.id },
+                select: { listId: true },
+              });
+              
+              if (task) {
+                // Find status by name in this list
+                let targetStatus = await tx.status.findFirst({
+                  where: { listId: task.listId, name: statusName },
+                });
+                
+                // If not found, auto-create it
+                if (!targetStatus) {
+                  // get last order
+                  const last = await tx.status.findFirst({
+                    where: { listId: task.listId },
+                    orderBy: { order: "desc" }
+                  });
+                  targetStatus = await tx.status.create({
+                    data: {
+                      name: statusName,
+                      color: "#6B7280",
+                      type: "custom",
+                      order: last ? last.order + 1 : 0,
+                      listId: task.listId,
+                    }
+                  });
+                }
+                
+                data.statusId = targetStatus.id;
+              }
+            } else {
+              data.statusId = t.statusId;
+            }
+          }
+
+          await tx.task.update({
+            where: { id: t.id },
+            data,
+          });
         }
-        return prisma.task.update({
-          where: { id: t.id },
-          data,
-        });
-      })
+      }
     );
 
     return NextResponse.json({ success: true });

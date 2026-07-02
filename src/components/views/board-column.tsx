@@ -10,7 +10,7 @@ import type { TaskSummary } from "@/types";
 interface BoardColumnProps {
   status: { id: string; name: string; color: string };
   tasks: TaskSummary[];
-  listId: string;
+  listId?: string;
   onTaskCreated?: () => void;
   onTaskAction?: () => void;
 }
@@ -68,14 +68,16 @@ function BoardColumnComponent({
         )}
       </Droppable>
 
-      {/* Add task */}
-      <div className="p-2 border-t">
-        <TaskForm
-          listId={listId}
-          statusId={status.id}
-          onCreated={onTaskCreated}
-        />
-      </div>
+    {/* Add task (only if listId is present) */}
+      {listId && (
+        <div className="p-2 border-t">
+          <TaskForm
+            listId={listId}
+            statusId={status.id.startsWith("global:") ? undefined : status.id} // Don't pass global string to TaskForm
+            onCreated={onTaskCreated}
+          />
+        </div>
+      )}
     </div>
   );
 }

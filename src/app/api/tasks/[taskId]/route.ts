@@ -200,14 +200,45 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     if (data.statusId !== undefined && data.statusId !== existingTask.statusId) {
-      const newStatus = await prisma.status.findUnique({
-        where: { id: data.statusId },
-      });
-      updateData.statusId = data.statusId;
+      let targetStatusId = data.statusId;
+      let newStatusName = data.statusId;
+      
+      if (data.statusId.startsWith("global:")) {
+        const statusName = data.statusId.replace("global:", "");
+        newStatusName = statusName;
+        
+        let targetStatus = await prisma.status.findFirst({
+          where: { listId: existingTask.listId, name: statusName },
+        });
+        
+        if (!targetStatus) {
+          const last = await prisma.status.findFirst({
+            where: { listId: existingTask.listId },
+            orderBy: { order: "desc" }
+          });
+          targetStatus = await prisma.status.create({
+            data: {
+              name: statusName,
+              color: "#6B7280",
+              type: "custom",
+              order: last ? last.order + 1 : 0,
+              listId: existingTask.listId,
+            }
+          });
+        }
+        targetStatusId = targetStatus.id;
+      } else {
+        const newStatus = await prisma.status.findUnique({
+          where: { id: data.statusId },
+        });
+        if (newStatus) newStatusName = newStatus.name;
+      }
+      
+      updateData.statusId = targetStatusId;
       activities.push({
         field: "status",
         oldValue: existingTask.status.name,
-        newValue: newStatus?.name ?? data.statusId,
+        newValue: newStatusName,
       });
     }
 

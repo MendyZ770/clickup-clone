@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ViewSwitcher } from "@/components/layout/view-switcher";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -61,17 +62,20 @@ export default function SpacePage() {
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <span
-          className="h-6 w-6 rounded"
-          style={{ backgroundColor: space.color ?? "#6B7280" }}
-        />
-        <div>
-          <h1 className="text-2xl font-bold">{space.name}</h1>
-          {space.description && (
-            <p className="text-sm text-muted-foreground">{space.description}</p>
-          )}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span
+            className="h-6 w-6 rounded"
+            style={{ backgroundColor: space.color ?? "#6B7280" }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold">{space.name}</h1>
+            {space.description && (
+              <p className="text-sm text-muted-foreground">{space.description}</p>
+            )}
+          </div>
         </div>
+        <ViewSwitcher />
       </div>
 
       {/* Folders */}

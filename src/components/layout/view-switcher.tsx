@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 import { List, LayoutGrid, Calendar, GanttChart, Users, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,32 +27,43 @@ interface ViewSwitcherProps {
 export function ViewSwitcher({ basePath }: ViewSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams<{ workspaceId: string; spaceId: string }>();
 
   // Determine active view from the current pathname
-  const currentSegment = pathname.split("/").pop() ?? "list-view";
+  const currentSegment = pathname.split("/").pop() ?? "";
+  const isWorkspaceRoot = currentSegment === params.workspaceId;
+  const isSpaceRoot = currentSegment === params.spaceId;
+  
   const currentView =
-    VIEW_OPTIONS.find((o) => o.segment === currentSegment)?.id ?? "list";
+    VIEW_OPTIONS.find((o) => o.segment === currentSegment)?.id ?? 
+    (isWorkspaceRoot || isSpaceRoot ? "overview" : "list");
+
+  // We add Overview dynamically if we are at space/workspace level
+  const options = (pathname.includes("/list/") && !pathname.match(/\/list\/[^\/]+$/)) 
+    ? VIEW_OPTIONS 
+    : [{ id: "overview", label: "Vue d'ensemble", icon: LayoutGrid, segment: "" }, ...VIEW_OPTIONS];
 
   const handleViewChange = (view: ViewOption) => {
     if (basePath) {
-      // basePath already contains the full path including current segment
-      // We need the list base path (up to [listId])
-      const listBasePath = basePath.replace(
+      // basePath should just be the base URL without view segment
+      const cleanBasePath = basePath.replace(
         /\/(list-view|board|calendar|gantt|workload|chat)$/,
         ""
       );
-      router.push(`${listBasePath}/${view.segment}`);
+      router.push(view.segment ? `${cleanBasePath}/${view.segment}` : cleanBasePath);
     } else {
-      // Fallback: replace last segment of current pathname
-      const segments = pathname.split("/");
-      segments[segments.length - 1] = view.segment;
-      router.push(segments.join("/"));
+      // Auto-detect base path
+      const cleanPathname = pathname.replace(
+        /\/(list-view|board|calendar|gantt|workload|chat)$/,
+        ""
+      );
+      router.push(view.segment ? `${cleanPathname}/${view.segment}` : cleanPathname);
     }
   };
 
   return (
     <div className="flex items-center gap-0.5 rounded-lg border bg-muted/30 p-0.5">
-      {VIEW_OPTIONS.map((option) => {
+      {options.map((option) => {
         const isActive = currentView === option.id;
         const Icon = option.icon;
 
