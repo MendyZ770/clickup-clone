@@ -1,192 +1,241 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
-  format,
   addDays,
-  startOfWeek,
   differenceInDays,
-  isToday,
-  isBefore,
-  startOfDay,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  subDays,
+  startOfToday,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { fr } from "date-fns/locale";
+import { LayoutGrid, Lock } from "lucide-react";
 import { useTasks } from "@/hooks/use-tasks";
-import { useFilters } from "@/hooks/use-filters";
 import { useModal } from "@/hooks/use-modal";
+import { useFilters } from "@/hooks/use-filters";
+import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { TaskSummary } from "@/types";
 
-const DAY_WIDTH = 50;
-const ROW_HEIGHT = 40;
-const HEADER_HEIGHT = 60;
-const TOTAL_DAYS = 60; // 2 months view
-
 interface GanttViewProps {
-  listId: string;
+  listId?: string;
+  spaceId?: string;
   workspaceId: string;
 }
 
-export function GanttView({ listId, workspaceId }: GanttViewProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { getFilter } = useFilters();
-  const { openTaskModal, setWorkspaceId } = useModal();
-  const [startDate, setStartDate] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
-  const [taskNameWidth, setTaskNameWidth] = useState(220);
+const DAY_WIDTH = 40; // width of a single day column in px
+const ROW_HEIGHT = 48; // height of a task row in px
 
-  useEffect(() => { setWorkspaceId(workspaceId); }, [workspaceId, setWorkspaceId]);
+export function GanttView({ listId, spaceId, workspaceId }: GanttViewProps) {
+  const { getFilter } = useFilters();
+  const { setWorkspaceId, openTaskModal } = useModal();
 
   useEffect(() => {
-    const update = () => setTaskNameWidth(window.innerWidth < 768 ? 140 : 220);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+    setWorkspaceId(workspaceId);
+  }, [workspaceId, setWorkspaceId]);
 
   const { tasks, isLoading } = useTasks(
-    { listId },
+    { listId, spaceId, workspaceId },
     {
       statusId: getFilter("statusId") ?? undefined,
       priority: getFilter("priority") ?? undefined,
       assigneeId: getFilter("assigneeId") ?? undefined,
       search: getFilter("search") ?? undefined,
+      sortBy: getFilter("sortBy") ?? undefined,
+      sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
     }
   );
 
-  const days = useMemo(() => {
-    return Array.from({ length: TOTAL_DAYS }, (_, i) => addDays(startDate, i));
-  }, [startDate]);
-
-  const tasksWithDates = useMemo(() => {
-    return tasks.filter((t) => t.dueDate || t.startDate);
+  // Filter tasks that have at least a startDate or dueDate
+  const ganttTasks = useMemo(() => {
+    return tasks.filter((t) => t.startDate || t.dueDate);
   }, [tasks]);
 
-  const tasksWithoutDates = useMemo(() => {
-    return tasks.filter((t) => !t.dueDate && !t.startDate);
-  }, [tasks]);
+  // Compute the total date interval to display
+  const interval = useMemo(() => {
+    const today = startOfToday();
+    let minDate = subDays(today, 14); // default 2 weeks before
+    let maxDate = addDays(today, 30); // default 1 month after
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      const todayOffset = differenceInDays(new Date(), startDate);
-      if (todayOffset >= 0 && todayOffset < TOTAL_DAYS) {
-        scrollRef.current.scrollLeft = Math.max(0, todayOffset * DAY_WIDTH - 200);
-      }
+    if (ganttTasks.length > 0) {
+      ganttTasks.forEach((t) => {
+        const start = t.startDate ? new Date(t.startDate) : null;
+        const end = t.dueDate ? new Date(t.dueDate) : null;
+        if (start && start < minDate) minDate = subDays(start, 7);
+        if (end && end > maxDate) maxDate = addDays(end, 14);
+      });
     }
-  }, [startDate]);
+
+    // Align to month boundaries for cleaner headers
+    minDate = startOfMonth(minDate);
+    maxDate = endOfMonth(maxDate);
+
+    const days = eachDayOfInterval({ start: minDate, end: maxDate });
+    return { minDate, maxDate, days };
+  }, [ganttTasks]);
+
+  // Group days by month for the top header
+  const months = useMemo(() => {
+    const result: { date: Date; count: number }[] = [];
+    interval.days.forEach((day) => {
+      if (result.length === 0 || !isSameMonth(result[result.length - 1].date, day)) {
+        result.push({ date: day, count: 1 });
+      } else {
+        result[result.length - 1].count++;
+      }
+    });
+    return result;
+  }, [interval.days]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-20"><LoadingSpinner size="lg" /></div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
-  const getBarStyle = (task: TaskSummary) => {
-    const taskStart = task.startDate ? startOfDay(new Date(task.startDate)) : startOfDay(new Date(task.createdAt));
-    const due = task.dueDate ? startOfDay(new Date(task.dueDate)) : addDays(taskStart, 1);
-    
-    // We allow negative left if the task starts before the current visible timeline
-    const left = differenceInDays(taskStart, startDate) * DAY_WIDTH;
-    const duration = Math.max(1, differenceInDays(due, taskStart) + 1);
-    const width = duration * DAY_WIDTH - 8;
-    
-    return { left, width: Math.max(DAY_WIDTH - 8, width) };
-  };
+  if (ganttTasks.length === 0) {
+    return (
+      <EmptyState
+        icon={LayoutGrid}
+        title="Aucune tâche planifiée"
+        description="Ajoutez des dates de début ou d'échéance à vos tâches pour les voir apparaître sur la Timeline."
+      />
+    );
+  }
 
   return (
-    <div className="p-2 md:p-4 space-y-3">
-      <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setStartDate(addDays(startDate, -7))}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-xs md:text-sm font-medium min-w-[140px] md:min-w-[200px] text-center">
-          {format(startDate, "d MMM")} - {format(addDays(startDate, TOTAL_DAYS - 1), "d MMM yyyy")}
-        </span>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setStartDate(addDays(startDate, 7))}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => setStartDate(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-          Aujourd&apos;hui
-        </Button>
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex">
-          {/* Task names column */}
-          <div className="shrink-0 border-r bg-muted/30" style={{ width: taskNameWidth }}>
-            <div className="border-b px-3 flex items-center text-xs font-medium text-muted-foreground" style={{ height: HEADER_HEIGHT }}>
-              Tâches ({tasksWithDates.length})
+    <div className="flex flex-col h-[calc(100vh-12rem)] min-h-[500px] border border-border/40 rounded-xl overflow-hidden bg-background/50 backdrop-blur-sm">
+      <ScrollArea className="w-full h-full">
+        <div className="flex min-w-max relative">
+          {/* LEFT SIDE: Task List (Sticky) */}
+          <div className="sticky left-0 z-20 w-64 md:w-80 border-r border-border/40 bg-background/95 backdrop-blur-xl shrink-0 flex flex-col shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]">
+            <div className="h-16 border-b border-border/40 flex items-center px-4 shrink-0 font-medium text-sm text-muted-foreground bg-muted/20">
+              Tâches
             </div>
-            {tasksWithDates.map((task) => (
-              <button
-                key={task.id}
-                onClick={() => openTaskModal(task.id)}
-                className="flex items-center gap-2 w-full px-3 text-xs border-b hover:bg-muted/50 truncate transition-colors"
-                style={{ height: ROW_HEIGHT }}
-              >
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: task.status.color }} />
-                <span className="truncate">{task.title}</span>
-              </button>
-            ))}
+            <div className="flex-1 flex flex-col">
+              {ganttTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center px-4 border-b border-border/20 text-sm hover:bg-muted/30 transition-colors cursor-pointer group"
+                  style={{ height: ROW_HEIGHT }}
+                  onClick={() => openTaskModal(task.id, task.locked)}
+                >
+                  <div className="flex-1 truncate inline-flex items-center gap-2">
+                    {task.locked && <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: task.status.color }}
+                    />
+                    <span className="truncate group-hover:text-primary transition-colors">
+                      {task.title}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Timeline */}
-          <div className="overflow-x-auto flex-1" ref={scrollRef}>
-            <div style={{ width: TOTAL_DAYS * DAY_WIDTH, minWidth: "100%" }}>
-              {/* Day headers */}
-              <div className="flex border-b bg-muted/30" style={{ height: HEADER_HEIGHT }}>
-                {days.map((day) => (
+          {/* RIGHT SIDE: Gantt Grid */}
+          <div className="flex-1 flex flex-col relative">
+            {/* Header: Months */}
+            <div className="flex h-8 border-b border-border/40 shrink-0 bg-muted/10">
+              {months.map((m, i) => (
+                <div
+                  key={i}
+                  className="flex items-center px-3 text-xs font-semibold uppercase text-muted-foreground border-r border-border/30 last:border-r-0 sticky left-0"
+                  style={{ width: m.count * DAY_WIDTH }}
+                >
+                  <span className="sticky left-0">{format(m.date, "MMMM yyyy", { locale: fr })}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Header: Days */}
+            <div className="flex h-8 border-b border-border/40 shrink-0 bg-muted/5">
+              {interval.days.map((day, i) => {
+                const isToday = isSameDay(day, new Date());
+                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                return (
                   <div
-                    key={day.toISOString()}
+                    key={i}
                     className={cn(
-                      "shrink-0 flex flex-col items-center justify-center border-r text-xs transition-colors",
-                      isToday(day) && "bg-primary/20",
-                      (day.getDay() === 0 || day.getDay() === 6) && !isToday(day) ? "bg-muted/50" : ""
+                      "flex items-center justify-center text-xs border-r border-border/30 shrink-0",
+                      isToday ? "bg-primary/10 text-primary font-bold" : "",
+                      isWeekend && !isToday ? "bg-muted/10" : ""
                     )}
                     style={{ width: DAY_WIDTH }}
                   >
-                    <span className="text-muted-foreground uppercase text-[10px] tracking-wider mb-1">
-                      {format(day, "EEE")}
-                    </span>
-                    <span className={cn(
-                      "font-semibold w-6 h-6 flex items-center justify-center rounded-full",
-                      isToday(day) ? "bg-primary text-primary-foreground" : "text-foreground"
-                    )}>
-                      {format(day, "d")}
-                    </span>
+                    {format(day, "d")}
                   </div>
-                ))}
+                );
+              })}
+            </div>
+
+            {/* Body: Grid and Bars */}
+            <div className="relative flex-1" style={{ minHeight: ganttTasks.length * ROW_HEIGHT }}>
+              {/* Background vertical grid lines */}
+              <div className="absolute inset-0 flex pointer-events-none">
+                {interval.days.map((day, i) => {
+                  const isToday = isSameDay(day, new Date());
+                  const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-full border-r border-border/20 shrink-0",
+                        isToday ? "bg-primary/5 border-primary/20" : "",
+                        isWeekend && !isToday ? "bg-muted/5" : ""
+                      )}
+                      style={{ width: DAY_WIDTH }}
+                    />
+                  );
+                })}
               </div>
 
-              {/* Task bars */}
-              {tasksWithDates.map((task) => {
-                const { left, width } = getBarStyle(task);
+              {/* Task Rows & Bars */}
+              {ganttTasks.map((task, i) => {
+                const start = task.startDate ? new Date(task.startDate) : new Date(task.dueDate!);
+                const end = task.dueDate ? new Date(task.dueDate) : new Date(task.startDate!);
+                
+                // Avoid rendering if totally out of bounds (shouldn't happen because of interval calc)
+                if (start > interval.maxDate || end < interval.minDate) return null;
+
+                const leftOffset = differenceInDays(start, interval.minDate) * DAY_WIDTH;
+                const duration = Math.max(1, differenceInDays(end, start) + 1); // at least 1 day
+                const width = duration * DAY_WIDTH;
+
                 return (
-                  <div key={task.id} className="relative border-b hover:bg-muted/10 transition-colors" style={{ height: ROW_HEIGHT }}>
-                    {/* Grid lines */}
-                    {days.map((day) => (
-                      <div
-                        key={day.toISOString()}
-                        className={cn(
-                          "absolute top-0 bottom-0 border-r",
-                          isToday(day) && "bg-primary/5",
-                          (day.getDay() === 0 || day.getDay() === 6) && !isToday(day) ? "bg-muted/20" : ""
-                        )}
-                        style={{ left: differenceInDays(day, startDate) * DAY_WIDTH, width: DAY_WIDTH }}
-                      />
-                    ))}
-                    {/* Bar */}
+                  <div
+                    key={task.id}
+                    className="absolute border-b border-border/10 w-full hover:bg-muted/10 transition-colors"
+                    style={{
+                      top: i * ROW_HEIGHT,
+                      height: ROW_HEIGHT,
+                    }}
+                  >
+                    {/* The Gantt Bar */}
                     <div
-                      className="absolute top-2 rounded-md cursor-pointer hover:brightness-110 hover:shadow-md transition-all flex items-center px-2 text-xs text-white font-medium truncate shadow-sm z-10"
+                      className="absolute top-1/2 -translate-y-1/2 h-8 rounded-md shadow-sm border border-white/10 overflow-hidden flex items-center px-2 cursor-pointer group/bar transition-all hover:scale-[1.02] hover:shadow-md hover:z-10"
                       style={{
-                        left: left + 4,
-                        width,
-                        height: ROW_HEIGHT - 16,
-                        backgroundColor: task.status.color,
-                        opacity: left + width < 0 || left > TOTAL_DAYS * DAY_WIDTH ? 0 : 1, // Hide if completely out of bounds
+                        left: leftOffset,
+                        width: width,
+                        backgroundColor: task.status.color, // Using status color for the bar
                       }}
-                      onClick={() => openTaskModal(task.id)}
+                      onClick={() => openTaskModal(task.id, task.locked)}
                     >
-                      {width > 60 && <span className="truncate drop-shadow-sm">{task.title}</span>}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                      <span className="relative text-xs font-semibold text-white truncate drop-shadow-md px-1">
+                        {task.title}
+                      </span>
                     </div>
                   </div>
                 );
@@ -194,27 +243,9 @@ export function GanttView({ listId, workspaceId }: GanttViewProps) {
             </div>
           </div>
         </div>
-
-        {/* Tasks without dates */}
-        {tasksWithoutDates.length > 0 && (
-          <div className="border-t bg-muted/10 px-3 py-2">
-            <p className="text-[10px] text-muted-foreground mb-1">
-              Sans date ({tasksWithoutDates.length})
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {tasksWithoutDates.slice(0, 10).map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => openTaskModal(t.id)}
-                  className="text-[10px] rounded border px-1.5 py-0.5 hover:bg-muted transition-colors truncate max-w-[120px]"
-                >
-                  {t.title}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </div>
   );
 }

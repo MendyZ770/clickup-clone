@@ -20,11 +20,12 @@ interface StatusGroup {
 }
 
 interface ListViewProps {
-  listId: string;
+  listId?: string;
+  spaceId?: string;
   workspaceId: string;
 }
 
-export function ListView({ listId, workspaceId }: ListViewProps) {
+export function ListView({ listId, spaceId, workspaceId }: ListViewProps) {
   const { getFilter } = useFilters();
   const { setWorkspaceId } = useModal();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
@@ -35,12 +36,16 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
     setWorkspaceId(workspaceId);
   }, [workspaceId, setWorkspaceId]);
 
-  const { data: statuses } = useSWR<StatusGroup[]>(
-    `/api/lists/${listId}/statuses`
-  );
+  const endpoint = listId
+    ? `/api/lists/${listId}/statuses`
+    : spaceId
+    ? `/api/spaces/${spaceId}/statuses`
+    : `/api/workspaces/${workspaceId}/statuses`;
+
+  const { data: statuses } = useSWR<StatusGroup[]>(endpoint);
 
   const { tasks, isLoading, mutate } = useTasks(
-    { listId },
+    { listId, spaceId, workspaceId },
     {
       statusId: getFilter("statusId") ?? undefined,
       priority: getFilter("priority") ?? undefined,
@@ -67,9 +72,14 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
   const grouped = useMemo(() => {
     return (statuses ?? []).map((status) => ({
       status,
-      tasks: tasks.filter((t) => t.status.id === status.id),
+      tasks: tasks.filter((t) => {
+        const taskStatusId = listId
+          ? t.status.id
+          : `global:${t.status.name.trim().toLowerCase()}`;
+        return taskStatusId === status.id;
+      }),
     }));
-  }, [statuses, tasks]);
+  }, [statuses, tasks, listId]);
 
   if (isLoading) {
     return (
@@ -100,11 +110,13 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
               isCollapsed={false}
               onToggle={() => {}}
             />
-            <TaskForm
-              listId={listId}
-              statusId={status.id}
-              onCreated={() => mutate()}
-            />
+            {listId && (
+              <TaskForm
+                listId={listId}
+                statusId={status.id}
+                onCreated={() => mutate()}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -144,12 +156,14 @@ export function ListView({ listId, workspaceId }: ListViewProps) {
                     onUpdated={() => mutate()}
                   />
                 ))}
-                <TaskForm
-                  listId={listId}
-                  statusId={status.id}
-                  onCreated={() => mutate()}
-                  className="border-b"
-                />
+                {listId && (
+                  <TaskForm
+                    listId={listId}
+                    statusId={status.id}
+                    onCreated={() => mutate()}
+                    className="border-b"
+                  />
+                )}
                 </div>
               </div>
             )}

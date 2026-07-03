@@ -127,18 +127,18 @@ export function TaskDetailContent({
 
   if (isLoading || !task) {
     return (
-      <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
+      <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden bg-background/50">
         <div className="flex-1 p-4 md:p-6 space-y-4">
-          <Skeleton className="h-9 w-3/4" />
-          <Skeleton className="h-5 w-1/2" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-9 w-3/4 opacity-50" />
+          <Skeleton className="h-5 w-1/2 opacity-50" />
+          <Skeleton className="h-24 w-full opacity-50" />
+          <Skeleton className="h-40 w-full opacity-50" />
         </div>
-        <div className="w-full md:w-72 border-t md:border-t-0 md:border-l p-4 space-y-4">
+        <div className="w-full md:w-72 border-t border-border/30 md:border-t-0 md:border-l p-4 space-y-4 bg-muted/10">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-1">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-7 w-full" />
+              <Skeleton className="h-4 w-16 opacity-50" />
+              <Skeleton className="h-7 w-full opacity-50" />
             </div>
           ))}
         </div>
@@ -268,7 +268,7 @@ export function TaskDetailContent({
           </div>
 
           {/* Properties — toujours visible sur mobile, dans la sidebar à droite sur desktop */}
-          <div className="md:hidden rounded-lg border bg-muted/30 p-3">
+          <div className="md:hidden rounded-xl border border-border/30 bg-muted/10 p-4 shadow-sm">
             <TaskProperties
               task={task}
               workspaceId={workspaceId}
@@ -297,7 +297,7 @@ export function TaskDetailContent({
                     setEditingDesc(false);
                   }
                 }}
-                className="min-h-[100px] text-base resize-y"
+                className="min-h-[100px] text-[15px] resize-y bg-background/50 border-border/50 focus-visible:ring-primary/50"
                 autoFocus
                 placeholder="Ajouter une description..."
               />
@@ -307,14 +307,14 @@ export function TaskDetailContent({
                   setEditingDesc(true);
                   setTimeout(() => descRef.current?.focus(), 0);
                 }}
-                className="min-h-[60px] cursor-text rounded-md border border-transparent p-2 text-base text-muted-foreground hover:border-border transition-colors whitespace-pre-wrap"
+                className="min-h-[60px] cursor-text rounded-xl border border-transparent p-3 text-[15px] text-muted-foreground hover:bg-muted/20 hover:border-border/30 transition-all whitespace-pre-wrap"
               >
-                {task.description || "Ajouter une description..."}
+                {task.description || "Ajouter une description détaillée..."}
               </div>
             )}
           </div>
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Multi-Assignees */}
           <div className="space-y-1.5">
@@ -324,7 +324,7 @@ export function TaskDetailContent({
             <MultiAssigneeSelector taskId={task.id} workspaceId={workspaceId} />
           </div>
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Custom Fields */}
           <CustomFieldsSection
@@ -332,7 +332,7 @@ export function TaskDetailContent({
             workspaceId={workspaceId}
           />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Dependencies */}
           <TaskDependencies
@@ -341,7 +341,7 @@ export function TaskDetailContent({
             taskStatus={task.status}
           />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Subtasks */}
           <SubtaskList
@@ -356,7 +356,7 @@ export function TaskDetailContent({
             onChanged={() => mutate()}
           />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Checklists */}
           <ChecklistSection
@@ -365,22 +365,22 @@ export function TaskDetailContent({
             onChanged={() => mutate()}
           />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Time Tracking */}
           <TaskTimeTracking taskId={task.id} />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Attachments */}
           <TaskAttachments taskId={task.id} />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Comments */}
           <CommentList taskId={task.id} workspaceId={workspaceId} />
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Activity */}
           <ActivityFeed taskId={task.id} />
@@ -389,9 +389,9 @@ export function TaskDetailContent({
 
       {/* Properties panel: à droite sur desktop */}
       {showProperties && (
-        <div className="hidden md:block md:w-80 md:border-l md:shrink-0">
+        <div className="hidden md:block md:w-80 md:border-l border-border/30 md:shrink-0 bg-muted/5 backdrop-blur-sm">
           <ScrollArea className="h-full">
-            <div className="p-4">
+            <div className="p-5">
               <TaskProperties
                 task={task}
                 workspaceId={workspaceId}

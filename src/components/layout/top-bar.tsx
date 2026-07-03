@@ -31,7 +31,7 @@ export function TopBar() {
 
 
   return (
-    <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-border/40 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 px-3 pt-[env(safe-area-inset-top)] md:static md:h-16 md:px-4 md:pt-0">
+    <header className="sticky top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-border/30 bg-background/40 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/20 px-3 pt-[env(safe-area-inset-top)] md:static md:h-16 md:px-4 md:pt-0">
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-2">
         <MobileSidebar />

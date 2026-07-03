@@ -76,7 +76,12 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
         tasksByStatus.set(
           status.id,
           tasks
-            .filter((t) => t.status.id === status.id)
+            .filter((t) => {
+              const taskStatusId = listId
+                ? t.status.id
+                : `global:${t.status.name.trim().toLowerCase()}`;
+              return taskStatusId === status.id;
+            })
             .sort((a, b) => a.position - b.position)
         );
       }
@@ -159,12 +164,17 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
       map.set(
         status.id,
         tasks
-          .filter((t) => t.status.id === status.id)
+          .filter((t) => {
+            const taskStatusId = listId
+              ? t.status.id
+              : `global:${t.status.name.trim().toLowerCase()}`;
+            return taskStatusId === status.id;
+          })
           .sort((a, b) => a.position - b.position)
       );
     }
     return map;
-  }, [statuses, tasks]);
+  }, [statuses, tasks, listId]);
 
   if (isLoading) {
     return (

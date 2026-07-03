@@ -138,7 +138,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
   return (
     <TooltipProvider delayDuration={0}>
       <aside
-        className="group/sidebar flex h-screen flex-col bg-sidebar/95 backdrop-blur-xl text-sidebar-foreground/80 border-r border-sidebar-border transition-all duration-300 ease-out relative z-40"
+        className="group/sidebar flex h-screen flex-col bg-sidebar/40 backdrop-blur-2xl supports-[backdrop-filter]:bg-sidebar/30 text-sidebar-foreground/80 border-r border-sidebar-border/50 transition-all duration-300 ease-out relative z-40"
         style={{ width: collapsed ? 72 : 280, minWidth: collapsed ? 72 : 280 }}
       >
         {/* =========================================
@@ -147,7 +147,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
         <div className={cn("shrink-0 pb-2 pt-4 transition-all duration-300", collapsed ? "px-2" : "px-4")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/10 hover:shadow-sm group/ws-btn outline-none ring-primary focus-visible:ring-2">
+              <button className="w-full flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/10 hover:shadow-sm group/ws-btn outline-none ring-primary focus-visible:ring-2 bg-sidebar/10">
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm transition-transform duration-200 group-hover/ws-btn:scale-105"
                   style={{
@@ -393,7 +393,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
         {/* =========================================
             FIXED FOOTER: Collapse & User 
         ========================================= */}
-        <div className="mt-auto shrink-0 bg-sidebar/95 backdrop-blur-xl border-t border-sidebar-border/30">
+        <div className="mt-auto shrink-0 bg-sidebar/40 backdrop-blur-2xl supports-[backdrop-filter]:bg-sidebar/30 border-t border-sidebar-border/30">
           {/* Collapse Toggle */}
           <div className="px-3 py-2">
             <button

@@ -13,7 +13,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ViewSwitcher } from "@/components/layout/view-switcher";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BoardView } from "@/components/views/board-view";
+import { ListView } from "@/components/views/list-view";
+import { GanttView } from "@/components/views/gantt-view";
+import { TableView } from "@/components/views/table-view";
+import { DashboardView } from "@/components/views/dashboard-view";
 import Link from "next/link";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { WorkspaceWithSpaces } from "@/types";
 
 const fetcher = (url: string) =>
@@ -25,6 +32,17 @@ const fetcher = (url: string) =>
 export default function WorkspacePage() {
   const params = useParams<{ workspaceId: string }>();
   const workspaceId = params.workspaceId;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = searchParams.get("view") || "overview";
+
+  const handleTabChange = (val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", val);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   const { data: workspace, isLoading } = useSWR<WorkspaceWithSpaces>(
     `/api/workspaces/${workspaceId}`,
     fetcher
@@ -86,110 +104,191 @@ export default function WorkspacePage() {
         <ViewSwitcher />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <Card className="border-border/50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <LayoutGrid className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{workspace.spaces.length}</p>
-              <p className="text-xs text-muted-foreground">Espaces</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-orange-500/10 p-2">
-              <Folder className="h-5 w-5 text-orange-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{totalFolders}</p>
-              <p className="text-xs text-muted-foreground">Dossiers</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-blue-500/10 p-2">
-              <List className="h-5 w-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{totalLists}</p>
-              <p className="text-xs text-muted-foreground">Listes</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-green-500/10 p-2">
-              <Users className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">
-                {(workspace as unknown as { members: unknown[] }).members?.length ?? 0}
-              </p>
-              <p className="text-xs text-muted-foreground">Membres</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tabs for Overview vs Board */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <div className="flex items-center mb-6 border-b border-border/50 pb-2">
+          <TabsList className="bg-transparent space-x-2 p-0 h-auto">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium"
+            >
+              Vue d'ensemble
+            </TabsTrigger>
+            <TabsTrigger
+              value="list"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              Liste (Everything)
+            </TabsTrigger>
+            <TabsTrigger
+              value="board"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Tableau (Everything)
+            </TabsTrigger>
+            <TabsTrigger
+              value="gantt"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Gantt
+            </TabsTrigger>
+            <TabsTrigger
+              value="table"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Table
+            </TabsTrigger>
+            <TabsTrigger
+              value="dashboard"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-      {/* Spaces */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Espaces</h2>
-        {workspace.spaces.length === 0 ? (
-          <EmptyState
-            icon={LayoutGrid}
-            title="Aucun espace"
-            description="Créez un espace pour organiser votre travail."
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workspace.spaces.map((space) => (
-              <Link
-                key={space.id}
-                href={`/workspace/${workspaceId}/space/${space.id}`}
-                className="group"
-              >
-                <Card className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer h-full">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <span
-                        className="h-4 w-4 rounded shrink-0"
-                        style={{ backgroundColor: space.color ?? "#6B7280" }}
-                      />
-                      <span className="truncate">{space.name}</span>
-                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground">
-                    <div className="flex items-center gap-4">
-                      <span className="inline-flex items-center gap-1">
-                        <Folder className="h-3.5 w-3.5" />
-                        {space.folders.length} dossier{space.folders.length > 1 ? "s" : ""}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <List className="h-3.5 w-3.5" />
-                        {space.lists.length +
-                          space.folders.reduce(
-                            (acc, f) => acc + f.lists.length,
-                            0
-                          )}{" "}
-                        liste{space.lists.length > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {space.description && (
-                      <p className="mt-2 line-clamp-2">{space.description}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+        <TabsContent value="overview" className="space-y-6 mt-0">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <Card className="border-border/50">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="rounded-lg bg-primary/10 p-2">
+                  <LayoutGrid className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{workspace.spaces.length}</p>
+                  <p className="text-xs text-muted-foreground">Espaces</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="rounded-lg bg-orange-500/10 p-2">
+                  <Folder className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{totalFolders}</p>
+                  <p className="text-xs text-muted-foreground">Dossiers</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="rounded-lg bg-blue-500/10 p-2">
+                  <List className="h-5 w-5 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{totalLists}</p>
+                  <p className="text-xs text-muted-foreground">Listes</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="rounded-lg bg-green-500/10 p-2">
+                  <Users className="h-5 w-5 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {(workspace as unknown as { members: unknown[] }).members?.length ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Membres</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
+
+          {/* Spaces */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Espaces</h2>
+            {workspace.spaces.length === 0 ? (
+              <EmptyState
+                icon={LayoutGrid}
+                title="Aucun espace"
+                description="Créez un espace pour organiser votre travail."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {workspace.spaces.map((space) => (
+                  <Link
+                    key={space.id}
+                    href={`/workspace/${workspaceId}/space/${space.id}`}
+                    className="group"
+                  >
+                    <Card className="border-border/50 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer h-full">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <span
+                            className="h-4 w-4 rounded shrink-0"
+                            style={{ backgroundColor: space.color ?? "#6B7280" }}
+                          />
+                          <span className="truncate">{space.name}</span>
+                          <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4">
+                          <span className="inline-flex items-center gap-1">
+                            <Folder className="h-3.5 w-3.5" />
+                            {space.folders.length} dossier{space.folders.length > 1 ? "s" : ""}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <List className="h-3.5 w-3.5" />
+                            {space.lists.length +
+                              space.folders.reduce(
+                                (acc, f) => acc + f.lists.length,
+                                0
+                              )}{" "}
+                            liste{space.lists.length > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        {space.description && (
+                          <p className="mt-2 line-clamp-2">{space.description}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-0">
+          <div className="-mx-4 md:-mx-6">
+             <ListView workspaceId={workspaceId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="board" className="mt-0">
+          <div className="-mx-4 md:-mx-6">
+             <BoardView workspaceId={workspaceId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="gantt" className="mt-0">
+          <div className="-mx-4 md:-mx-6">
+             <GanttView workspaceId={workspaceId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="table" className="mt-0">
+          <div className="-mx-4 md:-mx-6">
+             <TableView workspaceId={workspaceId} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="dashboard" className="mt-0">
+          <div className="-mx-4 md:-mx-6">
+             <DashboardView workspaceId={workspaceId} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

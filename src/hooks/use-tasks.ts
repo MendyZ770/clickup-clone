@@ -3,6 +3,21 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import type { TaskSummary, TaskWithDetails } from "@/types";
+import type { Status } from "@prisma/client";
+
+export function useSpaceStatuses(spaceId: string | null | undefined) {
+  const { data, error, isLoading, mutate } = useSWR<Status[]>(
+    spaceId ? `/api/spaces/${spaceId}/statuses` : null
+  );
+  return { statuses: data ?? [], isLoading, isError: !!error, mutate };
+}
+
+export function useWorkspaceStatuses(workspaceId: string | null | undefined) {
+  const { data, error, isLoading, mutate } = useSWR<Status[]>(
+    workspaceId ? `/api/workspaces/${workspaceId}/statuses` : null
+  );
+  return { statuses: data ?? [], isLoading, isError: !!error, mutate };
+}
 
 interface TaskFilters {
   statusId?: string;
