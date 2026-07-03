@@ -16,13 +16,13 @@ export default async function PlatformLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex h-dvh overflow-hidden">
+      <div className="fixed inset-0 flex overflow-hidden bg-background">
         <div className="hidden md:block h-full z-30">
           <Sidebar />
         </div>
         <div className="flex flex-1 flex-col min-w-0 h-full">
           <TopBar />
-          <main className="flex-1 bg-background pb-20 md:pb-0 page-content overflow-y-auto">
+          <main className="flex-1 bg-background pb-20 md:pb-0 page-content overflow-y-auto min-h-0">
             {children}
           </main>
         </div>

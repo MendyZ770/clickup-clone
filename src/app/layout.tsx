@@ -8,7 +8,6 @@ import { ModalProvider } from "@/providers/modal-provider";
 import { ToastProvider } from "@/providers/toast-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { CalendarAutoSync } from "@/components/calendar/calendar-auto-sync";
-import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 import { SWRProvider } from "@/lib/swr-config";
 
@@ -119,7 +118,6 @@ export default function RootLayout({
                   {children}
                   <ToastProvider />
                   <CalendarAutoSync />
-                  <PushNotificationToggle />
                   <PWAInstallBanner />
                 </ModalProvider>
               </WorkspaceProvider>

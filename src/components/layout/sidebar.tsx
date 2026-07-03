@@ -12,6 +12,7 @@ import {
   Search,
   LayoutDashboard,
   Bell,
+  BellOff,
   LogOut,
   Settings,
   Building2,
@@ -36,6 +37,7 @@ import {
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useSpaces } from "@/hooks/use-spaces";
 import { useNotifications } from "@/hooks/use-notifications";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useFavorites, type FavoriteItem } from "@/hooks/use-favorites";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useTheme } from "@/providers/theme-provider";
@@ -74,6 +76,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     useSpaces(currentWorkspace?.id);
   const { favorites } = useFavorites(currentWorkspace?.id);
   const { unreadCount } = useNotifications();
+  const { isSupported: pushSupported, isSubscribed: pushSubscribed, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
   const { collapsed, toggle } = useSidebar();
   const { openCreateSpace, openCreateWorkspace } = useModal();
   const { mode, theme, setMode } = useTheme();
@@ -479,6 +482,18 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
+                {pushSupported && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      pushSubscribed ? pushUnsubscribe() : pushSubscribe();
+                    }}
+                    className="cursor-pointer rounded-lg py-2"
+                  >
+                    {pushSubscribed ? <Bell className="mr-2.5 h-4 w-4 text-primary" /> : <BellOff className="mr-2.5 h-4 w-4 text-muted-foreground" />}
+                    <span className="font-medium">{pushSubscribed ? "Désactiver les notifs push" : "Activer les notifs push"}</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator className="my-1" />
                 <DropdownMenuItem
                   onClick={() => {
