@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 
@@ -9,6 +9,7 @@ const fetcher = async (url: string) => {
   if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
 };
+
 import {
   Calendar,
   Copy,
@@ -35,15 +36,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function CalendarSettingsPage() {
-  return (
-    <Suspense fallback={<div className="flex items-center justify-center h-64"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
-      <CalendarSettingsContent />
-    </Suspense>
-  );
-}
-
-function CalendarSettingsContent() {
+export function CalendarSyncSettings() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -293,51 +286,40 @@ function CalendarSettingsContent() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-          <Calendar className="h-5 w-5 md:h-6 md:w-6" />
-          Sync calendrier
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {"Synchronisez vos tâches avec Apple Calendar, Samsung Calendar ou Google Calendar."}
-        </p>
-      </div>
-
+    <div className="mx-auto max-w-4xl space-y-4 md:space-y-6 animate-in fade-in duration-500">
       {/* Section 1: Subscribe to Calendar Feed */}
-      <Card className="border-border/50">
-        <CardHeader>
+      <Card className="border-border/20 bg-card/60 backdrop-blur-xl shadow-lg rounded-[2rem] overflow-hidden transition-all duration-300">
+        <CardHeader className="bg-muted/10">
           <CardTitle className="text-lg flex items-center gap-2">
             <Link2 className="h-5 w-5" />
-            {"S'abonner au flux calendrier"}
+            S'abonner au flux calendrier
           </CardTitle>
           <CardDescription>
-            {"Abonnez-vous à un flux calendrier qui se met à jour automatiquement. Fonctionne avec toutes les applications supportant les abonnements iCal."}
+            Abonnez-vous à un flux calendrier qui se met à jour automatiquement. Fonctionne avec toutes les applications supportant les abonnements iCal.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {feedLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {"Chargement de l'URL du flux..."}
+              Chargement de l'URL du flux...
             </div>
           ) : feedUrl ? (
             <>
               {/* Feed URL */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {"URL de votre flux calendrier"}
+                  URL de votre flux calendrier
                 </label>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 rounded-md border bg-muted/50 px-3 py-2 text-xs break-all font-mono">
+                  <code className="flex-1 rounded-xl border border-border/20 bg-background/50 px-3 py-2 text-xs break-all font-mono shadow-inner">
                     {webcalUrl}
                   </code>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleCopyUrl(webcalUrl!)}
-                    className="shrink-0"
+                    className="shrink-0 rounded-xl"
                   >
                     {copied ? (
                       <Check className="h-4 w-4" />
@@ -348,72 +330,72 @@ function CalendarSettingsContent() {
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="bg-border/20" />
 
               {/* Instructions */}
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">{"Instructions d'installation"}</h4>
+                <h4 className="text-sm font-medium">Instructions d'installation</h4>
 
-                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                <div className="rounded-2xl border border-border/20 bg-background/30 backdrop-blur-md p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <Monitor className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium">Apple Calendar (macOS / iOS)</p>
                       <ol className="mt-1 list-decimal list-inside text-xs text-muted-foreground space-y-0.5">
-                        <li>{"Copiez l'URL ci-dessus"}</li>
+                        <li>Copiez l'URL ci-dessus</li>
                         <li>
-                          {"Ouvrez Apple Calendar > Fichier > Nouvel abonnement calendrier"}
+                          Ouvrez Apple Calendar {">"} Fichier {">"} Nouvel abonnement calendrier
                         </li>
-                        <li>{"Collez l'URL et cliquez sur S'abonner"}</li>
-                        <li>{"Réglez l'actualisation sur « Toutes les heures »"}</li>
+                        <li>Collez l'URL et cliquez sur S'abonner</li>
+                        <li>Réglez l'actualisation sur « Toutes les heures »</li>
                       </ol>
                     </div>
                   </div>
 
-                  <Separator />
+                  <Separator className="bg-border/20" />
 
                   <div className="flex items-start gap-3">
                     <Smartphone className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium">Samsung Calendar</p>
                       <ol className="mt-1 list-decimal list-inside text-xs text-muted-foreground space-y-0.5">
-                        <li>{"Copiez l'URL ci-dessus"}</li>
+                        <li>Copiez l'URL ci-dessus</li>
                         <li>
-                          {"Ouvrez Samsung Calendar > Paramètres > Ajouter un calendrier > S'abonner via URL"}
+                          Ouvrez Samsung Calendar {">"} Paramètres {">"} Ajouter un calendrier {">"} S'abonner via URL
                         </li>
-                        <li>{"Collez l'URL et enregistrez"}</li>
+                        <li>Collez l'URL et enregistrez</li>
                       </ol>
                     </div>
                   </div>
 
-                  <Separator />
+                  <Separator className="bg-border/20" />
 
                   <div className="flex items-start gap-3">
                     <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium">Autres applications</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {"La plupart des applications calendrier supportent les abonnements iCal. Cherchez « Ajouter un calendrier par URL » ou « S'abonner à un calendrier » dans les paramètres."}
+                        La plupart des applications calendrier supportent les abonnements iCal. Cherchez « Ajouter un calendrier par URL » ou « S'abonner à un calendrier » dans les paramètres.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="bg-border/20" />
 
               {/* Regenerate */}
               <div>
                 {showRegenerateConfirm ? (
-                  <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4 space-y-3">
+                  <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-md p-4 space-y-3">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" />
                       <div>
                         <p className="text-sm font-medium">
-                          {"Êtes-vous sûr de vouloir régénérer ?"}
+                          Êtes-vous sûr de vouloir régénérer ?
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {"Cela invalidera votre URL actuelle. Vous devrez la mettre à jour dans toutes les applications abonnées."}
+                          Cela invalidera votre URL actuelle. Vous devrez la mettre à jour dans toutes les applications abonnées.
                         </p>
                       </div>
                     </div>
@@ -423,16 +405,18 @@ function CalendarSettingsContent() {
                         size="sm"
                         onClick={handleRegenerate}
                         disabled={regenerating}
+                        className="rounded-xl"
                       >
                         {regenerating && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        {"Oui, régénérer"}
+                        Oui, régénérer
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setShowRegenerateConfirm(false)}
+                        className="rounded-xl"
                       >
                         Annuler
                       </Button>
@@ -443,24 +427,25 @@ function CalendarSettingsContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowRegenerateConfirm(true)}
+                    className="rounded-xl shadow-sm"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    {"Régénérer l'URL"}
+                    Régénérer l'URL
                   </Button>
                 )}
               </div>
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              {"Impossible de charger le flux calendrier. Veuillez rafraîchir la page."}
+              Impossible de charger le flux calendrier. Veuillez rafraîchir la page.
             </p>
           )}
         </CardContent>
       </Card>
 
       {/* Section 2: Google Calendar Sync */}
-      <Card className="border-border/50">
-        <CardHeader>
+      <Card className="border-border/20 bg-card/60 backdrop-blur-xl shadow-lg rounded-[2rem] overflow-hidden transition-all duration-300">
+        <CardHeader className="bg-muted/10">
           <CardTitle className="text-lg flex items-center gap-2">
             <svg
               className="h-5 w-5"
@@ -476,31 +461,31 @@ function CalendarSettingsContent() {
               <path d="M23.368 5.684V1.263A1.263 1.263 0 0022.105 0h-3.789v5.684h5.052z" fill="#1967D2" />
               <path d="M18.316 0H1.263A1.263 1.263 0 000 1.263v17.053h5.684V5.684h12.632V0z" fill="#4285F4" />
             </svg>
-            {"Synchronisation Google Calendar"}
+            Synchronisation Google Calendar
           </CardTitle>
           <CardDescription>
-            {"Connectez Google Calendar pour synchroniser vos tâches en tant qu'événements. La synchronisation est automatique : elle se déclenche toutes les 5 minutes et à chaque modification d'une tâche avec échéance."}
+            Connectez Google Calendar pour synchroniser vos tâches en tant qu'événements. La synchronisation est automatique : elle se déclenche toutes les 5 minutes et à chaque modification d'une tâche avec échéance.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {googleLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {"Vérification de la connexion Google Calendar..."}
+              Vérification de la connexion Google Calendar...
             </div>
           ) : googleStatus?.connected ? (
             <>
               {/* Connected status */}
-              <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-4">
+              <div className="rounded-2xl border border-green-500/30 bg-green-500/10 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2">
                   <Check className="h-5 w-5 text-green-500" />
                   <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                    {"Google Calendar est connecté"}
+                    Google Calendar est connecté
                   </span>
                 </div>
                 {googleStatus.lastSyncAt && (
                   <p className="mt-1 text-xs text-muted-foreground ml-7">
-                    {"Dernière synchronisation : "}
+                    Dernière synchronisation :{" "}
                     {new Date(googleStatus.lastSyncAt).toLocaleString("fr-FR")}
                   </p>
                 )}
@@ -513,13 +498,14 @@ function CalendarSettingsContent() {
                   size="sm"
                   onClick={handleSync}
                   disabled={syncing}
+                  className="rounded-xl shadow-md"
                 >
                   {syncing ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <RefreshCw className="mr-2 h-4 w-4" />
                   )}
-                  {"Synchroniser maintenant"}
+                  Synchroniser maintenant
                 </Button>
 
                 {showClearConfirm ? (
@@ -529,16 +515,18 @@ function CalendarSettingsContent() {
                       size="sm"
                       onClick={handleClear}
                       disabled={clearing}
+                      className="rounded-xl"
                     >
                       {clearing && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      {"Confirmer suppression"}
+                      Confirmer suppression
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowClearConfirm(false)}
+                      className="rounded-xl"
                     >
                       Annuler
                     </Button>
@@ -548,9 +536,10 @@ function CalendarSettingsContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowClearConfirm(true)}
+                    className="rounded-xl"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    {"Nettoyer"}
+                    Nettoyer
                   </Button>
                 )}
 
@@ -561,16 +550,18 @@ function CalendarSettingsContent() {
                       size="sm"
                       onClick={handleDisconnect}
                       disabled={disconnecting}
+                      className="rounded-xl"
                     >
                       {disconnecting && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      {"Confirmer la déconnexion"}
+                      Confirmer la déconnexion
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowDisconnectConfirm(false)}
+                      className="rounded-xl"
                     >
                       Annuler
                     </Button>
@@ -580,6 +571,7 @@ function CalendarSettingsContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDisconnectConfirm(true)}
+                    className="rounded-xl"
                   >
                     <Unplug className="mr-2 h-4 w-4" />
                     Déconnecter
@@ -590,16 +582,16 @@ function CalendarSettingsContent() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                {"Connectez votre Google Calendar pour créer automatiquement des événements à partir de vos tâches. Une fois connecté, synchronisez en un clic."}
+                Connectez votre Google Calendar pour créer automatiquement des événements à partir de vos tâches. Une fois connecté, synchronisez en un clic.
               </p>
-              <Button variant="default" size="sm" asChild>
+              <Button variant="default" size="sm" asChild className="rounded-xl shadow-md">
                 <a href="/api/calendar/google/auth">
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  {"Connecter Google Calendar"}
+                  Connecter Google Calendar
                 </a>
               </Button>
               <p className="text-xs text-muted-foreground">
-                {"Note : l'intégration Google Calendar nécessite que le serveur soit configuré avec les identifiants OAuth Google."}
+                Note : l'intégration Google Calendar nécessite que le serveur soit configuré avec les identifiants OAuth Google.
               </p>
             </>
           )}
@@ -607,29 +599,30 @@ function CalendarSettingsContent() {
       </Card>
 
       {/* Section 3: Export Calendar */}
-      <Card className="border-border/50">
-        <CardHeader>
+      <Card className="border-border/20 bg-card/60 backdrop-blur-xl shadow-lg rounded-[2rem] overflow-hidden transition-all duration-300">
+        <CardHeader className="bg-muted/10">
           <CardTitle className="text-lg flex items-center gap-2">
             <Download className="h-5 w-5" />
-            {"Exporter le calendrier"}
+            Exporter le calendrier
           </CardTitle>
           <CardDescription>
-            {"Téléchargez un fichier .ics contenant toutes vos tâches avec échéance. Importable dans n'importe quelle application calendrier."}
+            Téléchargez un fichier .ics contenant toutes vos tâches avec échéance. Importable dans n'importe quelle application calendrier.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Button
             variant="outline"
             size="sm"
             onClick={handleExport}
             disabled={exporting}
+            className="rounded-xl shadow-sm"
           >
             {exporting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Download className="mr-2 h-4 w-4" />
             )}
-            {"Télécharger le fichier .ics"}
+            Télécharger le fichier .ics
           </Button>
         </CardContent>
       </Card>

@@ -58,7 +58,7 @@ function TaskRowComponent({
   return (
     <div
       className={cn(
-        "group flex items-center gap-2 border-b px-3 py-1.5 text-sm transition-colors hover:bg-muted/40 animate-fade-in-up",
+        "group flex items-center gap-2 border border-border/20 rounded-xl px-3 py-2 text-sm transition-all duration-300 hover:bg-card/60 backdrop-blur-md hover:shadow-md hover:-translate-y-0.5 animate-fade-in-up bg-background/40 mb-1.5",
         className
       )}
     >

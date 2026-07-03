@@ -54,10 +54,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useModal } from "@/hooks/use-modal";
 import { useCreateTask, useUpdateTask } from "@/hooks/use-tasks";
 import { cn } from "@/lib/utils";
+import { CalendarSyncSettings } from "@/components/calendar/calendar-sync-settings";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -237,13 +239,25 @@ export default function GlobalCalendarPage() {
             size="sm"
             onClick={() => openCreateDialog(selectedDay ?? new Date())}
             disabled={!lists || lists.length === 0}
+            className="rounded-xl shadow-md transition-all hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">Nouvelle tâche</span>
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList className="mb-4 bg-muted/30 backdrop-blur-md border border-border/20 rounded-xl p-1">
+            <TabsTrigger value="calendar" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-300">
+              Vue Calendrier
+            </TabsTrigger>
+            <TabsTrigger value="sync" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-300">
+              Synchronisation
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="calendar" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
           {/* Calendar grid */}
           <div className="flex-1 min-w-0">
             {/* Month navigation */}
@@ -498,6 +512,13 @@ export default function GlobalCalendarPage() {
             </div>
           </div>
         </div>
+        </TabsContent>
+        <TabsContent value="sync" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+          <div className="max-w-4xl mx-auto py-4">
+            <CalendarSyncSettings />
+          </div>
+        </TabsContent>
+      </Tabs>
       </div>
 
       {/* Create task dialog */}

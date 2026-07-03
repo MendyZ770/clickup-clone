@@ -124,7 +124,6 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     { icon: Target, label: "Objectifs", href: "/goals" },
     { icon: BellRing, label: "Rappels", href: "/reminders" },
     { icon: Bell, label: "Notifications", href: "/notifications", badge: unreadCount },
-    { icon: CalendarSync, label: "Sync calendrier", href: "/dashboard/calendar-settings" },
     { icon: NotebookPen, label: "Notes", href: "/notes" },
   ];
 

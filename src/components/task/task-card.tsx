@@ -32,7 +32,7 @@ function TaskCardComponent({ task, className, onAction }: TaskCardProps) {
     <div
       onClick={() => openTaskModal(task.id, task.locked)}
       className={cn(
-        "group relative cursor-pointer rounded-lg border bg-card p-2 sm:p-3 shadow-sm transition-all hover:shadow-md",
+        "group relative cursor-pointer rounded-2xl border border-border/20 bg-card/60 backdrop-blur-md p-2 sm:p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5 hover:border-primary/20",
         className
       )}
     >

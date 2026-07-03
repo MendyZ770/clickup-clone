@@ -236,7 +236,7 @@ export default function FinancePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08, duration: 0.4 }}
           >
-            <Card className={`border-border/50 bg-gradient-to-br ${card.color} overflow-hidden hover:shadow-lg transition-all`}>
+            <Card className={`border-border/30 bg-gradient-to-br ${card.color} backdrop-blur-xl overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:shadow-black/10 transition-all duration-300 rounded-[2rem]`}>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">

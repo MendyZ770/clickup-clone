@@ -226,7 +226,7 @@ export default function MyTasksPage() {
                 <h2 className="text-sm font-semibold">{label}</h2>
                 <span className="text-xs text-muted-foreground">({sectionTasks.length})</span>
               </div>
-              <div className="rounded-lg border divide-y">
+              <div className="rounded-2xl border border-border/20 divide-y divide-border/10 bg-card/40 backdrop-blur-md shadow-sm overflow-hidden">
                 {sectionTasks.map((task) => (
                   <div
                     key={task.id}
