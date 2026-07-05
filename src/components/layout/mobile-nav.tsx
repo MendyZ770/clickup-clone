@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -24,8 +24,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 rounded-[2rem] border border-white/10 dark:border-white/5 bg-background/60 dark:bg-background/40 backdrop-blur-2xl shadow-2xl shadow-black/20">
-      <div className="flex items-center justify-around h-16 px-1">
+    <nav className="md:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50 rounded-[2.5rem] border border-white/20 dark:border-white/10 bg-background/50 dark:bg-background/30 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+      <div className="flex items-center justify-between h-[4.5rem] px-2 relative">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -34,16 +34,25 @@ export function MobileNav() {
             <motion.button
               key={item.href}
               onClick={() => router.push(item.href)}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.85 }}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-1 min-w-[60px] h-14 rounded-2xl transition-all duration-300",
+                "relative flex flex-col items-center justify-center gap-1 w-full h-14 rounded-full transition-colors duration-300 z-10",
                 isActive
-                  ? "text-primary bg-primary/15 shadow-inner"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className={cn("h-5 w-5 transition-transform duration-300", isActive && "stroke-[2.5] scale-110")} />
-              <span className={cn("text-[10px] font-semibold leading-tight transition-all duration-300", isActive ? "opacity-100" : "opacity-70")}>{item.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="mobile-nav-active-indicator"
+                  className="absolute inset-0 bg-primary/15 rounded-[2rem] -z-10 shadow-inner"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <item.icon className={cn("h-[22px] w-[22px] transition-transform duration-300", isActive && "stroke-[2.5] scale-110")} />
+              <span className={cn("text-[9px] font-bold leading-tight transition-all duration-300 tracking-wide", isActive ? "opacity-100" : "opacity-0 translate-y-1 absolute bottom-1")}>
+                {isActive ? item.label : ""}
+              </span>
             </motion.button>
           );
         })}

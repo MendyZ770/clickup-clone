@@ -58,7 +58,7 @@ export function Breadcrumbs() {
 
   if (segments.length === 0) {
     return (
-      <div className="flex items-center text-sm text-muted-foreground">
+      <div className="hidden md:flex items-center text-sm text-muted-foreground">
         <Home className="h-6 w-6" />
       </div>
     );
@@ -69,7 +69,7 @@ export function Breadcrumbs() {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="flex items-center gap-1 text-sm md:text-base min-w-0 overflow-hidden"
+      className="hidden md:flex items-center gap-1 text-sm md:text-base min-w-0 overflow-hidden"
     >
       <motion.div variants={staggerItem}>
         <Link

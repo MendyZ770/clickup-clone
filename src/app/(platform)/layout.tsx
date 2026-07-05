@@ -26,7 +26,7 @@ export default async function PlatformLayout({
           <div className="pointer-events-none absolute top-40 -left-40 h-[400px] w-[400px] rounded-full bg-blue-500/5 blur-[100px] dark:bg-blue-500/10 z-0" />
 
           <TopBar />
-          <main className="flex-1 pb-20 md:pb-0 page-content overflow-y-auto min-h-0 relative z-10">
+          <main className="flex-1 pb-[120px] md:pb-0 page-content overflow-y-auto min-h-0 relative z-10">
             {children}
           </main>
         </div>

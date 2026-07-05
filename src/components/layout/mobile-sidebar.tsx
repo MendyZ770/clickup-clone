@@ -29,7 +29,7 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="p-0 w-[320px] bg-sidebar border-r-0"
+        className="p-0 w-[320px] max-w-[85vw] bg-sidebar/80 backdrop-blur-3xl border-r border-white/5 shadow-[20px_0_40px_rgba(0,0,0,0.1)] dark:shadow-[20px_0_40px_rgba(0,0,0,0.3)]"
       >
         <Sidebar onCloseSheet={() => setOpen(false)} />
       </SheetContent>
