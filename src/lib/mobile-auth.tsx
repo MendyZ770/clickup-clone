@@ -42,6 +42,7 @@ export function MobileAuthProvider({ children }: { children: React.ReactNode }) 
       try {
         const r = await fetch("/api/mobile-me", {
           headers: { Authorization: `Bearer ${storedToken}` },
+          credentials: "include",
         });
         if (r.ok) {
           const data = await r.json();

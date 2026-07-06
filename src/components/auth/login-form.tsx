@@ -35,10 +35,9 @@ export function LoginForm() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     }
-  }, [status, router]);
+  }, [status]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
