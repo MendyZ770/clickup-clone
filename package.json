@@ -86,6 +86,7 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@next/bundle-analyzer": "^16.2.6",
     "@prisma/client": "^5.14.0",
     "@types/bcryptjs": "^2.4.6",

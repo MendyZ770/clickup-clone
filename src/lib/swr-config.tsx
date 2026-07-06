@@ -15,9 +15,10 @@ async function refreshTokenCache() {
   cachedToken = await storageGet("mobile_auth_token");
 }
 
-const fetcher = (url: string) => {
+const fetcher = async (url: string) => {
   const headers: HeadersInit = {};
-  if (cachedToken) headers.Authorization = `Bearer ${cachedToken}`;
+  const token = await storageGet("mobile_auth_token");
+  if (token) headers.Authorization = `Bearer ${token}`;
   return fetch(url, { headers }).then((res) => {
     if (!res.ok) throw new Error("Failed to fetch");
     return res.json();

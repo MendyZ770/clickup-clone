@@ -138,7 +138,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
   return (
     <TooltipProvider delayDuration={0}>
       <aside
-        className="group/sidebar flex h-screen flex-col bg-sidebar/40 backdrop-blur-2xl supports-[backdrop-filter]:bg-sidebar/30 text-sidebar-foreground/80 border-r border-sidebar-border/50 transition-all duration-300 ease-out relative z-40"
+        className="group/sidebar flex h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex-col bg-sidebar/40 backdrop-blur-2xl supports-[backdrop-filter]:bg-sidebar/30 text-sidebar-foreground/80 border-r border-sidebar-border/50 transition-all duration-300 ease-out relative z-40"
         style={{ width: collapsed ? 72 : 280, minWidth: collapsed ? 72 : 280 }}
       >
         {/* =========================================

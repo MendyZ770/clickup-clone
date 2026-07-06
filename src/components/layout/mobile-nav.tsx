@@ -24,7 +24,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50 rounded-[2.5rem] border border-white/20 dark:border-white/10 bg-background/50 dark:bg-background/30 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+    <nav className="md:hidden fixed bottom-[calc(3rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50 rounded-[2.5rem] border border-white/20 dark:border-white/10 bg-background/50 dark:bg-background/30 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
       <div className="flex items-center justify-between h-[4.5rem] px-2 relative">
         {navItems.map((item) => {
           const isActive =

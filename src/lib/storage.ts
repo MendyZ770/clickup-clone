@@ -16,15 +16,18 @@ export async function storageSet(key: string, value: string): Promise<void> {
   if (isCapacitor()) {
     const { Preferences } = await import("@capacitor/preferences");
     await Preferences.set({ key, value });
-  } else {
-    localStorage.setItem(key, value);
   }
+  localStorage.setItem(key, value);
 }
 
 export async function storageGet(key: string): Promise<string | null> {
   if (isCapacitor()) {
     const { Preferences } = await import("@capacitor/preferences");
     const { value } = await Preferences.get({ key });
+    if (value) {
+      // Sync it to localStorage so sync scripts can find it
+      localStorage.setItem(key, value);
+    }
     return value;
   } else {
     return localStorage.getItem(key);
@@ -35,7 +38,6 @@ export async function storageRemove(key: string): Promise<void> {
   if (isCapacitor()) {
     const { Preferences } = await import("@capacitor/preferences");
     await Preferences.remove({ key });
-  } else {
-    localStorage.removeItem(key);
   }
+  localStorage.removeItem(key);
 }
