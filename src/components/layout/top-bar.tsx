@@ -76,8 +76,10 @@ export function TopBar() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <TimerButton />
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div className="hidden md:flex items-center">
+          <TimerButton />
+        </div>
 
         <Button
           variant="ghost"
@@ -113,7 +115,9 @@ export function TopBar() {
           )}
         </Button>
 
-        <AccountSwitcher />
+        <div className="hidden md:flex items-center">
+          <AccountSwitcher />
+        </div>
       </div>
     </header>
   );
