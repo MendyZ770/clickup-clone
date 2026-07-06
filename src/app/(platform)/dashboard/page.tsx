@@ -148,100 +148,103 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl p-3 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <PageHeader
-        icon={LayoutDashboard}
-        title="Tableau de bord"
-        description={
-          currentWorkspace
-            ? `Vue d'ensemble de ${currentWorkspace.name}`
-            : "Sélectionnez un espace de travail pour commencer"
-        }
-        actions={
-          currentWorkspace ? (
-            <Button
-              size="sm"
-              onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
-            >
-              <Plus className="h-5 w-5 mr-1.5" />
-              Nouvelle tâche
-            </Button>
-          ) : undefined
-        }
-      />
+      {/* Header - Hidden on mobile as TopBar covers it */}
+      <div className="hidden md:block">
+        <PageHeader
+          icon={LayoutDashboard}
+          title="Tableau de bord"
+          description={
+            currentWorkspace
+              ? `Vue d'ensemble de ${currentWorkspace.name}`
+              : "Sélectionnez un espace de travail pour commencer"
+          }
+          actions={
+            currentWorkspace ? (
+              <Button
+                size="sm"
+                onClick={() => openCreateTask(currentWorkspace.id, undefined, handleTaskCreated)}
+              >
+                <Plus className="h-5 w-5 mr-1.5" />
+                Nouvelle tâche
+              </Button>
+            ) : undefined
+          }
+        />
+      </div>
 
       {/* Quick Actions + Productivity Score */}
       {currentWorkspace && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           {/* Productivity Score Card */}
-          <div className="md:col-span-1 rounded-2xl border bg-gradient-to-br from-primary/5 via-primary/2 to-transparent p-4 md:p-5 flex items-center gap-4 hover:shadow-sm transition-shadow">
-            <div className="relative h-14 w-14 shrink-0">
-              <svg viewBox="0 0 36 36" className="h-14 w-14 -rotate-90">
+          <div className="md:col-span-1 rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-5 flex items-center gap-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="relative h-16 w-16 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 36 36" className="absolute inset-0 h-16 w-16 -rotate-90">
                 <path
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
                   stroke="hsl(var(--muted))"
+                  className="opacity-30"
                   strokeWidth="3"
                 />
                 <path
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
                   stroke="hsl(var(--primary))"
-                  strokeWidth="3"
+                  strokeWidth="3.5"
                   strokeDasharray={`${productivityScore}, 100`}
                   strokeLinecap="round"
-                  className="transition-all duration-1000"
+                  className="transition-all duration-1000 ease-out drop-shadow-md"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold">{productivityScore}%</span>
+                <span className="text-sm font-black tracking-tighter text-foreground">{productivityScore}%</span>
               </div>
             </div>
             <div>
-              <p className="text-sm font-semibold">Productivité</p>
-              <p className="text-xs text-muted-foreground">
-                {data?.completedTasks ?? 0} sur {data?.totalTasks ?? 0} tâches terminées
+              <p className="text-base font-bold tracking-tight">Productivité</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {data?.completedTasks ?? 0} sur {data?.totalTasks ?? 0} tâches
               </p>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="md:col-span-2 grid grid-cols-3 gap-3">
+          <div className="md:col-span-2 grid grid-cols-3 gap-2 md:gap-3">
             <Link
               href="/my-tasks"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "flex flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-border/30 bg-card/40 backdrop-blur-xl p-3 md:p-4",
+                "hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ListTodo className="h-5 w-5 text-blue-600" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors shadow-inner">
+                <ListTodo className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />
               </div>
-              <span className="text-xs font-medium">Mes tâches</span>
+              <span className="text-[11px] md:text-sm font-semibold tracking-tight text-center leading-tight">Mes tâches</span>
             </Link>
             <Link
               href="/calendar"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "flex flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-border/30 bg-card/40 backdrop-blur-xl p-3 md:p-4",
+                "hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Calendar className="h-5 w-5 text-amber-600" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors shadow-inner">
+                <Calendar className="h-5 w-5 md:h-6 md:w-6 text-amber-500" />
               </div>
-              <span className="text-xs font-medium">Calendrier</span>
+              <span className="text-[11px] md:text-sm font-semibold tracking-tight text-center leading-tight">Calendrier</span>
             </Link>
             <Link
               href="/reminders"
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4",
-                "hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                "flex flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-border/30 bg-card/40 backdrop-blur-xl p-3 md:p-4",
+                "hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
               )}
             >
-              <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Zap className="h-5 w-5 text-purple-600" />
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors shadow-inner">
+                <Zap className="h-5 w-5 md:h-6 md:w-6 text-purple-500" />
               </div>
-              <span className="text-xs font-medium">Rappels</span>
+              <span className="text-[11px] md:text-sm font-semibold tracking-tight text-center leading-tight">Rappels</span>
             </Link>
           </div>
         </div>
