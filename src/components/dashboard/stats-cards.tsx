@@ -130,7 +130,7 @@ export const StatsCards = memo(function StatsCards({
             whileTap={{ scale: 0.98 }}
             onClick={() => onCardClick?.(card.key)}
             className={cn(
-              "group relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 w-full text-left",
+              "group relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-4 md:p-6 w-full text-left",
               "shadow-xl shadow-black/5 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500",
               "cursor-pointer",
               card.gradient
@@ -141,21 +141,21 @@ export const StatsCards = memo(function StatsCards({
 
             <div className="flex items-center justify-between relative z-10">
               <motion.div
-                className={cn("rounded-2xl p-3 shadow-sm", card.iconBg)}
+                className={cn("rounded-2xl p-2.5 md:p-3 shadow-sm", card.iconBg)}
                 whileHover={{ rotate: 8, scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
-                <Icon className="h-6 w-6" />
+                <Icon className="h-5 w-5 md:h-6 md:w-6" />
               </motion.div>
               {card.key === "completedTasks" && (
-                <div className="flex items-center gap-1 text-sm font-bold text-green-600 bg-green-500/10 px-2 py-1 rounded-full">
-                  <TrendingUp className="h-4 w-4" />
+                <div className="flex items-center gap-1 text-[10px] md:text-sm font-bold text-green-600 bg-green-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full whitespace-nowrap shrink-0">
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
                   {completionRate}%
                 </div>
               )}
               {isOverdue && (
-                <div className="flex items-center gap-1 text-sm font-bold text-red-600 bg-red-500/10 px-2 py-1 rounded-full animate-pulse">
-                  <TrendingDown className="h-4 w-4" />
+                <div className="flex items-center gap-1 text-[10px] md:text-sm font-bold text-red-600 bg-red-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full animate-pulse whitespace-nowrap shrink-0">
+                  <TrendingDown className="h-3 w-3 md:h-4 md:w-4" />
                   Attention
                 </div>
               )}

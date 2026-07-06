@@ -89,15 +89,15 @@ export default function DocsListPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto h-full overflow-y-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto h-full overflow-y-auto">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Documents</h1>
           <p className="text-muted-foreground mt-1">
             Gérez vos notes, cahiers des charges et spécifications.
           </p>
         </div>
-        <Button onClick={handleCreateDoc} disabled={isCreating}>
+        <Button onClick={handleCreateDoc} disabled={isCreating} className="w-full sm:w-auto">
           {isCreating ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -130,7 +130,7 @@ export default function DocsListPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <FileText className="h-8 w-8 text-primary/70 mb-2" />
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8">

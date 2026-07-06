@@ -125,11 +125,11 @@ export default function DocEditorPage() {
 
       {/* Editor Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-8 lg:p-12">
+        <div className="max-w-4xl mx-auto p-3 md:p-8 lg:p-12">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="text-4xl md:text-5xl font-bold border-none shadow-none focus-visible:ring-0 px-0 h-auto mb-8 bg-transparent"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold border-none shadow-none focus-visible:ring-0 px-0 h-auto mb-6 md:mb-8 bg-transparent"
             placeholder="Titre du document..."
           />
           
