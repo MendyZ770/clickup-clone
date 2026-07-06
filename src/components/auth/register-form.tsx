@@ -13,15 +13,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAccounts } from "@/hooks/use-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { storageSet } from "@/lib/storage";
+import { useMobileAuth } from "@/lib/mobile-auth";
+import { useEffect } from "react";
+
 export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { addAccount } = useAccounts();
+  const { status } = useMobileAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [status, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

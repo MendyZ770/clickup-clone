@@ -14,6 +14,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { QuickAccounts } from "./quick-accounts";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { storageSet } from "@/lib/storage";
+import { useMobileAuth } from "@/lib/mobile-auth";
+import { useEffect } from "react";
 
 function isNativeApp(): boolean {
   if (typeof window === "undefined") return false;
@@ -26,9 +28,17 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { addAccount } = useAccounts();
+  const { status } = useMobileAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [status, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
