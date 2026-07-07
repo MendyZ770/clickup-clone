@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
     // Pour retrouver à quel espace de travail on relie le compte après la redirection,
     // on peut utiliser le champ state (encode le workspaceId)
-    const state = Buffer.from(JSON.stringify({ workspaceId, userId: session.user.id })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ workspaceId, userId: user.id })).toString('base64');
 
     const authResponse = await fetchEnableBanking("/auth", {
       method: "POST",
