@@ -285,7 +285,7 @@ export default function FinancePage() {
         </TabsList>
 
         <TabsContent value="accounts" className="space-y-4">
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
             <SyncAccountsButton accounts={accounts} onSync={handleMutate} />
             <EnableBankingLinkButton workspaceId={workspaceId!} onSuccess={handleMutate} variant="outline" />
             <Button variant="default" onClick={() => setShowAddAccount(true)}>
