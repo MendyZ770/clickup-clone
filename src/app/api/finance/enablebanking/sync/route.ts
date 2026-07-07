@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import { fetchEnableBanking } from "@/lib/enablebanking";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const user = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Account not found or not connected to Enable Banking" }, { status: 404 });
     }
 
-    const isMember = dbAccount.workspace.members.some(m => m.userId === session.user.id);
+    const isMember = dbAccount.workspace.members.some(m => m.userId === user.id);
     if (!isMember) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
@@ -98,7 +97,7 @@ export async function POST(req: Request) {
               description,
               date: new Date(dateStr),
               accountId: dbAccount.id,
-              userId: session.user.id,
+              userId: user.id,
               ebTransactionId: txnId,
               type: amount > 0 ? "income" : "expense",
             },

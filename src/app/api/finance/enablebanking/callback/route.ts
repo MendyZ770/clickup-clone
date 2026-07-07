@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import { fetchEnableBanking } from "@/lib/enablebanking";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const user = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid state" }, { status: 400 });
     }
 
-    if (stateData.userId !== session.user.id) {
+    if (stateData.userId !== user.id) {
       return NextResponse.json({ error: "State mismatch" }, { status: 403 });
     }
 
@@ -72,7 +71,7 @@ export async function POST(req: Request) {
           type: "bank",
           balance: 0,
           workspaceId,
-          userId: session.user.id,
+          userId: user.id,
           ebAccountId: ebId,
           color: "#4F46E5", // Indigo color for Enable Banking
         },
