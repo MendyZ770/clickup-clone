@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MentionTextarea } from "@/components/shared/mention-textarea";
 import { useMentionMembers } from "@/hooks/use-mention-members";
+import Image from "next/image";
 
 interface ChatMessage {
   id: string;
@@ -137,9 +138,11 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
                   {/* Avatar */}
                   <div className="shrink-0 mt-auto mb-1">
                     {msg.user.image ? (
-                      <img
+                      <Image
                         src={msg.user.image}
                         alt={msg.user.name ?? ""}
+                        width={32}
+                        height={32}
                         className="h-8 w-8 rounded-full object-cover shadow-sm border border-border/50"
                       />
                     ) : (

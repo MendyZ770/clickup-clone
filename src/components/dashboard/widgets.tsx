@@ -67,11 +67,17 @@ export function StatCardsWidget() {
 
 // 3. Activity Feed
 export function ActivityFeedWidget() {
-  const activities = [
-    { id: 1, user: "Mendy Z.", action: "a terminé la tâche", task: "Intégration API", time: new Date(Date.now() - 1000 * 60 * 30) },
-    { id: 2, user: "Sarah L.", action: "a commenté sur", task: "Design System", time: new Date(Date.now() - 1000 * 60 * 60 * 2) },
-    { id: 3, user: "Mendy Z.", action: "a créé la tâche", task: "Correction Bug #42", time: new Date(Date.now() - 1000 * 60 * 60 * 5) },
-  ];
+  const [activities, setActivities] = useState<any[]>([]);
+
+  useEffect(() => {
+    setActivities([
+      { id: 1, user: "Mendy Z.", action: "a terminé la tâche", task: "Intégration API", time: new Date(Date.now() - 1000 * 60 * 30) },
+      { id: 2, user: "Sarah L.", action: "a commenté sur", task: "Design System", time: new Date(Date.now() - 1000 * 60 * 60 * 2) },
+      { id: 3, user: "Mendy Z.", action: "a créé la tâche", task: "Correction Bug #42", time: new Date(Date.now() - 1000 * 60 * 60 * 5) },
+    ]);
+  }, []);
+
+  if (activities.length === 0) return <div className="h-full flex items-center justify-center text-muted-foreground text-sm">Chargement...</div>;
 
   return (
     <div className="space-y-4 h-full overflow-y-auto pr-2">

@@ -32,7 +32,7 @@ export function QuickActionFab() {
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const ActionButtons = () => (
+  const actionButtonsNode = (
     <motion.div
       variants={staggerContainer}
       initial="hidden"
@@ -166,7 +166,7 @@ export function QuickActionFab() {
             <DialogHeader>
               <DialogTitle className="text-xl">Action rapide</DialogTitle>
             </DialogHeader>
-            <ActionButtons />
+            {actionButtonsNode}
           </DialogContent>
         </Dialog>
       ) : (
@@ -175,7 +175,7 @@ export function QuickActionFab() {
             <DrawerHeader className="px-0 pt-6 pb-4">
               <DrawerTitle className="text-2xl font-bold tracking-tight">Que voulez-vous créer ?</DrawerTitle>
             </DrawerHeader>
-            <ActionButtons />
+            {actionButtonsNode}
           </DrawerContent>
         </Drawer>
       )}

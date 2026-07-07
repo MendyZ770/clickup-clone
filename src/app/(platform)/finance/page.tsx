@@ -83,14 +83,6 @@ export default function FinancePage() {
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
 
-  if (!accounts || !transactions) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   // Auto-sync on page load
   useEffect(() => {
     const autoSync = async () => {
@@ -139,9 +131,9 @@ export default function FinancePage() {
     autoSync();
   }, [accounts, workspaceId, toast]);
 
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+  const totalBalance = accounts?.reduce((sum, a) => sum + a.balance, 0) || 0;
 
-  const filteredTransactions = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
+  const filteredTransactions = useMemo(() => filterByPeriod(transactions || [], period), [transactions, period]);
 
   const expenseByCategory = useMemo(() => {
     const map = new Map();
@@ -159,6 +151,14 @@ export default function FinancePage() {
   const handleMutate = async () => {
     await revalidateFinance(workspaceId);
   };
+
+  if (!accounts || !transactions) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   const statCards = [
     {

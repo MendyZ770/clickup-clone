@@ -41,8 +41,8 @@ export function MentionTextarea({
   const containerRef = useRef<HTMLDivElement>(null);
   const [mentionedIds, setMentionedIds] = useState<Set<string>>(new Set());
 
-  const filteredMembers =
-    mentionQuery !== null
+  const filteredMembers = useMemo(() => {
+    return mentionQuery !== null
       ? members
           .filter((m) => {
             const name = (m.name ?? m.email).toLowerCase();
@@ -54,6 +54,7 @@ export function MentionTextarea({
           })
           .slice(0, 6)
       : [];
+  }, [mentionQuery, members]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {

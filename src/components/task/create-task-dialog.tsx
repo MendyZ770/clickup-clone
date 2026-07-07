@@ -119,7 +119,7 @@ export function CreateTaskDialog({
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const FormContent = () => (
+  const formContentNode = (
     <>
       {allLists.length === 0 ? (
         <div className="py-2 space-y-3 px-4 md:px-0">
@@ -249,7 +249,7 @@ export function CreateTaskDialog({
               Ajoutez une tâche dans une de vos listes.
             </DialogDescription>
           </DialogHeader>
-          <FormContent />
+          {formContentNode}
         </DialogContent>
       </Dialog>
     );
@@ -270,7 +270,7 @@ export function CreateTaskDialog({
             Ajoutez une tâche dans une de vos listes.
           </DrawerDescription>
         </DrawerHeader>
-        <FormContent />
+        {formContentNode}
       </DrawerContent>
     </Drawer>
   );

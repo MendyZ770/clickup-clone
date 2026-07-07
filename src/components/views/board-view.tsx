@@ -154,7 +154,7 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
         mutate(); // Revert on error
       }
     },
-    [tasks, statuses, mutate]
+    [tasks, statuses, mutate, listId]
   );
 
   // Pre-compute tasks per column — memoized to avoid re-filtering on every render

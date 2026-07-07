@@ -28,21 +28,21 @@ export default function DocsListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
-  const fetchDocs = async () => {
-    try {
-      const res = await fetch(`/api/docs?workspaceId=${params.workspaceId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setDocs(data);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        const res = await fetch(`/api/docs?workspaceId=${params.workspaceId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDocs(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchDocs();
   }, [params.workspaceId]);
 
