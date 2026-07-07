@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   title: "Done",
   description: "Outil de gestion de projets pour développeurs web",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/icon-192.png",
+    shortcut: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
