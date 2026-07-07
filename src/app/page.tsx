@@ -1,17 +1,18 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-helpers";
 import Link from "next/link";
+import { MobileHomeRedirect } from "@/components/auth/mobile-home-redirect";
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  const user = await getCurrentUser();
 
-  if (session) {
+  if (user) {
     redirect("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden relative grain-overlay">
+      <MobileHomeRedirect />
       {/* Ambient gradient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-purple-500/15 blur-[120px] animate-gradient" />
