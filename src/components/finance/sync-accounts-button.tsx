@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { getTokenSync } from "@/lib/swr-config";
 
 export function SyncAccountsButton({ 
   accounts, 
@@ -34,9 +35,15 @@ export function SyncAccountsButton({
     try {
       // Sync each account one by one
       const syncPromises = linkedAccounts.map(async (acc) => {
+        const token = getTokenSync();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        
         const res = await fetch("/api/finance/enablebanking/sync", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ accountId: acc.id })
         });
         

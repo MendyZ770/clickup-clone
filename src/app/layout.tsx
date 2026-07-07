@@ -64,11 +64,16 @@ const fetchInterceptorScript = `
     var token = null;
     try { token = localStorage.getItem('mobile_auth_token'); } catch(e) {}
     if (token && (!init.headers || !init.headers.Authorization)) {
-      var headers = new Headers(init.headers);
-      if (!headers.has('Authorization')) {
-        headers.set('Authorization', 'Bearer ' + token);
+      var newHeaders = {};
+      if (init.headers instanceof Headers) {
+        init.headers.forEach(function(value, key) { newHeaders[key] = value; });
+      } else if (init.headers) {
+        for (var key in init.headers) { newHeaders[key] = init.headers[key]; }
       }
-      init.headers = headers;
+      if (!newHeaders['Authorization'] && !newHeaders['authorization']) {
+        newHeaders['Authorization'] = 'Bearer ' + token;
+      }
+      init.headers = newHeaders;
     }
     return origFetch(input, init);
   };
