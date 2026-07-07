@@ -200,7 +200,7 @@ export default function FinancePage() {
   ];
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 pb-24 md:pb-6 space-y-6 overflow-x-hidden max-w-[100vw]">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -218,9 +218,9 @@ export default function FinancePage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <PeriodFilter value={period} onChange={setPeriod} />
-          <Button onClick={() => setShowAddTransaction(true)} className="shadow-md shadow-violet-500/10">
+          <Button onClick={() => setShowAddTransaction(true)} className="shadow-md shadow-violet-500/10 w-full sm:w-auto">
             <TrendingUp className="h-4 w-4 mr-2" />
             Transaction
           </Button>
