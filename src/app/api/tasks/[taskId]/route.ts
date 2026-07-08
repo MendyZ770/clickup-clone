@@ -5,6 +5,7 @@ import { evaluateAutomations } from "@/lib/automation-engine";
 import { updateTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";
+import { pusherServer } from "@/lib/pusher-server";
 
 interface RouteContext {
   params: Promise<{ taskId: string }>;
@@ -330,6 +331,17 @@ export async function PATCH(request: Request, context: RouteContext) {
     // Ne jamais renvoyer le PIN dans la réponse
     const { lockedPin: _pin, ...taskWithoutPin } = updatedTask;
     void _pin;
+    
+    try {
+      await pusherServer.trigger(
+        `workspace-${existingTask.list.space.workspace.id}`,
+        "task:updated",
+        taskWithoutPin
+      );
+    } catch (e) {
+      console.error("Pusher error:", e);
+    }
+    
     return NextResponse.json(taskWithoutPin);
   } catch (error) {
     console.error("PATCH /api/tasks/[id] error:", error);
@@ -392,6 +404,16 @@ export async function DELETE(request: Request, context: RouteContext) {
     // Trigger calendar sync if deleted task had a due date
     if (task.dueDate) {
       triggerCalendarSync();
+    }
+
+    try {
+      await pusherServer.trigger(
+        `workspace-${task.list.space.workspace.id}`,
+        "task:deleted",
+        { id: taskId }
+      );
+    } catch (e) {
+      console.error("Pusher error:", e);
     }
 
     return NextResponse.json({ success: true });

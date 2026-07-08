@@ -1,4 +1,6 @@
 import useSWR from "swr";
+import { useEffect } from "react";
+import { getPusherClient } from "@/lib/pusher-client";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -18,11 +20,30 @@ export interface ChatMessage {
 export function useChat(listId: string) {
   const { data, error, isLoading, mutate } = useSWR<ChatMessage[]>(
     listId ? `/api/lists/${listId}/chat` : null,
-    fetcher,
-    {
-      refreshInterval: 2000, // Poll every 2 seconds for real-time feel
-    }
+    fetcher
   );
+
+  useEffect(() => {
+    if (!listId) return;
+
+    const pusher = getPusherClient();
+    const channelName = `list-${listId}-chat`;
+    const channel = pusher.subscribe(channelName);
+
+    channel.bind("message:created", (newMessage: ChatMessage) => {
+      // Avoid duplicating the optimistic message if it was sent by us
+      mutate((currentMessages) => {
+        if (!currentMessages) return [newMessage];
+        if (currentMessages.some(m => m.id === newMessage.id)) return currentMessages;
+        return [...currentMessages, newMessage];
+      }, false);
+    });
+
+    return () => {
+      channel.unbind("message:created");
+      pusher.unsubscribe(channelName);
+    };
+  }, [listId, mutate]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;

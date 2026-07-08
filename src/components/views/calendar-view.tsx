@@ -16,6 +16,18 @@ import {
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  DragOverlay,
+} from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,12 +49,76 @@ interface CalendarViewProps {
   workspaceId: string;
 }
 
+function DraggableTask({ task, onClick }: { task: TaskSummary; onClick: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+    data: { task },
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      onPointerDown={(e) => {
+        // Allow clicking without instantly dragging
+      }}
+      onClick={(e) => {
+        if (!isDragging) onClick();
+      }}
+      className="flex w-full items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight hover:bg-muted transition-colors truncate cursor-pointer active:cursor-grabbing relative z-10 touch-none"
+    >
+      <span
+        className="h-1.5 w-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: task.status.color }}
+      />
+      <span className="truncate pointer-events-none">{task.title}</span>
+    </button>
+  );
+}
+
+function DroppableDay({
+  dateKey,
+  children,
+  className,
+}: {
+  dateKey: string;
+  children: React.ReactNode;
+  className: string;
+}) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: dateKey,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(className, isOver && "bg-primary/10 ring-2 ring-primary ring-inset")}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { getFilter } = useFilters();
   const { openTaskModal, setWorkspaceId } = useModal();
   const { createTask } = useCreateTask();
   const { updateTask } = useUpdateTask();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
+
+  const [activeTask, setActiveTask] = useState<TaskSummary | null>(null);
 
   const [addingForDate, setAddingForDate] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -162,7 +238,22 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
       </div>
 
       {/* Calendar grid */}
-      <div className="rounded-lg border overflow-hidden">
+      <DndContext
+        sensors={sensors}
+        onDragStart={(e) => {
+          const task = e.active.data.current?.task as TaskSummary;
+          if (task) setActiveTask(task);
+        }}
+        onDragEnd={(e) => {
+          setActiveTask(null);
+          const { active, over } = e;
+          if (!over) return;
+          const taskId = active.id as string;
+          const dateKey = over.id as string;
+          handleDrop(dateKey, taskId);
+        }}
+      >
+        <div className="rounded-lg border overflow-hidden">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 border-b bg-muted/30">
           {WEEKDAYS.map((day) => (
@@ -185,26 +276,13 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
             const isDragOver = dragOverDate === dateKey;
 
             return (
-              <div
+              <DroppableDay
                 key={dateKey}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverDate !== dateKey) setDragOverDate(dateKey);
-                }}
-                onDragLeave={() => {
-                  if (dragOverDate === dateKey) setDragOverDate(null);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const taskId = e.dataTransfer.getData("text/plain");
-                  if (taskId) handleDrop(dateKey, taskId);
-                }}
+                dateKey={dateKey}
                 className={cn(
                   "group relative min-h-[55px] sm:min-h-[70px] md:min-h-[110px] border-b border-r p-0.5 sm:p-1 md:p-1.5 transition-colors",
                   !isCurrentMonth && "bg-muted/20",
-                  today && "bg-primary/5",
-                  isDragOver && "bg-primary/10 ring-2 ring-primary ring-inset"
+                  today && "bg-primary/5"
                 )}
               >
                 {/* Day number */}
@@ -298,29 +376,27 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
                 {/* Tasks */}
                 <div className="space-y-0.5">
                   {dayTasks.slice(0, 3).map((task) => (
-                    <button
-                      key={task.id}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/plain", task.id);
-                        e.dataTransfer.effectAllowed = "move";
-                      }}
-                      onClick={() => openTaskModal(task.id)}
-                      className="flex w-full items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight hover:bg-muted transition-colors truncate cursor-pointer active:cursor-grabbing"
-                    >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full shrink-0"
-                        style={{ backgroundColor: task.status.color }}
-                      />
-                      <span className="truncate">{task.title}</span>
-                    </button>
+                    <DraggableTask key={task.id} task={task} onClick={() => openTaskModal(task.id)} />
                   ))}
                 </div>
-              </div>
+              </DroppableDay>
             );
           })}
         </div>
-      </div>
+        
+        {/* Drag Overlay for smooth visual feedback */}
+        <DragOverlay>
+          {activeTask ? (
+            <div className="flex w-full items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight bg-muted/80 backdrop-blur shadow-xl border border-primary/20 truncate cursor-grabbing">
+              <span
+                className="h-1.5 w-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: activeTask.status.color }}
+              />
+              <span className="truncate">{activeTask.title}</span>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Tasks without due date info */}
       {undatedCount > 0 && (

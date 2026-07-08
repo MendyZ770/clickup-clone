@@ -9,6 +9,8 @@ import { ToastProvider } from "@/providers/toast-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { CalendarAutoSync } from "@/components/calendar/calendar-auto-sync";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
+import { OfflineIndicator } from "@/components/shared/offline-indicator";
+import { PusherListener } from "@/components/pusher-listener";
 import { SWRProvider } from "@/lib/swr-config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -124,6 +126,8 @@ export default function RootLayout({
                   <ToastProvider />
                   <CalendarAutoSync />
                   <PWAInstallBanner />
+                  <OfflineIndicator />
+                  <PusherListener />
                 </ModalProvider>
               </WorkspaceProvider>
             </AuthProvider>

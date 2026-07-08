@@ -5,6 +5,7 @@ import { evaluateAutomations } from "@/lib/automation-engine";
 import { createTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";
+import { pusherServer } from "@/lib/pusher-server";
 import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -251,6 +252,16 @@ export async function POST(request: Request) {
     // Trigger calendar sync if task has a due date
     if (task.dueDate) {
       triggerCalendarSync();
+    }
+
+    try {
+      await pusherServer.trigger(
+        `workspace-${list.space.workspace.id}`,
+        "task:created",
+        task
+      );
+    } catch (e) {
+      console.error("Pusher error:", e);
     }
 
     return NextResponse.json(task, { status: 201 });

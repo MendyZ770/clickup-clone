@@ -1,4 +1,12 @@
 import withBundleAnalyzer from "@next/bundle-analyzer";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -47,4 +55,4 @@ const nextConfig = {
 };
 
 const isAnalyze = process.env.ANALYZE === "true";
-export default isAnalyze ? withBundleAnalyzer({ enabled: true })(nextConfig) : nextConfig;
+export default isAnalyze ? withBundleAnalyzer({ enabled: true })(withPWA(nextConfig)) : withPWA(nextConfig);

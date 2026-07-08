@@ -104,6 +104,17 @@ export async function POST(
       },
     });
 
+    try {
+      const { pusherServer } = await import("@/lib/pusher-server");
+      await pusherServer.trigger(
+        `list-${listId}-chat`,
+        "message:created",
+        message
+      );
+    } catch (e) {
+      console.error("Pusher error:", e);
+    }
+
     return NextResponse.json(message);
   } catch (error) {
     console.error("Failed to send chat message:", error);
