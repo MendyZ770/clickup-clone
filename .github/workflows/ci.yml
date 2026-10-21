@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, types, build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: done_test
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:55432/done_test
+      NEXTAUTH_SECRET: ci-secret-not-for-production
+      NEXTAUTH_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma db push
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: ESLint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Verify PWA assets and push handlers
+        run: |
+          test -f public/sw.js
+          test -f public/icon-192.png
+          test -f public/icon-512.png
+          ls public/worker-*.js
+          grep -Eq "addEventListener\\(['\"]push['\"]" public/worker-*.js public/sw.js
+          grep -q "/offline" public/sw.js
+
+  e2e:
+    name: Playwright (autorisations + parcours critiques)
+    runs-on: ubuntu-latest
+    needs: quality
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: done_test
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:55432/done_test
+      NEXTAUTH_SECRET: ci-secret-not-for-production
+      NEXTAUTH_URL: http://localhost:3100
+      SEED_ALLOW_REMOTE: "1"
+      E2E_BASE_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma db push
+      - run: npm run db:seed
+      - run: npx playwright install --with-deps chromium
+      - name: Start app
+        run: |
+          npm run dev -- -p 3100 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3100/login > /dev/null && break
+            sleep 2
+          done
+      - run: npx playwright test --project=api
+      - run: npx playwright test --project=chromium
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
