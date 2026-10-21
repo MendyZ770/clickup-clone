@@ -25,7 +25,7 @@ export default function ErrorPage({
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
           className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/20 flex items-center justify-center"
         >
-          <AlertTriangle className="h-8 w-8 text-red-400" />
+          <AlertTriangle className="h-8 w-8 text-red-400" aria-hidden="true" />
         </motion.div>
 
         <motion.h1
@@ -41,9 +41,9 @@ export default function ErrorPage({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-3 text-white/40 text-sm"
+          className="mt-3 text-white/60 text-sm"
         >
-          {error.message || "Quelque chose s'est mal passé. Veuillez réessayer."}
+          Quelque chose s&apos;est mal passé. Veuillez réessayer.
         </motion.p>
 
         <motion.div
@@ -56,7 +56,7 @@ export default function ErrorPage({
             onClick={reset}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-sm font-medium"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
             Réessayer
           </button>
           <Link

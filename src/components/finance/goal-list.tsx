@@ -13,10 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Target, CheckCircle2, TrendingUp, Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import type { FinanceGoalWithAccount } from "@/hooks/use-finance";
 
 const QUICK_AMOUNTS = [10, 50, 100, 500];
 
-type GoalWithAccount = import("@prisma/client").FinanceGoal & { account?: { name: string } | null };
+type GoalWithAccount = FinanceGoalWithAccount;
 
 export function FinanceGoalList({ goals, onMutate }: { goals: GoalWithAccount[]; onMutate?: () => void }) {
   const [contributingId, setContributingId] = useState<string | null>(null);
@@ -241,21 +242,22 @@ export function FinanceGoalList({ goals, onMutate }: { goals: GoalWithAccount[];
 function EditGoalDialog({ goal, open, onOpenChange, onMutate }: { goal: GoalWithAccount; open: boolean; onOpenChange: (open: boolean) => void; onMutate?: () => void }) {
   const [name, setName] = useState(goal.name);
   const [targetAmount, setTargetAmount] = useState(String(goal.targetAmount));
-  const [currentAmount, setCurrentAmount] = useState(String(goal.currentAmount));
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !targetAmount) return;
+    setError(null);
     setIsSubmitting(true);
     try {
       const res = await fetch(`/api/finance/goals/${goal.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        // currentAmount n'est modifiable que via les contributions
         body: JSON.stringify({
           name,
           targetAmount: parseFloat(targetAmount),
-          currentAmount: parseFloat(currentAmount),
         }),
       });
       if (!res.ok) {
@@ -265,7 +267,7 @@ function EditGoalDialog({ goal, open, onOpenChange, onMutate }: { goal: GoalWith
       onMutate?.();
       onOpenChange(false);
     } catch (error) {
-      console.error(error);
+      setError(error instanceof Error ? error.message : "Impossible de modifier l'objectif");
     } finally {
       setIsSubmitting(false);
     }
@@ -284,10 +286,10 @@ function EditGoalDialog({ goal, open, onOpenChange, onMutate }: { goal: GoalWith
             <label className="text-sm font-medium">Montant cible</label>
             <input type="number" step="0.01" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} className="w-full h-10 rounded-md border bg-transparent px-3 text-sm" />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Montant actuel</label>
-            <input type="number" step="0.01" value={currentAmount} onChange={(e) => setCurrentAmount(e.target.value)} className="w-full h-10 rounded-md border bg-transparent px-3 text-sm" />
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Le montant actuel se met à jour via les contributions.
+          </p>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-2 justify-end pt-2">
             <button type="button" onClick={() => onOpenChange(false)} className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition-colors">Annuler</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50">Enregistrer</button>

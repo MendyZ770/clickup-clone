@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MentionTextarea } from "@/components/shared/mention-textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { useMentionMembers } from "@/hooks/use-mention-members";
 import Image from "next/image";
 
@@ -24,7 +25,11 @@ interface ChatMessage {
   };
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error("Impossible de charger le chat");
+    return res.json();
+  });
 
 interface ChatViewProps {
   listId: string;
@@ -51,6 +56,9 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
   const [isSending, setIsSending] = useState(false);
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const previousCountRef = useRef(0);
+  const { toast } = useToast();
   const members = useMentionMembers(workspaceId);
 
   const { data: messages, error, isLoading, mutate } = useSWR<ChatMessage[]>(
@@ -59,12 +67,19 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
     { refreshInterval: 3000 } // Poll every 3 seconds for real-time feel
   );
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    const count = messages?.length ?? 0;
+    const grew = count > previousCountRef.current;
+    previousCountRef.current = count;
+    if (!grew) return;
+
+    const container = scrollContainerRef.current;
+    const nearBottom =
+      !container ||
+      container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+    if (nearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   const handleSend = async () => {
@@ -78,13 +93,19 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
         body: JSON.stringify({ text: inputText, mentionedUserIds }),
       });
 
-      if (res.ok) {
-        setInputText("");
-        setMentionedUserIds([]);
-        mutate(); // Optimistic update could be added here, but mutate is fine for now
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.error ?? "Impossible d'envoyer le message.");
       }
-    } catch (error) {
-      console.error("Failed to send message", error);
+      setInputText("");
+      setMentionedUserIds([]);
+      mutate();
+    } catch (err) {
+      toast({
+        title: "Message non envoyé",
+        description: err instanceof Error ? err.message : "Réessayez dans un instant.",
+        variant: "destructive",
+      });
     } finally {
       setIsSending(false);
     }
@@ -92,8 +113,9 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center" role="status" aria-live="polite">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="sr-only">Chargement du chat</span>
       </div>
     );
   }
@@ -108,7 +130,10 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
 
   return (
     <div className="flex flex-col h-full bg-background rounded-b-2xl max-w-4xl mx-auto w-full border-x border-b shadow-sm overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar"
+      >
         {messages?.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-60">
             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
@@ -213,12 +238,13 @@ export function ChatView({ listId, workspaceId }: ChatViewProps) {
             size="icon"
             onClick={handleSend}
             disabled={!inputText.trim() || isSending}
+            aria-label="Envoyer le message"
             className="shrink-0 h-[50px] w-[50px] rounded-2xl shadow-sm transition-all hover:scale-105 active:scale-95"
           >
             {isSending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
             ) : (
-              <Send className="h-5 w-5" />
+              <Send className="h-5 w-5" aria-hidden="true" />
             )}
           </Button>
         </div>

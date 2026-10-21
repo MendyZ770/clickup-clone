@@ -17,6 +17,7 @@ import { formatSeconds, formatSecondsShort } from "@/components/time-tracking/ti
 import { TimeReport } from "@/components/time-tracking/time-report";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,14 +37,17 @@ export default function TimeTrackingPage() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [billableFilter, setBillableFilter] = useState<"all" | "billable" | "non-billable">("all");
 
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const currentWeekStart = startOfWeek(
     weekOffset === 0 ? now : weekOffset > 0 ? addWeeks(now, weekOffset) : subWeeks(now, Math.abs(weekOffset)),
     { weekStartsOn: 1 }
   );
   const currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
-  const { entries, isLoading } = useTimeEntries();
+  const { entries, isLoading, error, mutate } = useTimeEntries(
+    undefined,
+    currentWorkspace?.id
+  );
 
   // Filter entries for the selected week
   const weekEntries = useMemo(() => {
@@ -131,8 +135,9 @@ export default function TimeTrackingPage() {
               size="icon"
               className="h-8 w-8 shrink-0"
               onClick={() => setWeekOffset((o) => o - 1)}
+              aria-label="Semaine précédente"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span className="text-xs sm:text-sm font-medium min-w-[160px] sm:min-w-[200px] text-center">
               {format(currentWeekStart, "d MMM", { locale: fr })} —{" "}
@@ -143,8 +148,9 @@ export default function TimeTrackingPage() {
               size="icon"
               className="h-8 w-8 shrink-0"
               onClick={() => setWeekOffset((o) => o + 1)}
+              aria-label="Semaine suivante"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
             {weekOffset !== 0 && (
               <Button
@@ -160,7 +166,7 @@ export default function TimeTrackingPage() {
 
           <div className="flex items-center gap-2">
             <Select value={billableFilter} onValueChange={(v) => setBillableFilter(v as typeof billableFilter)}>
-              <SelectTrigger className="h-8 w-[160px] text-xs">
+              <SelectTrigger className="h-8 w-[160px] text-xs" aria-label="Filtrer par facturation">
                 <Filter className="h-3 w-3 mr-1.5" />
                 <SelectValue />
               </SelectTrigger>
@@ -215,7 +221,13 @@ export default function TimeTrackingPage() {
         <div className="space-y-4">
           <h2 className="text-sm font-semibold">Entrées de temps</h2>
 
-          {isLoading ? (
+          {error ? (
+            <ErrorState
+              title="Impossible de charger les entrées de temps"
+              description="Le suivi du temps n'a pas pu être récupéré."
+              onRetry={() => mutate()}
+            />
+          ) : isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div

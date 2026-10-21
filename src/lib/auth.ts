@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
@@ -25,6 +26,14 @@ export const authOptions: NextAuthOptions = {
         }
 
         const normalizedEmail = credentials.email.trim().toLowerCase();
+
+        const rate = await checkRateLimit(`web-login:${normalizedEmail}`, {
+          limit: 20,
+          windowMs: 60_000,
+        });
+        if (!rate.success) {
+          throw new Error("Trop de tentatives de connexion. Réessayez plus tard.");
+        }
 
         const user = await prisma.user.findFirst({
           where: { email: { equals: normalizedEmail, mode: "insensitive" } },

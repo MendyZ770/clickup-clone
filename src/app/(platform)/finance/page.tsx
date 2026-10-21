@@ -29,6 +29,8 @@ import { EnableBankingLinkButton } from "@/components/finance/enablebanking-link
 import { EnableBankingCallback } from "@/components/finance/enablebanking-callback";
 import { SyncAccountsButton } from "@/components/finance/sync-accounts-button";
 import { Suspense } from "react";
+import { ErrorState } from "@/components/shared/error-state";
+import { formatCurrency } from "@/lib/utils";
 import {
   TrendingUp,
   CreditCard,
@@ -72,8 +74,18 @@ export default function FinancePage() {
   const { toast } = useToast();
   const hasAutoSynced = useRef(false);
 
-  const { accounts } = useFinanceAccounts(workspaceId);
-  const { transactions } = useFinanceTransactions(workspaceId);
+  const {
+    accounts,
+    isLoading: accountsLoading,
+    error: accountsError,
+    mutate: mutateAccounts,
+  } = useFinanceAccounts(workspaceId);
+  const {
+    transactions,
+    isLoading: transactionsLoading,
+    error: transactionsError,
+    mutate: mutateTransactions,
+  } = useFinanceTransactions(workspaceId);
   const { goals } = useFinanceGoals(workspaceId);
   const { stats } = useFinanceStats(workspaceId);
   useFinanceCategories(workspaceId);
@@ -88,7 +100,7 @@ export default function FinancePage() {
     const autoSync = async () => {
       if (hasAutoSynced.current || !accounts || accounts.length === 0) return;
       
-      const linkedAccounts = accounts.filter((a: any) => a.ebAccountId);
+      const linkedAccounts = accounts.filter((a) => a.ebAccountId);
       if (linkedAccounts.length === 0) return;
 
       // Only auto-sync once per session to avoid spamming the bank API
@@ -131,7 +143,12 @@ export default function FinancePage() {
     autoSync();
   }, [accounts, workspaceId, toast]);
 
-  const totalBalance = accounts?.reduce((sum, a) => sum + a.balance, 0) || 0;
+  const displayCurrency = stats?.currency || accounts[0]?.currency || "EUR";
+  const totalBalance =
+    stats?.totalBalance ??
+    accounts
+      .filter((account) => account.currency === displayCurrency)
+      .reduce((sum, account) => sum + account.balance, 0);
 
   const filteredTransactions = useMemo(() => filterByPeriod(transactions || [], period), [transactions, period]);
 
@@ -139,6 +156,7 @@ export default function FinancePage() {
     const map = new Map();
     filteredTransactions
       .filter((t) => t.type === "expense")
+      .filter((t) => (t.account?.currency || displayCurrency) === displayCurrency)
       .forEach((t) => {
         const catId = t.categoryId || "none";
         const existing = map.get(catId) || { amount: 0, category: t.category };
@@ -146,25 +164,48 @@ export default function FinancePage() {
         map.set(catId, existing);
       });
     return Array.from(map.values());
-  }, [filteredTransactions]);
+  }, [filteredTransactions, displayCurrency]);
 
   const handleMutate = async () => {
     await revalidateFinance(workspaceId);
   };
 
-  if (!accounts || !transactions) {
+  if (accountsError || transactionsError) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="mx-auto max-w-6xl p-4 md:p-6">
+        <ErrorState
+          title="Impossible de charger vos finances"
+          description="Les comptes ou transactions n'ont pas pu être récupérés."
+          onRetry={async () => {
+            await Promise.all([mutateAccounts(), mutateTransactions()]);
+          }}
+        />
       </div>
     );
   }
 
+  if (accountsLoading || transactionsLoading) {
+    return (
+      <div className="flex h-full items-center justify-center" role="status" aria-live="polite">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="sr-only">Chargement des finances</span>
+      </div>
+    );
+  }
+
+  const otherBalances = (stats?.balances || []).filter(
+    (balance) => balance.currency !== displayCurrency
+  );
+  const balanceSub =
+    otherBalances.length > 0
+      ? otherBalances.map((balance) => formatCurrency(balance.balance, balance.currency)).join(" · ")
+      : `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`;
+
   const statCards = [
     {
       label: "Solde total",
-      value: totalBalance.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
-      sub: `${accounts.length} compte${accounts.length > 1 ? "s" : ""}`,
+      value: formatCurrency(totalBalance, displayCurrency),
+      sub: balanceSub,
       color: "from-violet-500/10 to-indigo-500/5",
       iconColor: "text-violet-500",
       bgIcon: "bg-violet-500/10",
@@ -172,7 +213,7 @@ export default function FinancePage() {
     },
     {
       label: "Revenus",
-      value: (stats?.monthlyIncome || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      value: formatCurrency(stats?.monthlyIncome || 0, displayCurrency),
       sub: "Ce mois",
       color: "from-emerald-500/10 to-teal-500/5",
       iconColor: "text-emerald-500",
@@ -181,7 +222,7 @@ export default function FinancePage() {
     },
     {
       label: "Dépenses",
-      value: (stats?.monthlyExpense || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      value: formatCurrency(stats?.monthlyExpense || 0, displayCurrency),
       sub: "Ce mois",
       color: "from-rose-500/10 to-pink-500/5",
       iconColor: "text-rose-500",
@@ -191,7 +232,7 @@ export default function FinancePage() {
     {
       label: "Objectifs",
       value: `${goals.length}`,
-      sub: `${stats?.totalSaved?.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} épargnés`,
+      sub: `${formatCurrency(stats?.totalSaved ?? 0, displayCurrency)} épargnés`,
       color: "from-amber-500/10 to-orange-500/5",
       iconColor: "text-amber-500",
       bgIcon: "bg-amber-500/10",
@@ -257,7 +298,7 @@ export default function FinancePage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ExpenseChart data={expenseByCategory} />
-        <IncomeExpenseChart transactions={filteredTransactions} />
+        <IncomeExpenseChart transactions={filteredTransactions} currency={displayCurrency} />
       </div>
 
       <Suspense fallback={null}>

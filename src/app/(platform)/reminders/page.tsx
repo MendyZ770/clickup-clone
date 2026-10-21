@@ -10,6 +10,8 @@ import { ReminderList } from "@/components/reminders/reminder-list";
 import { CreateReminderDialog } from "@/components/reminders/create-reminder-dialog";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { useToast } from "@/components/ui/use-toast";
 
 type Filter = "all" | "upcoming" | "completed";
 
@@ -17,14 +19,42 @@ export default function RemindersPage() {
   const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace();
   const [filter, setFilter] = useState<Filter>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const {
     reminders,
     isLoading,
+    isError,
+    mutate,
     createReminder,
     toggleComplete,
     deleteReminder,
   } = useReminders(currentWorkspace?.id);
+
+  const handleToggleComplete = async (id: string, completed: boolean) => {
+    try {
+      await toggleComplete(id, completed);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Impossible de mettre à jour le rappel.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteReminder(id);
+      toast({ title: "Rappel supprimé" });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Impossible de supprimer le rappel.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredReminders = useMemo(() => {
     if (filter === "upcoming") {
@@ -67,6 +97,14 @@ export default function RemindersPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-3xl p-4 md:p-6">
+        <ErrorState onRetry={() => mutate()} />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
       <PageHeader
@@ -87,8 +125,15 @@ export default function RemindersPage() {
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
+      <div
+        role="tablist"
+        aria-label="Filtrer les rappels"
+        className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1"
+      >
         <button
+          role="tab"
+          type="button"
+          aria-selected={filter === "all"}
           onClick={() => setFilter("all")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             filter === "all"
@@ -99,6 +144,9 @@ export default function RemindersPage() {
           Tous
         </button>
         <button
+          role="tab"
+          type="button"
+          aria-selected={filter === "upcoming"}
           onClick={() => setFilter("upcoming")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             filter === "upcoming"
@@ -108,12 +156,18 @@ export default function RemindersPage() {
         >
           À venir
           {upcomingCount > 0 && (
-            <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
+            <span
+              aria-hidden="true"
+              className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white"
+            >
               {upcomingCount}
             </span>
           )}
         </button>
         <button
+          role="tab"
+          type="button"
+          aria-selected={filter === "completed"}
           onClick={() => setFilter("completed")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             filter === "completed"
@@ -123,7 +177,10 @@ export default function RemindersPage() {
         >
           Terminés
           {completedCount > 0 && (
-            <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-muted-foreground/20 px-1.5 text-[10px] font-bold text-muted-foreground">
+            <span
+              aria-hidden="true"
+              className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-muted-foreground/20 px-1.5 text-[10px] font-bold text-muted-foreground"
+            >
               {completedCount}
             </span>
           )}
@@ -134,8 +191,8 @@ export default function RemindersPage() {
       <ReminderList
         reminders={filteredReminders}
         isLoading={isLoading}
-        onToggleComplete={toggleComplete}
-        onDelete={deleteReminder}
+        onToggleComplete={handleToggleComplete}
+        onDelete={handleDelete}
       />
 
       {/* Create dialog */}

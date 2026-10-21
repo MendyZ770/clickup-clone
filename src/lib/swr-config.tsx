@@ -3,6 +3,7 @@
 import { SWRConfig, mutate } from "swr";
 import { ReactNode, useEffect } from "react";
 import { storageGet } from "@/lib/storage";
+import { installOutboxReplay } from "@/lib/offline-queue";
 
 // Cache mémoire du token — mis à jour au montage et au login
 let cachedToken: string | null = null;
@@ -20,7 +21,12 @@ const fetcher = async (url: string) => {
   const token = await storageGet("mobile_auth_token");
   if (token) headers.Authorization = `Bearer ${token}`;
   return fetch(url, { headers }).then((res) => {
-    if (!res.ok) throw new Error("Failed to fetch");
+    if (!res.ok) {
+      if (res.status === 401) throw new Error("Session expirée. Reconnectez-vous.");
+      if (res.status === 403) throw new Error("Accès refusé à cette ressource.");
+      if (res.status === 404) throw new Error("Ressource introuvable.");
+      throw new Error("Impossible de charger les données.");
+    }
     return res.json();
   });
 };
@@ -29,6 +35,7 @@ export function SWRProvider({ children }: { children: ReactNode }) {
   // Charger le token au montage
   useEffect(() => {
     refreshTokenCache();
+    return installOutboxReplay();
   }, []);
 
   return (

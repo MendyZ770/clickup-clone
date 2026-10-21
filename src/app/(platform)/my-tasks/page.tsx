@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format, isPast, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ClipboardList, Calendar, AlertTriangle, CheckCircle2, Plus } from "lucide-react";
@@ -10,6 +10,7 @@ import { useModal } from "@/hooks/use-modal";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,13 +52,22 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 export default function MyTasksPage() {
   const { currentWorkspace } = useWorkspace();
-  const { openTaskModal, openCreateTask } = useModal();
+  const { openTaskModal, openCreateTask, setWorkspaceId } = useModal();
   const { mutate: globalMutate } = useSWRConfig();
   const { updateTask } = useUpdateTask();
 
   const [mode, setMode] = useState<"me" | "team">("me");
 
-  const { data: tasks, isLoading } = useSWR<MyTask[]>(
+  useEffect(() => {
+    if (currentWorkspace) setWorkspaceId(currentWorkspace.id);
+  }, [currentWorkspace, setWorkspaceId]);
+
+  const {
+    data: tasks,
+    isLoading,
+    error,
+    mutate,
+  } = useSWR<MyTask[]>(
     currentWorkspace ? `/api/my-tasks?workspaceId=${currentWorkspace.id}&mode=${mode}` : null,
     fetcher,
     { refreshInterval: 30000 }
@@ -95,6 +105,18 @@ export default function MyTasksPage() {
       globalMutate(`/api/my-tasks?workspaceId=${currentWorkspace.id}&mode=${mode}`);
     }
   };
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-5xl p-4 md:p-6">
+        <ErrorState
+          title="Impossible de charger vos tâches"
+          description="Vos tâches n'ont pas pu être récupérées. Vérifiez votre connexion."
+          onRetry={() => mutate()}
+        />
+      </div>
+    );
+  }
 
   if (isLoading || !tasks) {
     return (

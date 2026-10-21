@@ -11,6 +11,8 @@ import { BoardColumn } from "./board-column";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 import type { TaskSummary } from "@/types";
 
 interface StatusGroup {
@@ -50,6 +52,7 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
       priority: getFilter("priority") ?? undefined,
       assigneeId: getFilter("assigneeId") ?? undefined,
       search: getFilter("search") ?? undefined,
+      dateFilter: getFilter("dateFilter") ?? undefined,
       sortBy: getFilter("sortBy") ?? undefined,
       sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
     }
@@ -144,14 +147,14 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
 
       // Send to API
       try {
-        await fetch("/api/tasks/reorder", {
+        await apiJson("/api/tasks/reorder", {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tasks: reorderPayload }),
         });
         mutate();
-      } catch {
+      } catch (error) {
         mutate(); // Revert on error
+        toast({ title: "Déplacement impossible", description: apiErrorMessage(error), variant: "destructive" });
       }
     },
     [tasks, statuses, mutate, listId]
@@ -196,8 +199,8 @@ export function BoardView({ listId, spaceId, workspaceId }: BoardViewProps) {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <ScrollArea className="w-full">
-        <div className="flex gap-4 p-4 min-h-[calc(100vh-200px)] stagger-children snap-x snap-mandatory">
+      <ScrollArea className="h-[calc(100vh-220px)] w-full">
+        <div className="flex gap-4 p-4 stagger-children">
           {statuses.map((status) => (
             <BoardColumn
               key={status.id}

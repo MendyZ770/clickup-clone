@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 import { updateListSchema } from "@/lib/validations/list";
 
 interface RouteContext {
@@ -73,6 +74,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "List not found" }, { status: 404 });
     }
 
+    if (!(await isWorkspaceAdmin(list.space.workspace.id, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent modifier cette liste" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = updateListSchema.safeParse(body);
     if (!parsed.success) {
@@ -124,6 +132,13 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!list || list.space.workspace.members.length === 0) {
       return NextResponse.json({ error: "List not found" }, { status: 404 });
+    }
+
+    if (!(await isWorkspaceAdmin(list.space.workspace.id, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer cette liste" },
+        { status: 403 }
+      );
     }
 
     await prisma.list.delete({ where: { id: listId } });

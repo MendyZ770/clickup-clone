@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface ChecklistItemProps {
   item: {
@@ -25,24 +27,32 @@ export function ChecklistItemRow({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleToggle = async (checked: boolean) => {
-    await fetch(
-      `/api/tasks/${taskId}/checklists/${checklistId}/items`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item.id, completed: checked }),
-      }
-    );
-    onChanged?.();
+    try {
+      await apiJson(
+        `/api/tasks/${taskId}/checklists/${checklistId}/items`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ id: item.id, completed: checked }),
+        }
+      );
+      onChanged?.();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await fetch(
-      `/api/tasks/${taskId}/checklists/${checklistId}/items?itemId=${item.id}`,
-      { method: "DELETE" }
-    );
-    onChanged?.();
+    try {
+      await apiJson(
+        `/api/tasks/${taskId}/checklists/${checklistId}/items?itemId=${item.id}`,
+        { method: "DELETE" }
+      );
+      onChanged?.();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
+      setIsDeleting(false);
+    }
   };
 
   return (

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>Done</title>
+    <title>Done — hors ligne</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
     <style>
       * { box-sizing: border-box; }
       body {
@@ -12,62 +12,62 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
         margin: 0;
+        padding: 24px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: white;
-      }
-      .loader {
         text-align: center;
-        padding: 20px;
-        max-width: 320px;
       }
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(255,255,255,0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 16px;
+      .panel {
+        max-width: 340px;
       }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .error {
-        display: none;
-        margin-top: 20px;
+      .logo {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 34px;
+        font-weight: 700;
       }
-      .error h2 {
-        font-size: 18px;
-        margin-bottom: 8px;
+      h1 {
+        font-size: 22px;
+        margin: 0 0 10px;
       }
-      .error p {
+      p {
         font-size: 14px;
-        opacity: 0.9;
-        line-height: 1.5;
+        line-height: 1.6;
+        opacity: 0.92;
+        margin: 0 0 20px;
       }
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        background: white;
+        color: #7c3aed;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 12px 28px;
+        cursor: pointer;
+      }
+      button:active { transform: scale(0.98); }
     </style>
   </head>
   <body>
-    <div class="loader" id="loader">
-      <div class="spinner"></div>
-      <p>Chargement de Done...</p>
-      <div class="error" id="error">
-        <h2>Connexion impossible</h2>
-        <p>
-          Cette application n&eacute;cessite que le serveur Next.js soit accessible.
-          Assure-toi que ton Mac est allum&eacute; et connect&eacute; au m&ecirc;me WiFi,
-          puis relance l&rsquo;application.
-        </p>
-      </div>
-    </div>
-    <script>
-      // Capacitor injecte capacitor.config.json avec server.url
-      // Si configur&eacute;, le serveur est accessible. Sinon on affiche une erreur apr&egrave;s 5s.
-      setTimeout(() => {
-        document.getElementById('spinner').style.display = 'none';
-        document.querySelector('.loader p').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-      }, 5000);
-    </script>
+    <main class="panel">
+      <div class="logo" aria-hidden="true">D</div>
+      <h1>Connexion impossible</h1>
+      <p>
+        Done n&rsquo;arrive pas &agrave; joindre le serveur. V&eacute;rifiez votre
+        connexion Internet, puis r&eacute;essayez. Vos modifications en attente
+        seront synchronis&eacute;es au retour du r&eacute;seau.
+      </p>
+      <button type="button" onclick="window.location.reload()">R&eacute;essayer</button>
+    </main>
   </body>
 </html>

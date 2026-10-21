@@ -17,14 +17,17 @@ import { BudgetPieChart } from "@/components/budget/budget-pie-chart";
 import { TransactionItem } from "@/components/budget/transaction-item";
 import { AddTransactionDialog } from "@/components/budget/add-transaction-dialog";
 import { BudgetDetailSkeleton } from "@/components/budget/budget-skeleton";
+import { ErrorState } from "@/components/shared/error-state";
 import { motion } from "framer-motion";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 export default function BudgetDetailPage() {
   const params = useParams();
   const router = useRouter();
   const budgetId = params.budgetId as string;
   const { currentWorkspace } = useWorkspace();
-  const { budget, isLoading: budgetLoading } = useBudget(budgetId);
+  const { budget, isLoading: budgetLoading, isError, mutate: mutateBudget } = useBudget(budgetId);
   const { stats, isLoading: statsLoading } = useBudgetStats(budgetId);
   const { mutate } = useSWRConfig();
 
@@ -37,18 +40,29 @@ export default function BudgetDetailPage() {
     date: string;
     categoryId?: string;
   }) => {
-    await fetch(`/api/budget/${budgetId}/transactions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    mutate(`/api/budget/${budgetId}`);
-    mutate(`/api/budget/stats?budgetId=${budgetId}`);
+    try {
+      await apiJson(`/api/budget/${budgetId}/transactions`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      mutate(`/api/budget/${budgetId}`);
+      mutate(`/api/budget/stats?budgetId=${budgetId}`);
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const isLoading = budgetLoading || statsLoading;
 
   if (isLoading) return <BudgetDetailSkeleton />;
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-6xl p-3 md:p-6">
+        <ErrorState onRetry={() => mutateBudget()} />
+      </div>
+    );
+  }
 
   if (!budget) {
     return (
@@ -64,8 +78,13 @@ export default function BudgetDetailPage() {
     <div className="mx-auto max-w-6xl p-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/budget")}>
-          <ArrowLeft className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push("/budget")}
+          aria-label="Retour aux budgets"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
         <PageHeader
           icon={Wallet}
@@ -107,7 +126,7 @@ export default function BudgetDetailPage() {
             <div>
               <p className="text-xs text-muted-foreground">Revenus</p>
               <p className="text-lg font-semibold text-emerald-600">
-                {stats?.totalIncome.toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
+                {(stats?.totalIncome ?? 0).toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
               </p>
             </div>
           </CardContent>
@@ -121,7 +140,7 @@ export default function BudgetDetailPage() {
             <div>
               <p className="text-xs text-muted-foreground">Dépenses</p>
               <p className="text-lg font-semibold text-red-600">
-                {stats?.totalExpense.toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
+                {(stats?.totalExpense ?? 0).toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
               </p>
             </div>
           </CardContent>
@@ -135,7 +154,7 @@ export default function BudgetDetailPage() {
             <div>
               <p className="text-xs text-muted-foreground">Solde restant</p>
               <p className={`text-lg font-semibold ${(stats?.remaining ?? 0) < 0 ? "text-red-600" : "text-purple-600"}`}>
-                {stats?.remaining.toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
+                {(stats?.remaining ?? 0).toLocaleString("fr-FR", { style: "currency", currency: budget.currency })}
               </p>
             </div>
           </CardContent>

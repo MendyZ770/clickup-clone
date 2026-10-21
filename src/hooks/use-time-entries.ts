@@ -10,12 +10,13 @@ const fetcher = (url: string) =>
     return res.json();
   });
 
-export function useTimeEntries(taskId?: string) {
+export function useTimeEntries(taskId?: string, workspaceId?: string) {
   const params = new URLSearchParams();
   if (taskId) params.set("taskId", taskId);
+  if (workspaceId) params.set("workspaceId", workspaceId);
 
   const { data, error, isLoading, mutate } = useSWR<TimeEntryWithDetails[]>(
-    `/api/time-entries?${params.toString()}`,
+    taskId || workspaceId ? `/api/time-entries?${params.toString()}` : null,
     fetcher
   );
 
@@ -23,6 +24,7 @@ export function useTimeEntries(taskId?: string) {
     entries: data ?? [],
     isLoading,
     isError: !!error,
+    error,
     mutate,
   };
 }

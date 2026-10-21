@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { toMoneyNumber } from "@/lib/money";
 
 async function checkBudgetAccess(userId: string, budgetId: string) {
   const budget = await prisma.budget.findFirst({
@@ -8,9 +10,13 @@ async function checkBudgetAccess(userId: string, budgetId: string) {
       id: budgetId,
       workspace: { members: { some: { userId } } },
     },
-    select: { id: true },
+    select: { id: true, workspaceId: true },
   });
   return !!budget;
+}
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export async function GET(req: Request) {
@@ -32,95 +38,99 @@ export async function GET(req: Request) {
 
     if (!budget) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const totalIncome = budget.transactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0);
+    const transactions = budget.transactions.filter((transaction) => !transaction.isTransfer);
 
-    const totalExpense = budget.transactions
-      .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + t.amount, 0);
+    let totalIncome = new Prisma.Decimal(0);
+    let totalExpense = new Prisma.Decimal(0);
+    for (const transaction of transactions) {
+      if (transaction.type === "income") totalIncome = totalIncome.plus(transaction.amount);
+      else if (transaction.type === "expense") totalExpense = totalExpense.plus(transaction.amount);
+    }
 
-    const balance = totalIncome - totalExpense;
-    const remaining = budget.amount - totalExpense;
-    const spentPercent = budget.amount > 0 ? (totalExpense / budget.amount) * 100 : 0;
+    const balance = totalIncome.minus(totalExpense);
+    const remaining = budget.amount.minus(totalExpense);
+    const spentPercent = budget.amount.gt(0)
+      ? totalExpense.div(budget.amount).times(100).toNumber()
+      : 0;
 
-    // Évolution mensuelle (12 derniers mois)
     const now = new Date();
     const monthlyEvolution = [];
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStr = date.toISOString().slice(0, 7); // YYYY-MM
-      const monthTransactions = budget.transactions.filter((t) =>
-        t.date.toISOString().startsWith(monthStr)
-      );
-      const income = monthTransactions
-        .filter((t) => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0);
-      const expense = monthTransactions
-        .filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
+      const key = monthKey(date);
+      let income = new Prisma.Decimal(0);
+      let expense = new Prisma.Decimal(0);
+      for (const transaction of transactions) {
+        if (monthKey(transaction.date) !== key) continue;
+        if (transaction.type === "income") income = income.plus(transaction.amount);
+        else if (transaction.type === "expense") expense = expense.plus(transaction.amount);
+      }
       monthlyEvolution.push({
-        month: monthStr,
-        income,
-        expense,
+        month: key,
+        income: toMoneyNumber(income),
+        expense: toMoneyNumber(expense),
       });
     }
 
-    // Répartition par catégorie (dépenses uniquement)
-    const categoryMap = new Map<string, { name: string; color: string; amount: number }>();
-    const expenseTransactions = budget.transactions.filter((t) => t.type === "expense");
-
-    // Récupérer les noms de catégories
-    const categoryIds = Array.from(new Set(expenseTransactions.map((t) => t.categoryId).filter((id): id is string => !!id)));
+    const categoryIds = Array.from(
+      new Set(
+        transactions
+          .filter((transaction) => transaction.type === "expense" && transaction.categoryId)
+          .map((transaction) => transaction.categoryId as string)
+      )
+    );
 
     const categories = await prisma.budgetCategory.findMany({
-      where: { id: { in: categoryIds } },
+      where: { id: { in: categoryIds }, workspaceId: budget.workspaceId },
     });
+    const categoryById = new Map(categories.map((category) => [category.id, category]));
 
-    const categoryById = new Map(categories.map((c) => [c.id, c]));
-
-    for (const t of expenseTransactions) {
-      const cat = t.categoryId ? categoryById.get(t.categoryId) : null;
-      const key = cat?.name ?? "Sans catégorie";
+    const categoryMap = new Map<string, { name: string; color: string; amount: Prisma.Decimal }>();
+    for (const transaction of transactions) {
+      if (transaction.type !== "expense") continue;
+      const category = transaction.categoryId ? categoryById.get(transaction.categoryId) : null;
+      const key = category?.name ?? "Sans catégorie";
       const existing = categoryMap.get(key);
       if (existing) {
-        existing.amount += t.amount;
+        existing.amount = existing.amount.plus(transaction.amount);
       } else {
         categoryMap.set(key, {
           name: key,
-          color: cat?.color ?? "#9CA3AF",
-          amount: t.amount,
+          color: category?.color ?? "#9CA3AF",
+          amount: new Prisma.Decimal(transaction.amount),
         });
       }
     }
 
-    // Répartition par subType
-    const subTypeMap = new Map<string, { name: string; amount: number; type: string }>();
-
-    for (const t of budget.transactions) {
-      if (!t.subType) continue;
-      const existing = subTypeMap.get(t.subType);
+    const subTypeMap = new Map<string, { name: string; amount: Prisma.Decimal; type: string }>();
+    for (const transaction of transactions) {
+      if (!transaction.subType) continue;
+      const existing = subTypeMap.get(transaction.subType);
       if (existing) {
-        existing.amount += t.amount;
+        existing.amount = existing.amount.plus(transaction.amount);
       } else {
-        subTypeMap.set(t.subType, {
-          name: t.subType,
-          amount: t.amount,
-          type: t.type,
+        subTypeMap.set(transaction.subType, {
+          name: transaction.subType,
+          amount: new Prisma.Decimal(transaction.amount),
+          type: transaction.type,
         });
       }
     }
 
     return NextResponse.json({
-      totalIncome,
-      totalExpense,
-      balance,
-      remaining,
+      totalIncome: toMoneyNumber(totalIncome),
+      totalExpense: toMoneyNumber(totalExpense),
+      balance: toMoneyNumber(balance),
+      remaining: toMoneyNumber(remaining),
       spentPercent,
-      budgetAmount: budget.amount,
+      budgetAmount: toMoneyNumber(budget.amount),
       monthlyEvolution,
-      categoryBreakdown: Array.from(categoryMap.values()),
-      subTypeBreakdown: Array.from(subTypeMap.values()),
+      categoryBreakdown: Array.from(categoryMap.values())
+        .map((entry) => ({ ...entry, amount: toMoneyNumber(entry.amount) }))
+        .sort((a, b) => b.amount - a.amount),
+      subTypeBreakdown: Array.from(subTypeMap.values())
+        .map((entry) => ({ ...entry, amount: toMoneyNumber(entry.amount) }))
+        .sort((a, b) => b.amount - a.amount),
     });
   } catch (error) {
     console.error("[BUDGET_STATS]", error);

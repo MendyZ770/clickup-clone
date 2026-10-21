@@ -90,6 +90,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    if (membership.role !== "owner" && membership.role !== "admin") {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent modifier ce workspace" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = updateWorkspaceSchema.safeParse(body);
     if (!parsed.success) {

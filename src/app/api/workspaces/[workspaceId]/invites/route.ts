@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { sendInvitationEmail } from "@/lib/email";
@@ -98,6 +99,7 @@ export async function POST(request: Request, context: RouteContext) {
         })
       : await prisma.workspaceInvite.create({
           data: {
+            token: randomBytes(24).toString("base64url"),
             workspaceId,
             email: emailRaw,
             role,

@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { MentionTextarea } from "@/components/shared/mention-textarea";
 import { useMentionMembers } from "@/hooks/use-mention-members";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface CommentFormProps {
   taskId: string;
@@ -24,16 +26,15 @@ export function CommentForm({ taskId, workspaceId, onCommentAdded }: CommentForm
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/tasks/${taskId}/comments`, {
+      await apiJson(`/api/tasks/${taskId}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: trimmed, mentionedUserIds }),
       });
-      if (res.ok) {
-        setContent("");
-        setMentionedUserIds([]);
-        onCommentAdded?.();
-      }
+      setContent("");
+      setMentionedUserIds([]);
+      onCommentAdded?.();
+    } catch (error) {
+      toast({ title: "Envoi impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

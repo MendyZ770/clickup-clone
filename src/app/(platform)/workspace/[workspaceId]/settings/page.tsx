@@ -18,6 +18,8 @@ import { MemberList } from "@/components/workspace/member-list";
 import { InviteList } from "@/components/workspace/invite-list";
 import { TeamList } from "@/components/workspace/team-list";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
     if (!r.ok) throw new Error("Failed to fetch");
@@ -61,14 +63,12 @@ export default function WorkspaceSettingsPage() {
   const handleDelete = async () => {
     if (!workspace) return;
     try {
-      const res = await fetch(`/api/workspaces/${workspace.id}`, {
+      await apiJson(`/api/workspaces/${workspace.id}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        router.push("/dashboard");
-      }
-    } catch {
-      // Error handling
+      router.push("/dashboard");
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setDeleteOpen(false);
     }

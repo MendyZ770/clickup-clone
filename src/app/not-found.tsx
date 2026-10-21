@@ -6,11 +6,11 @@ export default function NotFoundPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/20 flex items-center justify-center">
-          <FileQuestion className="h-8 w-8 text-purple-400" />
+          <FileQuestion className="h-8 w-8 text-purple-400" aria-hidden="true" />
         </div>
 
         <h1 className="text-2xl font-bold">Page introuvable</h1>
-        <p className="mt-3 text-white/40 text-sm">
+        <p className="mt-3 text-white/60 text-sm">
           La page que vous cherchez n&apos;existe pas ou a été déplacée.
         </p>
 

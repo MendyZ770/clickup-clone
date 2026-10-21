@@ -18,8 +18,6 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
 };
@@ -28,7 +26,10 @@ export const metadata: Metadata = {
   title: "Done",
   description: "Outil de gestion de projets pour développeurs web",
   icons: {
-    icon: "/icon-192.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     shortcut: "/icon-192.png",
     apple: "/apple-touch-icon.png",
   },
@@ -82,8 +83,11 @@ const fetchInterceptorScript = `
 })();
 `;
 
-// Enregistre le Service Worker PWA (désactivé dans Capacitor — casse la WebView)
-const swRegisterScript = `
+// Enregistre le Service Worker PWA (désactivé dans Capacitor — casse la WebView).
+// En développement, next-pwa ne génère pas le SW : l'enregistrement échouerait.
+const swRegisterScript =
+  process.env.NODE_ENV === "production"
+    ? `
 (function() {
   try {
     if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
@@ -93,16 +97,14 @@ const swRegisterScript = `
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('/sw.js')
-        .then(function(reg) {
-          console.log('[PWA] Service Worker enregistré', reg.scope);
-        })
         .catch(function(err) {
-          console.log('[PWA] Échec enregistrement SW', err);
+          console.error('[PWA] Échec enregistrement SW', err);
         });
     });
   }
 })();
-`;
+`
+    : "";
 
 export default function RootLayout({
   children,

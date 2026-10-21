@@ -36,7 +36,7 @@ export type TaskAssigneeWithUser = TaskAssignee & {
 
 export type TaskWithDetails = Task & {
   status: Status;
-  creator: Pick<User, "id" | "name" | "email" | "image">;
+  creator: Pick<User, "id" | "name" | "email" | "image"> | null;
   assignees: { user: Pick<User, "id" | "name" | "email" | "image"> }[];
   checklists: ChecklistWithItems[];
   taskTags: TaskTagWithTag[];
@@ -180,13 +180,16 @@ declare module "next-auth/jwt" {
 
 // ─── Budget Types ───────────────────────────────────────────────────────────
 
-export type BudgetWithTransactions = Budget & {
+// Les routes API sérialisent les montants Decimal Prisma en nombres.
+export type BudgetWithTransactions = Omit<Budget, "amount"> & {
+  amount: number;
   transactions: BudgetTransactionWithCategory[];
-  creator: Pick<User, "id" | "name" | "image">;
+  creator: Pick<User, "id" | "name" | "image"> | null;
 };
 
-export type BudgetTransactionWithCategory = BudgetTransaction & {
-  creator: Pick<User, "id" | "name" | "image">;
+export type BudgetTransactionWithCategory = Omit<BudgetTransaction, "amount"> & {
+  amount: number;
+  creator: Pick<User, "id" | "name" | "image"> | null;
   category: BudgetCategory | null;
   tags: BudgetTransactionTag[];
 };
@@ -220,10 +223,12 @@ export type BudgetCategoryWithChildren = BudgetCategory & {
   parent: BudgetCategory | null;
 };
 
-export type BudgetTemplateWithCreator = BudgetTemplate & {
-  creator: Pick<User, "id" | "name" | "image">;
+export type BudgetTemplateWithCreator = Omit<BudgetTemplate, "amount"> & {
+  amount: number;
+  creator: Pick<User, "id" | "name" | "image"> | null;
 };
 
-export type BudgetAlertWithBudget = BudgetAlert & {
+export type BudgetAlertWithBudget = Omit<BudgetAlert, "threshold"> & {
+  threshold: number | null;
   budget: Pick<Budget, "id" | "name" | "color">;
 };

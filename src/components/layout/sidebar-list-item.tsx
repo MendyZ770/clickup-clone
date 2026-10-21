@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { ListWithStatuses } from "@/types";
 
@@ -12,17 +13,15 @@ interface SidebarListItemProps {
 }
 
 export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const listPath = `/workspace/${workspaceId}/space/${spaceId}/list/${list.id}/list-view`;
   const isActive = pathname?.includes(`/list/${list.id}`);
   const taskCount = list._count?.tasks;
 
   return (
-    <motion.button
-      onClick={() => router.push(listPath)}
-      whileHover={{ x: 2 }}
-      whileTap={{ scale: 0.98 }}
+    <Link
+      href={listPath}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "group relative flex w-full items-center gap-2 rounded-lg px-2 py-1 text-[13px] transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
         isActive
@@ -42,6 +41,7 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
         className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: list.color ?? "#6B7280" }}
+        aria-hidden="true"
       />
       <span className="flex-1 truncate text-left">{list.name}</span>
       {taskCount !== undefined && taskCount > 0 && (
@@ -56,6 +56,6 @@ export function SidebarListItem({ list, workspaceId, spaceId }: SidebarListItemP
           {taskCount}
         </motion.span>
       )}
-    </motion.button>
+    </Link>
   );
 }

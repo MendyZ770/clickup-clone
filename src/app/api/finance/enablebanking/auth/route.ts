@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { getCurrentUser, isWorkspaceMember } from "@/lib/auth-helpers";
 import { fetchEnableBanking } from "@/lib/enablebanking";
-import { prisma } from "@/lib/prisma";
+import { createSignedState } from "@/lib/signed-state";
 
 export async function POST(req: Request) {
   try {
@@ -16,13 +16,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     }
 
+    if (!(await isWorkspaceMember(workspaceId, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const redirectUrl = process.env.NEXT_PUBLIC_APP_URL 
       ? `${process.env.NEXT_PUBLIC_APP_URL}/finance` 
       : "http://localhost:3000/finance";
 
-    // Pour retrouver à quel espace de travail on relie le compte après la redirection,
-    // on peut utiliser le champ state (encode le workspaceId)
-    const state = Buffer.from(JSON.stringify({ workspaceId, userId: user.id })).toString('base64');
+    // State signé (HMAC) et expirant, pour empêcher la falsification/CSRF
+    const state = createSignedState({ workspaceId, userId: user.id });
 
     const authResponse = await fetchEnableBanking("/auth", {
       method: "POST",

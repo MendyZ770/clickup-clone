@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -119,7 +120,7 @@ export function CreateReminderDialog({
             <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <span className={cn(!date && "text-muted-foreground")}>
-                {date ? format(date, "PPP") : "Choisir une date ci-dessous"}
+                {date ? format(date, "PPP", { locale: fr }) : "Choisir une date ci-dessous"}
               </span>
             </div>
             <div className="rounded-md border p-2">

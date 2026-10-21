@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
+import { serializeMoney } from "@/lib/money";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ goalId: string }> }) {
   try {
@@ -19,7 +21,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ goalId:
 
     const { workspace: _w, ...goalData } = goal;
     void _w;
-    return NextResponse.json(goalData);
+    return NextResponse.json(serializeMoney(goalData));
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -38,6 +40,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ goalId
       include: { workspace: { include: { members: { where: { userId: user.id } } } } },
     });
     if (!existing || existing.workspace.members.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    if (
+      existing.creatorId !== user.id &&
+      !(await isWorkspaceAdmin(existing.workspaceId, user.id))
+    ) {
+      return NextResponse.json(
+        { error: "Seuls l'auteur ou un administrateur peuvent modifier cet objectif" },
+        { status: 403 }
+      );
+    }
 
     // Si verrouillé, seule la modification du champ `locked` est autorisée
     if (existing.locked) {
@@ -62,7 +74,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ goalId
       },
       include: { targets: true },
     });
-    return NextResponse.json(goal);
+    return NextResponse.json(serializeMoney(goal));
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -80,6 +92,16 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ goal
       include: { workspace: { include: { members: { where: { userId: user.id } } } } },
     });
     if (!existing || existing.workspace.members.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    if (
+      existing.creatorId !== user.id &&
+      !(await isWorkspaceAdmin(existing.workspaceId, user.id))
+    ) {
+      return NextResponse.json(
+        { error: "Seuls l'auteur ou un administrateur peuvent supprimer cet objectif" },
+        { status: 403 }
+      );
+    }
 
     if (existing.locked) {
       return NextResponse.json(

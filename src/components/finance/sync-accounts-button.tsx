@@ -49,7 +49,6 @@ export function SyncAccountsButton({
         
         if (res.ok) {
           const data = await res.json();
-          console.log(`Sync data for account ${acc.name}:`, data);
           if (data.skippedCount > 0) {
              console.warn(`Skipped ${data.skippedCount} transactions for ${acc.name} due to missing fields.`);
           }

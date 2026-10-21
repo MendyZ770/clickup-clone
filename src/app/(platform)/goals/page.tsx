@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Target, Plus, Loader2, Trash2, Lock, Unlock } from "lucide-react";
@@ -12,7 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 import {
   Dialog,
   DialogContent,
@@ -44,13 +47,13 @@ interface Goal {
   dueDate: string | null;
   locked: boolean;
   targets: GoalTarget[];
-  creator: { id: string; name: string | null; image: string | null };
+  creator: { id: string; name: string | null; image: string | null } | null;
 }
 
 export default function GoalsPage() {
   const { currentWorkspace } = useWorkspace();
   const { toast } = useToast();
-  const { data: goals, mutate } = useSWR<Goal[]>(
+  const { data: goals, isLoading, error, mutate } = useSWR<Goal[]>(
     currentWorkspace ? `/api/goals?workspaceId=${currentWorkspace.id}` : null,
     fetcher
   );
@@ -62,20 +65,22 @@ export default function GoalsPage() {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [targetName, setTargetName] = useState("");
   const [targetValue, setTargetValue] = useState("100");
+  const [deleteTarget, setDeleteTarget] = useState<Goal | null>(null);
 
   const handleCreate = async () => {
     if (!newName.trim() || !currentWorkspace) return;
     setCreating(true);
     try {
-      await fetch("/api/goals", {
+      await apiJson("/api/goals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName, description: newDesc || null, workspaceId: currentWorkspace.id }),
       });
       setNewName("");
       setNewDesc("");
       setDialogOpen(false);
       mutate();
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setCreating(false);
     }
@@ -132,6 +137,7 @@ export default function GoalsPage() {
       return;
     }
     toast({ title: "Objectif supprimé" });
+    setDeleteTarget(null);
     mutate();
   };
 
@@ -165,6 +171,18 @@ export default function GoalsPage() {
     return Math.round(avg);
   };
 
+  if (error) {
+    return (
+      <div className="mx-auto max-w-4xl p-4 md:p-6">
+        <ErrorState
+          title="Impossible de charger les objectifs"
+          description="La liste des objectifs n'a pas pu être récupérée."
+          onRetry={() => mutate()}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-4xl p-4 md:p-6 space-y-4 md:space-y-6">
@@ -186,8 +204,8 @@ export default function GoalsPage() {
                   <DialogTitle>Créer un objectif</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3 pt-2">
-                  <Input placeholder="Nom de l'objectif" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                  <Input placeholder="Description (optionnel)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
+                  <Input aria-label="Nom de l'objectif" placeholder="Nom de l'objectif" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                  <Input aria-label="Description de l'objectif (optionnel)" placeholder="Description (optionnel)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
                   <Button onClick={handleCreate} disabled={creating || !newName.trim()} className="w-full">
                     {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Créer
@@ -198,7 +216,16 @@ export default function GoalsPage() {
           }
         />
 
-        {(!goals || goals.length === 0) && (
+        {isLoading && (
+          <div className="space-y-3" role="status" aria-live="polite">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-28 animate-pulse rounded-xl bg-muted/40" />
+            ))}
+            <span className="sr-only">Chargement des objectifs</span>
+          </div>
+        )}
+
+        {!isLoading && goals?.length === 0 && (
           <EmptyState
             icon={Target}
             title="Aucun objectif"
@@ -217,7 +244,11 @@ export default function GoalsPage() {
                 <div className="h-1" style={{ backgroundColor: goal.color }} />
                 <CardContent className="p-4 md:p-5 space-y-3">
                   <div className="flex items-start justify-between">
-                    <button onClick={() => setSelectedGoal(isExpanded ? null : goal.id)} className="text-left flex-1">
+                    <button
+                      onClick={() => setSelectedGoal(isExpanded ? null : goal.id)}
+                      aria-expanded={isExpanded}
+                      className="text-left flex-1"
+                    >
                       <h3 className="font-semibold inline-flex items-center gap-1.5">
                         {goal.locked && (
                           <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="Verrouillé" />
@@ -246,9 +277,9 @@ export default function GoalsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => handleDeleteGoal(goal.id)}
+                        onClick={() => setDeleteTarget(goal)}
                         disabled={goal.locked}
-                        aria-label="Supprimer"
+                        aria-label={`Supprimer l'objectif ${goal.name}`}
                         title={goal.locked ? "Déverrouiller d'abord" : "Supprimer"}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
@@ -275,12 +306,13 @@ export default function GoalsPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Progress value={pct} className="h-1.5 flex-1" />
-                              <input
-                                type="number"
-                                className="w-16 h-6 text-xs border rounded px-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                              <TargetValueInput
                                 value={target.currentValue}
                                 disabled={goal.locked}
-                                onChange={(e) => handleUpdateTarget(goal.id, target.id, parseFloat(e.target.value) || 0)}
+                                label={`Progression de ${target.name}`}
+                                onCommit={(value) =>
+                                  handleUpdateTarget(goal.id, target.id, value)
+                                }
                               />
                             </div>
                           </div>
@@ -289,6 +321,7 @@ export default function GoalsPage() {
                       {!goal.locked && (
                         <div className="flex gap-2 pt-1">
                           <Input
+                            aria-label="Nom de la cible"
                             placeholder="Nom de la cible"
                             value={targetName}
                             onChange={(e) => setTargetName(e.target.value)}
@@ -296,12 +329,13 @@ export default function GoalsPage() {
                           />
                           <Input
                             type="number"
+                            aria-label="Valeur cible"
                             placeholder="Objectif"
                             value={targetValue}
                             onChange={(e) => setTargetValue(e.target.value)}
                             className="h-7 text-xs w-20"
                           />
-                          <Button size="sm" className="h-7 text-xs" onClick={() => handleAddTarget(goal.id)}>
+                          <Button size="sm" className="h-7 text-xs" onClick={() => handleAddTarget(goal.id)} aria-label="Ajouter la cible">
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
@@ -314,6 +348,65 @@ export default function GoalsPage() {
           })}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Supprimer l'objectif"
+        description={`Êtes-vous sûr de vouloir supprimer « ${deleteTarget?.name ?? ""} » et toutes ses cibles ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        onConfirm={() => deleteTarget && handleDeleteGoal(deleteTarget.id)}
+      />
     </div>
+  );
+}
+
+function TargetValueInput({
+  value,
+  disabled,
+  label,
+  onCommit,
+}: {
+  value: number;
+  disabled?: boolean;
+  label: string;
+  onCommit: (value: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(value));
+
+  useEffect(() => {
+    setDraft(String(value));
+  }, [value]);
+
+  const commit = () => {
+    const parsed = Number.parseFloat(draft);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setDraft(String(value));
+      return;
+    }
+    if (parsed !== value) onCommit(parsed);
+  };
+
+  return (
+    <input
+      type="number"
+      min={0}
+      aria-label={label}
+      className="w-16 h-6 text-xs border rounded px-1 disabled:opacity-50 disabled:cursor-not-allowed"
+      value={draft}
+      disabled={disabled}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+        if (e.key === "Escape") {
+          setDraft(String(value));
+          e.currentTarget.blur();
+        }
+      }}
+    />
   );
 }

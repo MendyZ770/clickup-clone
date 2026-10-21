@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 
 interface RouteContext {
   params: Promise<{ fieldId: string }>;
@@ -76,6 +77,13 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!field || field.workspace.members.length === 0) {
       return NextResponse.json({ error: "Field not found" }, { status: 404 });
+    }
+
+    if (!(await isWorkspaceAdmin(field.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer un champ" },
+        { status: 403 }
+      );
     }
 
     await prisma.customField.delete({ where: { id: fieldId } });

@@ -65,7 +65,11 @@ export async function GET(request: Request) {
       take: 100,
     });
 
-    return NextResponse.json(tasks);
+    const tasksWithoutPin = tasks.map(({ lockedPin: _lockedPin, ...task }) => {
+      void _lockedPin;
+      return task;
+    });
+    return NextResponse.json(tasksWithoutPin);
   } catch (error) {
     console.error("GET /api/my-tasks error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

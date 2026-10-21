@@ -38,17 +38,7 @@ export async function sendNotificationToUsers(
   const targets = actorId ? userIds.filter((id) => id !== actorId) : userIds;
   if (targets.length === 0) return;
 
-  // 1. Créer les notifications en base
-  await prisma.notification.createMany({
-    data: targets.map((userId) => ({
-      type: payload.type,
-      message: payload.message,
-      link: payload.link ?? null,
-      userId,
-    })),
-  });
-
-  // 2. Récupérer les préférences + subscriptions de chaque user
+  // 1. Récupérer les préférences + subscriptions de chaque user
   const users = await prisma.user.findMany({
     where: { id: { in: targets } },
     select: {
@@ -58,16 +48,33 @@ export async function sendNotificationToUsers(
     },
   });
 
+  // 2. Ne créer la notification in-app que pour les types activés
+  const eligibleUsers = users.filter(
+    (user) =>
+      !user.notificationPreferences ||
+      isTypeEnabled(user.notificationPreferences, payload.type)
+  );
+
+  if (eligibleUsers.length > 0) {
+    await prisma.notification.createMany({
+      data: eligibleUsers.map((user) => ({
+        type: payload.type,
+        message: payload.message,
+        link: payload.link ?? null,
+        userId: user.id,
+      })),
+    });
+  }
+
   const pushTitle = payload.title ?? "Done";
   const pushBody = payload.body ?? payload.message;
   const pushUrl = payload.link ?? "/dashboard";
 
-  for (const user of users) {
-    const prefs = user.notificationPreferences;
-
-    // Vérifier si ce type de notif est activé (par défaut tout est activé)
-    if (prefs && !prefs.pushEnabled) continue;
-    if (prefs && !isTypeEnabled(prefs, payload.type)) continue;
+  for (const user of eligibleUsers) {
+    // pushEnabled ne coupe que le push, pas la notification in-app
+    if (user.notificationPreferences && !user.notificationPreferences.pushEnabled) {
+      continue;
+    }
 
     // 3. Envoyer à chaque subscription
     for (const sub of user.pushSubscriptions) {

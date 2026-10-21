@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 import { createTagSchema } from "@/lib/validations/tag";
 
 export async function GET(request: Request) {
@@ -135,6 +136,13 @@ export async function DELETE(request: Request) {
 
     if (!tag || tag.workspace.members.length === 0) {
       return NextResponse.json({ error: "Tag not found" }, { status: 404 });
+    }
+
+    if (!(await isWorkspaceAdmin(tag.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer un tag" },
+        { status: 403 }
+      );
     }
 
     await prisma.tag.delete({ where: { id: tagId } });

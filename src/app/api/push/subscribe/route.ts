@@ -16,17 +16,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Upsert: delete old subscriptions for same endpoint, create new
-    await prisma.pushSubscription.deleteMany({ where: { endpoint } });
-
-    await prisma.pushSubscription.create({
-      data: {
-        endpoint,
-        p256dh,
-        auth,
-        userId: user.id,
-      },
+    const existing = await prisma.pushSubscription.findUnique({
+      where: { endpoint },
     });
+
+    if (existing && existing.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Cet abonnement appartient déjà à un autre compte" },
+        { status: 409 }
+      );
+    }
+
+    if (existing) {
+      await prisma.pushSubscription.update({
+        where: { id: existing.id },
+        data: { p256dh, auth, provider: "web" },
+      });
+    } else {
+      await prisma.pushSubscription.create({
+        data: {
+          endpoint,
+          p256dh,
+          auth,
+          userId: user.id,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

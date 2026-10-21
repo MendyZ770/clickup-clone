@@ -48,6 +48,7 @@ export function GanttView({ listId, spaceId, workspaceId }: GanttViewProps) {
       priority: getFilter("priority") ?? undefined,
       assigneeId: getFilter("assigneeId") ?? undefined,
       search: getFilter("search") ?? undefined,
+      dateFilter: getFilter("dateFilter") ?? undefined,
       sortBy: getFilter("sortBy") ?? undefined,
       sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
     }

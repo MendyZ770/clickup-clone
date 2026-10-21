@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 
 const BarChartComponent = dynamic(
   () => import("recharts").then((mod) => {
@@ -9,7 +10,7 @@ const BarChartComponent = dynamic(
     return {
       default: ({ data }: { data: { name: string; count: number; fill: string }[] }) => (
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} layout="vertical" barCategoryGap="20%">
+          <BarChart data={data} layout="vertical" barCategoryGap="20%" accessibilityLayer>
             <XAxis type="number" allowDecimals={false} fontSize={11} />
             <YAxis
               type="category"
@@ -95,9 +96,14 @@ export function TasksByPriorityChart({
     <div className="relative overflow-hidden rounded-[2rem] border border-border/30 bg-card/40 backdrop-blur-xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl transition-all duration-500 group h-full flex flex-col">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 relative z-10">
-        <span className="h-2 w-2 rounded-full bg-primary" />
+        <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
         Tâches par priorité
       </h3>
+      <ChartDataTable
+        caption="Tâches par priorité"
+        columns={["Priorité", "Nombre de tâches"]}
+        rows={chartData.map((entry) => [entry.name, entry.count])}
+      />
       <div className="flex-grow min-h-0 relative z-10 flex items-center justify-center">
         <div className="w-full h-full -ml-4">
           <BarChartComponent data={chartData} />

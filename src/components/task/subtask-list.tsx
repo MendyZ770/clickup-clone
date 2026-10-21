@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -10,6 +11,7 @@ import { PriorityBadge } from "./priority-badge";
 import { StatusBadge } from "./status-badge";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -60,14 +62,15 @@ export function SubtaskList({
     if (!trimmed || isCreating) return;
     setIsCreating(true);
     try {
-      await fetch(`/api/tasks/${taskId}/subtasks`, {
+      await apiJson(`/api/tasks/${taskId}/subtasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: trimmed, listId }),
       });
       setNewTitle("");
       mutate();
       onChanged?.();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsCreating(false);
     }

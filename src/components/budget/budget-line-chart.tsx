@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 
 interface MonthlyData {
   month: string;
@@ -29,9 +30,22 @@ export function BudgetLineChart({ data }: BudgetLineChartProps) {
     label: format(parseISO(`${d.month}-01`), "MMM yyyy", { locale: fr }),
   }));
 
+  const currency = (value: number) =>
+    value.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={formatted} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+    <div>
+      <ChartDataTable
+        caption="Évolution mensuelle des revenus et dépenses"
+        columns={["Mois", "Revenus", "Dépenses"]}
+        rows={formatted.map((d) => [d.label, currency(d.income), currency(d.expense)])}
+      />
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart
+          data={formatted}
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          accessibilityLayer
+        >
         <defs>
           <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
@@ -73,6 +87,7 @@ export function BudgetLineChart({ data }: BudgetLineChartProps) {
           strokeWidth={2}
         />
       </AreaChart>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
   );
 }

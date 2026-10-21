@@ -41,8 +41,8 @@ export async function GET(request: Request) {
           space: { workspaceId },
         },
         OR: [
-          { title: { contains: q } },
-          { description: { contains: q } },
+          { title: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
         ],
       },
       include: {
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     const lists = await prisma.list.findMany({
       where: {
         space: { workspaceId },
-        name: { contains: q },
+        name: { contains: q, mode: "insensitive" },
       },
       include: {
         space: { select: { id: true, name: true } },
@@ -79,16 +79,21 @@ export async function GET(request: Request) {
       where: {
         workspaceId,
         OR: [
-          { name: { contains: q } },
-          { description: { contains: q } },
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
         ],
       },
       take: 10,
       orderBy: { updatedAt: "desc" },
     });
 
+    const tasksWithoutPin = tasks.map(({ lockedPin: _lockedPin, ...task }) => {
+      void _lockedPin;
+      return task;
+    });
+
     return NextResponse.json({
-      tasks,
+      tasks: tasksWithoutPin,
       lists,
       spaces,
     });

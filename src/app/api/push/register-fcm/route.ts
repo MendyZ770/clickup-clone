@@ -12,10 +12,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "fcmToken required" }, { status: 400 });
     }
 
-    // Upsert : si le token existe déjà pour un autre user, on le réassigne
+    const existing = await prisma.pushSubscription.findUnique({
+      where: { fcmToken },
+    });
+
+    if (existing && existing.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Ce jeton appartient déjà à un autre compte" },
+        { status: 409 }
+      );
+    }
+
     await prisma.pushSubscription.upsert({
       where: { fcmToken },
-      update: { userId: user.id },
+      update: { provider: "fcm" },
       create: {
         fcmToken,
         provider: "fcm",

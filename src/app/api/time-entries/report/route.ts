@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { getCurrentUser, isWorkspaceMember } from "@/lib/auth-helpers";
 import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
@@ -30,8 +30,12 @@ export async function GET(request: Request) {
       }
     }
 
-    // If workspaceId, filter by tasks in that workspace
+    // Le rapport ne porte jamais sur l'ensemble des utilisateurs : soit un workspace
+    // dont on est membre, soit ses propres entrées.
     if (workspaceId) {
+      if (!(await isWorkspaceMember(workspaceId, user.id))) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
       where.task = {
         list: {
           space: {
@@ -39,6 +43,8 @@ export async function GET(request: Request) {
           },
         },
       };
+    } else {
+      where.userId = user.id;
     }
 
     const entries = await prisma.timeEntry.findMany({

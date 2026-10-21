@@ -107,7 +107,7 @@ export default async function Home() {
                   <div className="w-3 h-3 rounded-full bg-[#28c840]" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="px-12 py-1 rounded-md bg-white/5 text-xs text-white/40 font-mono">
+                  <div className="px-12 py-1 rounded-md bg-white/5 text-xs text-white/60 font-mono">
                     done.app/dashboard
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default async function Home() {
                     </div>
                     <div className="space-y-1">
                       {["Dashboard", "Projets clients", "Time tracking"].map((item, i) => (
-                        <div key={item} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${i === 1 ? "bg-white/5 text-white" : "text-white/40"}`}>
+                        <div key={item} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${i === 1 ? "bg-white/5 text-white" : "text-white/60"}`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${i === 1 ? "bg-purple-400" : "bg-white/20"}`} />
                           {item}
                         </div>
@@ -133,7 +133,7 @@ export default async function Home() {
                     </div>
                     <div className="mt-6 mb-2 text-[10px] font-medium text-white/25 uppercase tracking-wider px-3">Espaces</div>
                     {["Frontend", "Backend", "DevOps"].map((space, i) => (
-                      <div key={space} className="flex items-center gap-2 px-3 py-1.5 text-xs text-white/40">
+                      <div key={space} className="flex items-center gap-2 px-3 py-1.5 text-xs text-white/60">
                         <div className={`w-2 h-2 rounded-sm ${["bg-blue-400", "bg-emerald-400", "bg-orange-400"][i]}`} />
                         {space}
                       </div>
@@ -145,11 +145,11 @@ export default async function Home() {
                     <div className="flex items-center justify-between mb-5">
                       <div>
                         <div className="text-sm font-semibold text-white/90">Sprint 12 — Site e-commerce</div>
-                        <div className="text-[11px] text-white/30 mt-0.5">12 tâches · 3 assignés</div>
+                        <div className="text-[11px] text-white/50 mt-0.5">12 tâches · 3 assignés</div>
                       </div>
                       <div className="flex gap-1.5">
                         {["Liste", "Tableau", "Cal"].map((v, i) => (
-                          <div key={v} className={`px-3 py-1 rounded-md text-[10px] font-medium ${i === 1 ? "bg-purple-500/20 text-purple-300" : "text-white/30"}`}>{v}</div>
+                          <div key={v} className={`px-3 py-1 rounded-md text-[10px] font-medium ${i === 1 ? "bg-purple-500/20 text-purple-300" : "text-white/50"}`}>{v}</div>
                         ))}
                       </div>
                     </div>
@@ -199,7 +199,7 @@ export default async function Home() {
               <span className="bg-gradient-to-r from-purple-300 to-indigo-300 bg-clip-text text-transparent">dev</span>{" "}
               a besoin
             </h2>
-            <p className="mt-4 text-white/40 max-w-xl mx-auto">
+            <p className="mt-4 text-white/60 max-w-xl mx-auto">
               Fini les outils éparpillés. Un seul espace pour planifier, développer et livrer.
             </p>
           </div>
@@ -249,7 +249,7 @@ export default async function Home() {
               >
                 <div className="text-2xl mb-3">{feature.icon}</div>
                 <h3 className="text-base font-semibold text-white/90 mb-1">{feature.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{feature.desc}</p>
+                <p className="text-sm text-white/60 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -267,7 +267,7 @@ export default async function Home() {
                 <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-300 to-indigo-300 bg-clip-text text-transparent">
                   {stat.value}
                 </div>
-                <div className="text-sm text-white/30 mt-1">{stat.label}</div>
+                <div className="text-sm text-white/50 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -282,7 +282,7 @@ export default async function Home() {
             </span>{" "}
             vos projets ?
           </h2>
-          <p className="text-white/40 mb-8 max-w-lg mx-auto">
+          <p className="text-white/60 mb-8 max-w-lg mx-auto">
             Rejoignez des développeurs qui gèrent leurs projets clients plus efficacement.
           </p>
           <Link
@@ -300,7 +300,7 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-indigo-600" />
-            <span className="font-medium text-white/40">Done</span>
+            <span className="font-medium text-white/60">Done</span>
           </div>
           <div className="flex items-center gap-4">
             <Link

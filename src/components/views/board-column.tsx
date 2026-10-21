@@ -23,7 +23,7 @@ function BoardColumnComponent({
   onTaskAction,
 }: BoardColumnProps) {
   return (
-    <div className="flex h-full w-[280px] sm:w-64 md:w-72 shrink-0 flex-col rounded-[2rem] bg-muted/20 backdrop-blur-xl border border-border/30 shadow-lg snap-center sm:snap-none overflow-hidden">
+    <div className="flex h-full w-[280px] sm:w-64 md:w-72 shrink-0 flex-col rounded-[2rem] bg-muted/20 backdrop-blur-xl border border-border/30 shadow-lg overflow-hidden">
       {/* Column header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b">
         <span
@@ -43,7 +43,7 @@ function BoardColumnComponent({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "flex-1 overflow-y-auto p-2 space-y-2 min-h-[100px] transition-colors",
+              "flex-1 p-2 space-y-2 min-h-[100px] transition-colors",
               snapshot.isDraggingOver && "bg-primary/5"
             )}
           >

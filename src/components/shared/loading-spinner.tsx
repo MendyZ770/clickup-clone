@@ -16,9 +16,15 @@ const sizeClasses = {
 
 export function LoadingSpinner({ className, size = "md" }: LoadingSpinnerProps) {
   return (
-    <Loader2
-      className={cn("animate-spin text-muted-foreground", sizeClasses[size], className)}
-    />
+    <>
+      <Loader2
+        aria-hidden="true"
+        className={cn("animate-spin text-muted-foreground", sizeClasses[size], className)}
+      />
+      <span role="status" className="sr-only">
+        Chargement…
+      </span>
+    </>
   );
 }
 

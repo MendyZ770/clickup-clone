@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 import { updateFolderSchema } from "@/lib/validations/folder";
 
 interface RouteContext {
@@ -81,6 +82,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    if (!(await isWorkspaceAdmin(folder.space.workspace.id, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent modifier ce dossier" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = updateFolderSchema.safeParse(body);
     if (!parsed.success) {
@@ -131,6 +139,13 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json(
         { error: "Folder not found" },
         { status: 404 }
+      );
+    }
+
+    if (!(await isWorkspaceAdmin(folder.space.workspace.id, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer ce dossier" },
+        { status: 403 }
       );
     }
 

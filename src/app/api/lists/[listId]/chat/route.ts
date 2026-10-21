@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { chatChannelName } from "@/lib/pusher-channels";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 
@@ -107,7 +108,7 @@ export async function POST(
     try {
       const { pusherServer } = await import("@/lib/pusher-server");
       await pusherServer.trigger(
-        `list-${listId}-chat`,
+        chatChannelName(listId),
         "message:created",
         message
       );

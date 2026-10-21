@@ -11,6 +11,7 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
+import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTasks } from "@/hooks/use-tasks";
@@ -41,6 +42,7 @@ export function WorkloadView({ listId, workspaceId }: WorkloadViewProps) {
       priority: getFilter("priority") ?? undefined,
       assigneeId: getFilter("assigneeId") ?? undefined,
       search: getFilter("search") ?? undefined,
+      dateFilter: getFilter("dateFilter") ?? undefined,
     }
   );
 
@@ -106,7 +108,7 @@ export function WorkloadView({ listId, workspaceId }: WorkloadViewProps) {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium w-[160px] text-center">
-            {format(startDate, "d MMM")} - {format(addDays(startDate, DAYS_TO_SHOW - 1), "d MMM yyyy")}
+            {format(startDate, "d MMM", { locale: fr })} - {format(addDays(startDate, DAYS_TO_SHOW - 1), "d MMM yyyy", { locale: fr })}
           </span>
           <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setStartDate(addDays(startDate, 7))}>
             <ChevronRight className="h-4 w-4" />
@@ -129,7 +131,7 @@ export function WorkloadView({ listId, workspaceId }: WorkloadViewProps) {
                    "px-2 py-3 font-medium border-b border-r text-center min-w-[80px]",
                    isToday(day) && "bg-primary/10 text-primary"
                  )}>
-                   <div className="text-[10px] uppercase mb-1">{format(day, "EEE")}</div>
+                   <div className="text-[10px] uppercase mb-1">{format(day, "EEE", { locale: fr })}</div>
                    <div>{format(day, "d")}</div>
                  </th>
                ))}

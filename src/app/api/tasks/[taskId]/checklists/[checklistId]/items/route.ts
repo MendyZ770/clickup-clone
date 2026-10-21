@@ -18,6 +18,16 @@ interface RouteContext {
   params: Promise<{ taskId: string; checklistId: string }>;
 }
 
+async function checklistAccessError(taskId: string, checklistId: string, userId: string) {
+  const checklist = await prisma.checklist.findFirst({
+    where: { id: checklistId, taskId },
+    select: { id: true },
+  });
+  if (!checklist) return { status: 404, error: "Checklist not found" };
+  if (!(await verifyTaskAccess(taskId, userId))) return { status: 403, error: "Forbidden" };
+  return null;
+}
+
 export async function POST(request: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
@@ -25,17 +35,13 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { checklistId } = await context.params;
+    const { taskId, checklistId } = await context.params;
 
-    // Verify checklist exists
-    const checklist = await prisma.checklist.findUnique({
-      where: { id: checklistId },
-    });
-
-    if (!checklist) {
+    const accessError = await checklistAccessError(taskId, checklistId, user.id);
+    if (accessError) {
       return NextResponse.json(
-        { error: "Checklist not found" },
-        { status: 404 }
+        { error: accessError.error },
+        { status: accessError.status }
       );
     }
 
@@ -78,7 +84,15 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { checklistId } = await context.params;
+    const { taskId, checklistId } = await context.params;
+
+    const accessError = await checklistAccessError(taskId, checklistId, user.id);
+    if (accessError) {
+      return NextResponse.json(
+        { error: accessError.error },
+        { status: accessError.status }
+      );
+    }
 
     const body = await request.json();
     const parsed = updateItemSchema.safeParse(body);
@@ -122,7 +136,15 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { checklistId } = await context.params;
+    const { taskId, checklistId } = await context.params;
+
+    const accessError = await checklistAccessError(taskId, checklistId, user.id);
+    if (accessError) {
+      return NextResponse.json(
+        { error: accessError.error },
+        { status: accessError.status }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("itemId");
 

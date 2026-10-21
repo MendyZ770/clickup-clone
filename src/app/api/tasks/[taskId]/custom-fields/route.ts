@@ -105,6 +105,21 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Field not found" }, { status: 404 });
     }
 
+    if (field.type === "url" && value !== null && value !== undefined && value !== "") {
+      let parsed: URL | null = null;
+      try {
+        parsed = new URL(String(value));
+      } catch {
+        parsed = null;
+      }
+      if (!parsed || (parsed.protocol !== "http:" && parsed.protocol !== "https:")) {
+        return NextResponse.json(
+          { error: "URL invalide : seuls http:// et https:// sont autorisés." },
+          { status: 400 }
+        );
+      }
+    }
+
     // If value is empty/null, remove the field value
     if (value === null || value === undefined || value === "") {
       await prisma.customFieldValue.deleteMany({

@@ -80,10 +80,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
     }
 
-    // Update all widgets in a transaction
+    // Update all widgets in a transaction, en les confinant à ce dashboard
     const updatePromises = layout.map((item) =>
-      prisma.widget.update({
-        where: { id: item.id },
+      prisma.widget.updateMany({
+        where: { id: item.id, dashboardId },
         data: {
           x: item.x,
           y: item.y,
@@ -132,9 +132,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
     }
 
-    await prisma.widget.delete({
-      where: { id: widgetId },
+    const deleted = await prisma.widget.deleteMany({
+      where: { id: widgetId, dashboardId },
     });
+    if (deleted.count === 0) {
+      return NextResponse.json({ error: "Widget not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

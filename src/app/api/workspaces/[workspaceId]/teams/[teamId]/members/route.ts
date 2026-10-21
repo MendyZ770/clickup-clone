@@ -24,6 +24,14 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Réservé aux admins" }, { status: 403 });
     }
 
+    const team = await prisma.team.findFirst({
+      where: { id: teamId, workspaceId },
+      select: { id: true },
+    });
+    if (!team) {
+      return NextResponse.json({ error: "Équipe introuvable" }, { status: 404 });
+    }
+
     const body = await request.json();
     const workspaceMemberId: string | undefined = body.workspaceMemberId;
     if (!workspaceMemberId) {
@@ -73,10 +81,29 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Réservé aux admins" }, { status: 403 });
     }
 
+    const team = await prisma.team.findFirst({
+      where: { id: teamId, workspaceId },
+      select: { id: true },
+    });
+    if (!team) {
+      return NextResponse.json({ error: "Équipe introuvable" }, { status: 404 });
+    }
+
     const { searchParams } = new URL(request.url);
     const workspaceMemberId = searchParams.get("workspaceMemberId");
     if (!workspaceMemberId) {
       return NextResponse.json({ error: "workspaceMemberId requis" }, { status: 400 });
+    }
+
+    const wm = await prisma.workspaceMember.findFirst({
+      where: { id: workspaceMemberId, workspaceId },
+      select: { id: true },
+    });
+    if (!wm) {
+      return NextResponse.json(
+        { error: "Ce membre n'appartient pas à cet espace" },
+        { status: 400 }
+      );
     }
 
     await prisma.teamMember.deleteMany({

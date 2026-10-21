@@ -3,15 +3,29 @@
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 import { formatCurrency } from "@/lib/utils";
+import type { FinanceTransactionWithCategory } from "@/hooks/use-finance";
 
-const MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+export function IncomeExpenseChart({
+  transactions,
+  currency = "EUR",
+}: {
+  transactions: FinanceTransactionWithCategory[];
+  currency?: string;
+}) {
+  // On n'affiche que les transactions dans la devise principale du workspace
+  const scopedTransactions = transactions.filter(
+    (t) => (t.account?.currency || currency) === currency
+  );
 
-export function IncomeExpenseChart({ transactions }: { transactions: import("@prisma/client").FinanceTransaction[] }) {
-  const data = MONTHS.map((month, i) => {
-    const monthTransactions = transactions.filter((t) => {
+  const now = new Date();
+  const data = Array.from({ length: 12 }, (_, index) => {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
+    const nextMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
+    const monthTransactions = scopedTransactions.filter((t) => {
       const d = new Date(t.date);
-      return d.getMonth() === i;
+      return d >= monthDate && d < nextMonth;
     });
     const income = monthTransactions
       .filter((t) => t.type === "income")
@@ -19,7 +33,11 @@ export function IncomeExpenseChart({ transactions }: { transactions: import("@pr
     const expense = monthTransactions
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
-    return { month, income, expense };
+    return {
+      month: monthDate.toLocaleDateString("fr-FR", { month: "short" }),
+      income,
+      expense,
+    };
   });
 
   const hasData = data.some((d) => d.income > 0 || d.expense > 0);
@@ -51,14 +69,23 @@ export function IncomeExpenseChart({ transactions }: { transactions: import("@pr
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <ChartDataTable
+            caption="Revenus et dépenses par mois"
+            columns={["Mois", "Revenus", "Dépenses"]}
+            rows={data.map((entry) => [
+              entry.month,
+              formatCurrency(entry.income, currency),
+              formatCurrency(entry.expense, currency),
+            ])}
+          />
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} barGap={2} barCategoryGap="20%">
+              <BarChart data={data} barGap={2} barCategoryGap="20%" accessibilityLayer>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip
-                  formatter={(value) => formatCurrency(Number(value), "EUR")}
+                  formatter={(value) => formatCurrency(Number(value), currency)}
                   contentStyle={{
                     borderRadius: "12px",
                     border: "1px solid hsl(var(--border))",

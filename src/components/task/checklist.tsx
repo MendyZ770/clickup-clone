@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Plus, ListChecks } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ChecklistItemRow } from "./checklist-item";
 import type { ChecklistWithItems } from "@/types";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface ChecklistProps {
   checklist: ChecklistWithItems;
@@ -30,16 +32,17 @@ export function Checklist({ checklist, taskId, onChanged }: ChecklistProps) {
     if (!trimmed || isCreating) return;
     setIsCreating(true);
     try {
-      await fetch(
+      await apiJson(
         `/api/tasks/${taskId}/checklists/${checklist.id}/items`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: trimmed }),
         }
       );
       setNewText("");
       onChanged?.();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsCreating(false);
     }
@@ -147,14 +150,15 @@ export function ChecklistSection({
     if (!trimmed || isCreating) return;
     setIsCreating(true);
     try {
-      await fetch(`/api/tasks/${taskId}/checklists`, {
+      await apiJson(`/api/tasks/${taskId}/checklists`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: trimmed }),
       });
       setNewTitle("");
       setIsAdding(false);
       onChanged?.();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsCreating(false);
     }

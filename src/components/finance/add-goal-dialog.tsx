@@ -37,6 +37,7 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
   const [currency, setCurrency] = useState("EUR");
   const [deadline, setDeadline] = useState("");
   const [accountId, setAccountId] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reset = () => {
@@ -52,6 +53,7 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
     e.preventDefault();
     if (!name || !targetAmount || !workspaceId) return;
 
+    setError(null);
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/finance/goals", {
@@ -75,7 +77,7 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
       reset();
       onOpenChange(false);
     } catch (error) {
-      console.error(error);
+      setError(error instanceof Error ? error.message : "Impossible de créer l'objectif");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +107,11 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
 
           <div className="space-y-2">
             <Label>Devise</Label>
-            <Select value={currency} onValueChange={setCurrency}>
+            <Select value={currency} onValueChange={(value) => {
+              setCurrency(value);
+              const linked = accounts.find((a) => a.id === accountId);
+              if (linked && linked.currency !== value) setAccountId("");
+            }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -126,7 +132,15 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
           {accounts.length > 0 && (
             <div className="space-y-2">
               <Label>Compte lié (optionnel)</Label>
-              <Select value={accountId} onValueChange={setAccountId}>
+              <Select value={accountId || "__none__"} onValueChange={(value) => {
+                if (value === "__none__") {
+                  setAccountId("");
+                  return;
+                }
+                setAccountId(value);
+                const account = accounts.find((a) => a.id === value);
+                if (account) setCurrency(account.currency);
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir un compte" />
                 </SelectTrigger>
@@ -138,6 +152,10 @@ export function AddGoalDialog({ open, onOpenChange, workspaceId }: AddGoalDialog
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {error && (
+            <p role="alert" className="text-sm text-red-600">{error}</p>
           )}
 
           <DialogFooter>

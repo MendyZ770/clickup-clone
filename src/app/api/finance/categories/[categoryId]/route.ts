@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ categoryId: string }> }) {
   try {
@@ -41,6 +42,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ c
       include: { workspace: { include: { members: { where: { userId: user.id } } } } },
     });
     if (!existing || existing.workspace.members.length === 0) return NextResponse.json({ error: "Not found or Forbidden" }, { status: 404 });
+
+    if (!(await isWorkspaceAdmin(existing.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer une catégorie" },
+        { status: 403 }
+      );
+    }
 
     await prisma.financeCategory.delete({
       where: { id: categoryId },

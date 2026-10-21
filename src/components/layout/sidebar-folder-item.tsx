@@ -59,13 +59,13 @@ export function SidebarFolderItem({
                 animate={{ rotate: isOpen ? 90 : 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-primary" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-primary" aria-hidden="true" />
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <Folder className="h-4 w-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-primary" />
+                <Folder className="h-4 w-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-primary" aria-hidden="true" />
               </motion.div>
               <span className="flex-1 truncate font-medium text-sidebar-foreground/80">
                 {folder.name}
@@ -82,8 +82,9 @@ export function SidebarFolderItem({
             whileTap={{ scale: 0.9 }}
             className="mr-1 rounded-md p-1.5 text-muted-foreground opacity-0 transition-all duration-200 hover:bg-primary/10 hover:text-primary group-hover:opacity-100"
             title="Ajouter une liste"
+            aria-label={`Ajouter une liste dans ${folder.name}`}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
           </motion.button>
         </div>
 

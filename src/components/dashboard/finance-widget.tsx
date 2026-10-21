@@ -7,6 +7,7 @@ import { Landmark, TrendingUp, TrendingDown, Target, ArrowUpRight } from "lucide
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFinanceStats, useFinanceAccounts, useFinanceGoals } from "@/hooks/use-finance";
+import { formatCurrency } from "@/lib/utils";
 
 interface FinanceWidgetProps {
   workspaceId?: string;
@@ -33,14 +34,19 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
     );
   }
 
-  const totalBalance = accounts.reduce((sum: number, a: any) => sum + (a.balance || 0), 0);
+  const displayCurrency = stats?.currency || accounts[0]?.currency || "EUR";
+  const totalBalance =
+    stats?.totalBalance ??
+    accounts
+      .filter((account) => account.currency === displayCurrency)
+      .reduce((sum, account) => sum + account.balance, 0);
   const monthlyNet = (stats?.monthlyIncome || 0) - (stats?.monthlyExpense || 0);
   const goalsProgress = stats?.goalsProgress || 0;
 
   const cards = [
     {
       label: "Solde total",
-      value: totalBalance.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      value: formatCurrency(totalBalance, displayCurrency),
       icon: Landmark,
       color: "from-violet-500/10 to-indigo-500/5",
       iconColor: "text-violet-500",
@@ -48,7 +54,7 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
     },
     {
       label: "Revenus ce mois",
-      value: (stats?.monthlyIncome || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      value: formatCurrency(stats?.monthlyIncome || 0, displayCurrency),
       icon: TrendingUp,
       color: "from-emerald-500/10 to-teal-500/5",
       iconColor: "text-emerald-500",
@@ -56,7 +62,7 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
     },
     {
       label: "Dépenses ce mois",
-      value: (stats?.monthlyExpense || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }),
+      value: formatCurrency(stats?.monthlyExpense || 0, displayCurrency),
       icon: TrendingDown,
       color: "from-rose-500/10 to-pink-500/5",
       iconColor: "text-rose-500",
@@ -140,7 +146,7 @@ export function FinanceWidget({ workspaceId }: FinanceWidgetProps) {
             Ce mois :{" "}
             <span className={monthlyNet >= 0 ? "text-emerald-600 font-medium" : "text-rose-600 font-medium"}>
               {monthlyNet >= 0 ? "+" : ""}
-              {monthlyNet.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+              {formatCurrency(monthlyNet, displayCurrency)}
             </span>
           </span>
         </motion.div>

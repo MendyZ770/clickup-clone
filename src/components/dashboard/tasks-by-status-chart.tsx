@@ -91,7 +91,7 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
       
       <div className="flex items-center justify-between mb-4 relative z-10">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-primary" />
+          <span className="h-3 w-3 rounded-full bg-primary" aria-hidden="true" />
           Répartition par statut
         </h3>
         <span className="text-sm text-muted-foreground">{total} tâches</span>
@@ -99,7 +99,12 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
 
       {/* Donut */}
       <div className="relative flex items-center justify-center py-5">
-        <svg viewBox="0 0 100 100" className="h-40 w-40 -rotate-90">
+        <svg
+          viewBox="0 0 100 100"
+          className="h-40 w-40 -rotate-90"
+          aria-hidden="true"
+          focusable="false"
+        >
           <circle
             cx="50"
             cy="50"
@@ -137,6 +142,7 @@ export const TasksByStatusChart = memo(function TasksByStatusChart({
                 <span
                   className="h-3 w-3 rounded-full shrink-0"
                   style={{ backgroundColor: item.color }}
+                  aria-hidden="true"
                 />
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   {item.name}

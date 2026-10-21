@@ -24,7 +24,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Lock, Unlock, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { SetPinDialog } from "./set-pin-dialog";
+import { PinDialog } from "./pin-dialog";
 import { StatusBadge } from "./status-badge";
+import { ErrorState } from "@/components/shared/error-state";
+
+interface ListStatus {
+  id: string;
+  name: string;
+  color: string;
+  type: string;
+}
 
 interface TaskDetailContentProps {
   taskId: string;
@@ -35,10 +44,9 @@ export function TaskDetailContent({
   taskId,
   workspaceId,
 }: TaskDetailContentProps) {
-  const { task, isLoading, mutate } = useTask(taskId);
-  const { data: statuses } = useSWR(
-    task?.listId ? `/api/lists/${task.listId}/statuses` : null,
-    (url) => fetch(url).then((r) => r.json())
+  const { task, isLoading, isError, mutate } = useTask(taskId);
+  const { data: statuses } = useSWR<ListStatus[]>(
+    task?.listId ? `/api/lists/${task.listId}/statuses` : null
   );
   const { updateTask } = useUpdateTask();
   const { toast } = useToast();
@@ -48,6 +56,7 @@ export function TaskDetailContent({
   const [editingDesc, setEditingDesc] = useState(false);
   const [togglingLock, setTogglingLock] = useState(false);
   const [setPinOpen, setSetPinOpen] = useState(false);
+  const [unlockPinOpen, setUnlockPinOpen] = useState(false);
   const [showProperties, setShowProperties] = useState(true);
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
@@ -87,10 +96,18 @@ export function TaskDetailContent({
       setSetPinOpen(true);
       return;
     }
-    // Déverrouiller
+    // Déverrouiller → vérifier le PIN avant de modifier
+    setUnlockPinOpen(true);
+  };
+
+  const handleConfirmUnlock = async (pin: string) => {
+    setUnlockPinOpen(false);
     setTogglingLock(true);
     try {
-      await updateTask(taskId, { locked: false } as Parameters<typeof updateTask>[1]);
+      await updateTask(taskId, {
+        locked: false,
+        lockedPin: pin,
+      } as Parameters<typeof updateTask>[1]);
       toast({ title: "Tâche déverrouillée", description: "Vous pouvez à nouveau la modifier." });
       mutate();
     } catch (err) {
@@ -124,6 +141,18 @@ export function TaskDetailContent({
       setTogglingLock(false);
     }
   };
+
+  if (isError) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <ErrorState
+          title="Impossible de charger la tâche"
+          description="La tâche n'a pas pu être récupérée. Elle a peut-être été supprimée."
+          onRetry={() => mutate()}
+        />
+      </div>
+    );
+  }
 
   if (isLoading || !task) {
     return (
@@ -169,10 +198,11 @@ export function TaskDetailContent({
                   onCheckedChange={async (checked) => {
                     if (!statuses) return;
                     if (checked) {
-                      const doneStatus = statuses.find((s: any) => s.type === "done");
+                      const doneStatus = statuses?.find((s) => s.type === "done");
                       if (doneStatus) await handleUpdate({ statusId: doneStatus.id });
                     } else {
-                      const todoStatus = statuses.find((s: any) => s.type === "todo") ?? statuses[0];
+                      const todoStatus =
+                        statuses?.find((s) => s.type === "todo") ?? statuses?.[0];
                       if (todoStatus) await handleUpdate({ statusId: todoStatus.id });
                     }
                   }}
@@ -203,22 +233,28 @@ export function TaskDetailContent({
                       setEditingTitle(false);
                     }
                   }}
+                  aria-label="Titre de la tâche"
                   className="w-full bg-transparent text-lg sm:text-xl md:text-2xl font-bold outline-none border-b-2 border-primary pb-1"
                   autoFocus
                 />
               ) : (
-                <h1
-                  onClick={() => {
-                    if (task.locked) return;
-                    setEditingTitle(true);
-                    setTimeout(() => titleRef.current?.focus(), 0);
-                  }}
-                  className={`text-lg sm:text-xl md:text-2xl font-bold transition-colors inline-flex items-center gap-2 ${
-                    task.locked ? "cursor-default" : "cursor-text hover:text-primary/80"
-                  }`}
-                >
-                  {task.locked && <Lock className="h-5 w-5 text-amber-500 shrink-0" />}
-                  <span className="truncate">{task.title}</span>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold inline-flex max-w-full items-center gap-2">
+                  {task.locked && <Lock className="h-5 w-5 text-amber-500 shrink-0" aria-hidden="true" />}
+                  <button
+                    type="button"
+                    disabled={task.locked}
+                    onClick={() => {
+                      setEditingTitle(true);
+                      setTimeout(() => titleRef.current?.focus(), 0);
+                    }}
+                    className={`truncate text-left transition-colors ${
+                      task.locked
+                        ? "cursor-default"
+                        : "cursor-text hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+                    }`}
+                  >
+                    {task.title}
+                  </button>
                 </h1>
               )}
             </div>
@@ -282,12 +318,16 @@ export function TaskDetailContent({
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-1 block">
+            <label
+              htmlFor="task-detail-description"
+              className="text-sm font-medium text-muted-foreground mb-1 block"
+            >
               Description
             </label>
             {editingDesc ? (
               <Textarea
                 ref={descRef}
+                id="task-detail-description"
                 value={descriptionValue}
                 onChange={(e) => setDescriptionValue(e.target.value)}
                 onBlur={handleDescBlur}
@@ -302,15 +342,17 @@ export function TaskDetailContent({
                 placeholder="Ajouter une description..."
               />
             ) : (
-              <div
+              <button
+                type="button"
                 onClick={() => {
                   setEditingDesc(true);
                   setTimeout(() => descRef.current?.focus(), 0);
                 }}
-                className="min-h-[60px] cursor-text rounded-xl border border-transparent p-3 text-[15px] text-muted-foreground hover:bg-muted/20 hover:border-border/30 transition-all whitespace-pre-wrap"
+                aria-label="Modifier la description"
+                className="block w-full min-h-[60px] cursor-text rounded-xl border border-transparent p-3 text-left text-[15px] text-muted-foreground hover:bg-muted/20 hover:border-border/30 transition-all whitespace-pre-wrap"
               >
                 {task.description || "Ajouter une description détaillée..."}
-              </div>
+              </button>
             )}
           </div>
 
@@ -351,7 +393,8 @@ export function TaskDetailContent({
               id: s.id,
               title: s.title,
               priority: s.priority,
-              status: task.status, // subtask status simplified
+              status:
+                statuses?.find((status) => status.id === s.statusId) ?? task.status,
             }))}
             onChanged={() => mutate()}
           />
@@ -407,6 +450,13 @@ export function TaskDetailContent({
         open={setPinOpen}
         onConfirm={handleConfirmPin}
         onCancel={() => setSetPinOpen(false)}
+      />
+
+      <PinDialog
+        open={unlockPinOpen}
+        taskId={taskId}
+        onSuccess={handleConfirmUnlock}
+        onCancel={() => setUnlockPinOpen(false)}
       />
     </div>
   );

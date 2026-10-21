@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { verifyTaskAccess } from "@/lib/task-auth";
 
 export async function GET() {
   try {
@@ -54,54 +55,44 @@ export async function POST(request: Request) {
         );
       }
 
-      // Check if there's already a running timer
-      const existingTimer = await prisma.timeEntry.findFirst({
-        where: {
-          userId: user.id,
-          endTime: null,
-        },
-      });
+      if (!(await verifyTaskAccess(taskId, user.id))) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      }
 
-      if (existingTimer) {
-        // Stop the existing timer first
-        const now = new Date();
-        const duration = Math.round(
-          (now.getTime() - existingTimer.startTime.getTime()) / 1000
-        );
-        await prisma.timeEntry.update({
-          where: { id: existingTimer.id },
-          data: { endTime: now, duration },
+      const now = new Date();
+      const entry = await prisma.$transaction(async (tx) => {
+        const existingTimer = await tx.timeEntry.findFirst({
+          where: { userId: user.id, endTime: null },
+          orderBy: { startTime: "desc" },
         });
-      }
 
-      // Verify task exists
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-      });
+        if (existingTimer) {
+          const duration = Math.max(
+            0,
+            Math.round((now.getTime() - existingTimer.startTime.getTime()) / 1000)
+          );
+          await tx.timeEntry.update({
+            where: { id: existingTimer.id },
+            data: { endTime: now, duration },
+          });
+        }
 
-      if (!task) {
-        return NextResponse.json(
-          { error: "Task not found" },
-          { status: 404 }
-        );
-      }
-
-      // Create new running timer
-      const entry = await prisma.timeEntry.create({
-        data: {
-          startTime: new Date(),
-          taskId,
-          userId: user.id,
-          description: description || null,
-        },
-        include: {
-          task: {
-            select: { id: true, title: true, listId: true },
+        return tx.timeEntry.create({
+          data: {
+            startTime: now,
+            taskId,
+            userId: user.id,
+            description: description || null,
           },
-          user: {
-            select: { id: true, name: true, email: true, image: true },
+          include: {
+            task: {
+              select: { id: true, title: true, listId: true },
+            },
+            user: {
+              select: { id: true, name: true, email: true, image: true },
+            },
           },
-        },
+        });
       });
 
       return NextResponse.json(entry, { status: 201 });
@@ -152,6 +143,12 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error) {
+    if ((error as { code?: string }).code === "P2002") {
+      return NextResponse.json(
+        { error: "Un minuteur est déjà actif" },
+        { status: 409 }
+      );
+    }
     console.error("POST /api/time-entries/timer error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

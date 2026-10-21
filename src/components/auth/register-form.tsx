@@ -20,7 +20,7 @@ export function RegisterForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { addAccount } = useAccounts();
-  const { status } = useMobileAuth();
+  const { status, refresh } = useMobileAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,9 +29,9 @@ export function RegisterForm() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      window.location.href = "/dashboard";
+      router.replace("/dashboard");
     }
-  }, [status]);
+  }, [status, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -127,6 +127,7 @@ export function RegisterForm() {
         name: mobileData.user.name ?? null,
         image: mobileData.user.image ?? null,
       });
+      await refresh();
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -171,7 +172,7 @@ export function RegisterForm() {
           Créer un compte
         </motion.h1>
         <motion.p
-          className="text-white/40 text-sm mt-1"
+          className="text-white/60 text-sm mt-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -198,7 +199,7 @@ export function RegisterForm() {
               disabled={isLoading}
               required
               minLength={2}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
@@ -211,7 +212,7 @@ export function RegisterForm() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
@@ -225,7 +226,7 @@ export function RegisterForm() {
               disabled={isLoading}
               required
               minLength={8}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
@@ -239,7 +240,7 @@ export function RegisterForm() {
               disabled={isLoading}
               required
               minLength={8}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
         </motion.div>
@@ -254,7 +255,7 @@ export function RegisterForm() {
           </Button>
         </motion.div>
 
-        <motion.p variants={staggerItem} className="text-sm text-white/30 text-center">
+        <motion.p variants={staggerItem} className="text-sm text-white/60 text-center">
           {"Déjà un compte ? "}
           <Link
             href="/login"

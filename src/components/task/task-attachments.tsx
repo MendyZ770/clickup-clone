@@ -11,6 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { safeHref } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -84,8 +87,8 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
       clearInterval(progressInterval);
 
       if (!uploadRes.ok) {
-        const err = await uploadRes.json();
-        alert(err.error || "Upload échoué");
+        const err = await uploadRes.json().catch(() => null);
+        toast({ title: "Téléversement impossible", description: err && typeof err.error === "string" ? err.error : "Le fichier n'a pas pu être envoyé.", variant: "destructive" });
         return;
       }
 
@@ -93,9 +96,8 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
       const { url, mimeType, size } = await uploadRes.json();
 
       // Create attachment record
-      const attachRes = await fetch(`/api/tasks/${taskId}/attachments`, {
+      await apiJson(`/api/tasks/${taskId}/attachments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: file.name,
           url,
@@ -105,10 +107,10 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
         }),
       });
 
-      if (attachRes.ok) {
-        setUploadProgress(100);
-        await mutate();
-      }
+      setUploadProgress(100);
+      await mutate();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -118,30 +120,33 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
 
   const handleAddLink = async () => {
     if (!linkUrl.trim()) return;
-    const res = await fetch(`/api/tasks/${taskId}/attachments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: linkName.trim() || linkUrl,
-        url: linkUrl.trim(),
-        type: "link",
-      }),
-    });
-    if (res.ok) {
+    try {
+      await apiJson(`/api/tasks/${taskId}/attachments`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: linkName.trim() || linkUrl,
+          url: linkUrl.trim(),
+          type: "link",
+        }),
+      });
       setLinkUrl("");
       setLinkName("");
       setAddingLink(false);
       await mutate();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
   const handleDelete = async (attachmentId: string) => {
     setDeletingId(attachmentId);
     try {
-      await fetch(`/api/tasks/${taskId}/attachments?attachmentId=${attachmentId}`, {
+      await apiJson(`/api/tasks/${taskId}/attachments?attachmentId=${attachmentId}`, {
         method: "DELETE",
       });
       await mutate();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setDeletingId(null);
     }
@@ -261,7 +266,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <a
-                    href={att.url}
+                    href={safeHref(att.url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm font-medium hover:underline truncate block"
@@ -289,7 +294,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
                     className="h-7 w-7"
                     asChild
                   >
-                    <a href={att.url} target="_blank" rel="noopener noreferrer">
+                    <a href={safeHref(att.url)} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   </Button>

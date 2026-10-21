@@ -13,9 +13,9 @@ import { TrendingUp, TrendingDown, ArrowRightLeft, MoreHorizontal, Pencil, Trash
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { formatCurrency } from "@/lib/utils";
 
-import type { FinanceTransactionWithCategory } from "@/hooks/use-finance";
+import type { FinanceAccountSerialized, FinanceTransactionWithCategory } from "@/hooks/use-finance";
 
-export function FinanceTransactionList({ transactions, accounts, onMutate, onAddTransaction }: { transactions: FinanceTransactionWithCategory[]; accounts: import("@prisma/client").FinanceAccount[]; onMutate?: () => void; onAddTransaction?: () => void }) {
+export function FinanceTransactionList({ transactions, accounts, onMutate, onAddTransaction }: { transactions: FinanceTransactionWithCategory[]; accounts: FinanceAccountSerialized[]; onMutate?: () => void; onAddTransaction?: () => void }) {
   const [editing, setEditing] = useState<FinanceTransactionWithCategory | null>(null);
 
   if (transactions.length === 0) {
@@ -166,17 +166,19 @@ function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: { 
   const [amount, setAmount] = useState(String(transaction.amount));
   const [description, setDescription] = useState(transaction.description || "");
   const [date, setDate] = useState(new Date(transaction.date).toISOString().slice(0, 10));
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount) return;
+    setError(null);
     setIsSubmitting(true);
     try {
       const res = await fetch(`/api/finance/transactions/${transaction.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), description, date }),
+        body: JSON.stringify({ amount: parseFloat(amount), description: description || null, date }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Request failed" }));
@@ -185,7 +187,7 @@ function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: { 
       onMutate?.();
       onOpenChange(false);
     } catch (error) {
-      console.error(error);
+      setError(error instanceof Error ? error.message : "Impossible de modifier la transaction");
     } finally {
       setIsSubmitting(false);
     }
@@ -208,6 +210,7 @@ function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: { 
             <label className="text-sm font-medium">Date</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full h-10 rounded-md border bg-transparent px-3 text-sm" />
           </div>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-2 justify-end pt-2">
             <button type="button" onClick={() => onOpenChange(false)} className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition-colors">Annuler</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50">Enregistrer</button>

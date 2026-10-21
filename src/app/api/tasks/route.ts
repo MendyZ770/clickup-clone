@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { workspaceChannelName } from "@/lib/pusher-channels";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { evaluateAutomations } from "@/lib/automation-engine";
@@ -6,9 +7,28 @@ import { createTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";
 import { pusherServer } from "@/lib/pusher-server";
+import { sendNotificationToUsers } from "@/lib/notifications";
 import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+const taskResponseInclude = {
+  status: true,
+  assignees: {
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true } },
+    },
+  },
+  creator: {
+    select: { id: true, name: true, email: true, image: true },
+  },
+  taskTags: {
+    include: { tag: true },
+  },
+  _count: {
+    select: { subtasks: true, comments: true },
+  },
+} satisfies Prisma.TaskInclude;
 
 export async function GET(request: Request) {
   try {
@@ -25,6 +45,7 @@ export async function GET(request: Request) {
     const priority = searchParams.get("priority");
     const assigneeId = searchParams.get("assigneeId");
     const search = searchParams.get("search");
+    const dateFilter = searchParams.get("dateFilter");
     const sortBy = searchParams.get("sortBy") ?? "position";
     const sortOrder = searchParams.get("sortOrder") ?? "asc";
 
@@ -90,6 +111,34 @@ export async function GET(request: Request) {
         { description: { contains: search } },
       ];
     }
+    if (dateFilter) {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+      const weekStartOffset = (startOfDay.getDay() + 6) % 7; // Monday = 0
+      const startOfWeek = new Date(startOfDay.getTime() - weekStartOffset * 24 * 60 * 60 * 1000);
+      const startOfNextWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const endOfWeek = new Date(startOfNextWeek.getTime() - 1);
+      const endOfNextWeek = new Date(startOfNextWeek.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+
+      switch (dateFilter) {
+        case "overdue":
+          where.dueDate = { lt: startOfDay };
+          break;
+        case "today":
+          where.dueDate = { gte: startOfDay, lte: endOfDay };
+          break;
+        case "this_week":
+          where.dueDate = { gte: startOfWeek, lte: endOfWeek };
+          break;
+        case "next_week":
+          where.dueDate = { gte: startOfNextWeek, lte: endOfNextWeek };
+          break;
+        case "no_date":
+          where.dueDate = null;
+          break;
+      }
+    }
 
     // Build orderBy
     const validSortFields = [
@@ -125,7 +174,11 @@ export async function GET(request: Request) {
       orderBy: { [orderField]: orderDir },
     });
 
-    return NextResponse.json(tasks);
+    const tasksWithoutPin = tasks.map(({ lockedPin: _lockedPin, ...task }) => {
+      void _lockedPin;
+      return task;
+    });
+    return NextResponse.json(tasksWithoutPin);
   } catch (error) {
     console.error("GET /api/tasks error:", error);
     return NextResponse.json(
@@ -184,8 +237,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "List not found" }, { status: 404 });
     }
 
+    if (parentId) {
+      const parent = await prisma.task.findFirst({
+        where: {
+          id: parentId,
+          list: { space: { workspaceId: list.space.workspaceId } },
+        },
+        select: { id: true },
+      });
+      if (!parent) {
+        return NextResponse.json(
+          { error: "Tâche parente introuvable dans ce workspace" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const uniqueAssigneeIds = [...new Set(assigneeIds ?? [])];
+    if (uniqueAssigneeIds.length > 0) {
+      const memberCount = await prisma.workspaceMember.count({
+        where: {
+          workspaceId: list.space.workspaceId,
+          userId: { in: uniqueAssigneeIds },
+        },
+      });
+      if (memberCount !== uniqueAssigneeIds.length) {
+        return NextResponse.json(
+          { error: "Un ou plusieurs assignés n'appartiennent pas au workspace" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Determine status: use provided or first status of the list
     let taskStatusId = statusId;
+    if (taskStatusId?.startsWith("global:")) {
+      const statusName = taskStatusId.slice("global:".length).trim().toLowerCase();
+      taskStatusId = list.statuses.find(
+        (s) => s.name.toLowerCase() === statusName
+      )?.id;
+    }
+    if (taskStatusId && !list.statuses.some((s) => s.id === taskStatusId)) {
+      return NextResponse.json(
+        { error: "Statut invalide pour cette liste" },
+        { status: 400 }
+      );
+    }
     if (!taskStatusId) {
       if (list.statuses.length === 0) {
         return NextResponse.json(
@@ -219,27 +316,11 @@ export async function POST(request: Request) {
         statusId: taskStatusId,
         creatorId: user.id,
         parentId: parentId ?? null,
-        assignees: assigneeIds && assigneeIds.length > 0 ? {
-          create: assigneeIds.map(id => ({ userId: id }))
+        assignees: uniqueAssigneeIds.length > 0 ? {
+          create: uniqueAssigneeIds.map(id => ({ userId: id }))
         } : undefined,
       },
-      include: {
-        status: true,
-        assignees: {
-          include: {
-            user: { select: { id: true, name: true, email: true, image: true } }
-          }
-        },
-        creator: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        taskTags: {
-          include: { tag: true },
-        },
-        _count: {
-          select: { subtasks: true, comments: true },
-        },
-      },
+      include: taskResponseInclude,
     });
 
     // Log activity
@@ -249,22 +330,57 @@ export async function POST(request: Request) {
       userId: user.id,
     });
 
+    // Notifier les assignés initiaux (hors auteur de la création)
+    const initialAssigneeIds = uniqueAssigneeIds.filter((id) => id !== user.id);
+    if (initialAssigneeIds.length > 0) {
+      await sendNotificationToUsers(
+        initialAssigneeIds,
+        {
+          type: "taskAssigned",
+          message: `Vous avez été assigné à « ${task.title} »`,
+          link: `/task/${task.id}`,
+          title: "👤 Nouvelle assignation",
+          body: task.title,
+          tag: "task-assigned",
+        },
+        user.id
+      ).catch((error) => {
+        console.error("Assignee notification failed:", error);
+      });
+    }
+
+    const automationApplied = await evaluateAutomations(
+      listId,
+      task.id,
+      "TASK_CREATED",
+      null,
+      task,
+      user.id
+    );
+
+    const finalTask = automationApplied
+      ? (await prisma.task.findUnique({
+          where: { id: task.id },
+          include: taskResponseInclude,
+        })) ?? task
+      : task;
+
     // Trigger calendar sync if task has a due date
-    if (task.dueDate) {
-      triggerCalendarSync();
+    if (finalTask.dueDate) {
+      triggerCalendarSync(user.id);
     }
 
     try {
       await pusherServer.trigger(
-        `workspace-${list.space.workspace.id}`,
+        workspaceChannelName(list.space.workspace.id),
         "task:created",
-        task
+        finalTask
       );
     } catch (e) {
       console.error("Pusher error:", e);
     }
 
-    return NextResponse.json(task, { status: 201 });
+    return NextResponse.json(finalTask, { status: 201 });
   } catch (error) {
     console.error("POST /api/tasks error:", error);
     return NextResponse.json(

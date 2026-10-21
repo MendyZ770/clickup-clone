@@ -1,6 +1,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 
 interface CategoryData {
   name: string;
@@ -21,9 +22,18 @@ export function BudgetPieChart({ data }: BudgetPieChartProps) {
     );
   }
 
+  const currency = (value: number) =>
+    value.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+
   return (
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
+    <div>
+      <ChartDataTable
+        caption="Répartition des dépenses par catégorie"
+        columns={["Catégorie", "Montant"]}
+        rows={data.map((entry) => [entry.name, currency(entry.amount)])}
+      />
+      <ResponsiveContainer width="100%" height={250}>
+        <PieChart accessibilityLayer>
         <Pie
           data={data}
           dataKey="amount"
@@ -48,6 +58,7 @@ export function BudgetPieChart({ data }: BudgetPieChartProps) {
         />
         <Legend />
       </PieChart>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
   );
 }

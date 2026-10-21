@@ -153,7 +153,7 @@ export function SearchCommand() {
               <CommandItem
                 key={task.id}
                 value={`task-${task.id}-${task.title}`}
-                onSelect={() => handleSelect(`/tasks/${task.id}`)}
+                onSelect={() => handleSelect(`/task/${task.id}`)}
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -181,7 +181,11 @@ export function SearchCommand() {
                 <CommandItem
                   key={list.id}
                   value={`list-${list.id}-${list.name}`}
-                  onSelect={() => handleSelect(`/lists/${list.id}`)}
+                  onSelect={() =>
+                    handleSelect(
+                      `/workspace/${currentWorkspace?.id}/space/${list.space?.id}/list/${list.id}`
+                    )
+                  }
                 >
                   <div className="flex items-center gap-2">
                     <List className="h-5 w-5 shrink-0 text-muted-foreground" />
@@ -211,7 +215,11 @@ export function SearchCommand() {
                 <CommandItem
                   key={space.id}
                   value={`space-${space.id}-${space.name}`}
-                  onSelect={() => handleSelect(`/spaces/${space.id}`)}
+                  onSelect={() =>
+                    handleSelect(
+                      `/workspace/${currentWorkspace?.id}/space/${space.id}`
+                    )
+                  }
                 >
                   <div className="flex items-center gap-2">
                     <div

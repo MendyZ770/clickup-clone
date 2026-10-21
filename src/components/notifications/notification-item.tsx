@@ -86,7 +86,9 @@ export function NotificationItem({
             "h-2 w-2 rounded-full",
             !notification.read ? "bg-primary" : "bg-transparent"
           )}
+          aria-hidden="true"
         />
+        {!notification.read && <span className="sr-only">Non lue</span>}
       </div>
 
       {/* Icon */}
@@ -95,6 +97,7 @@ export function NotificationItem({
           "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
           config.bgColor
         )}
+        aria-hidden="true"
       >
         <Icon className={cn("h-5 w-5", config.color)} />
       </div>

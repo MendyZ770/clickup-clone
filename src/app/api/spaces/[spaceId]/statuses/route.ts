@@ -42,7 +42,7 @@ export async function GET(request: Request, context: RouteContext) {
         // use 'global:NAME' as ID for the frontend mapping
         grouped.set(normalizedName, {
           ...status,
-          id: `global:${status.name}`, 
+          id: `global:${normalizedName}`, 
         });
       }
     }

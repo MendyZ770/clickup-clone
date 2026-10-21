@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
-import { verifyTaskAccess } from "@/lib/task-auth";
+import { verifyTaskAccess, getTaskWorkspaceId } from "@/lib/task-auth";
 import { logActivity } from "@/lib/activity-logger";
 import { z } from "zod";
 
@@ -58,9 +58,14 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const { tagId } = parsed.data;
+    const workspaceId = await getTaskWorkspaceId(taskId, user.id);
+    if (!workspaceId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-    // Check tag exists
-    const tag = await prisma.tag.findUnique({ where: { id: tagId } });
+    const tag = await prisma.tag.findFirst({
+      where: { id: tagId, workspaceId },
+    });
     if (!tag) {
       return NextResponse.json({ error: "Tag not found" }, { status: 404 });
     }

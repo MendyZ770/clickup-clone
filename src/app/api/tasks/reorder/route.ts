@@ -31,6 +31,40 @@ export async function PATCH(request: Request) {
 
     const { tasks } = parsed.data;
 
+    const requestedIds = [...new Set(tasks.map((t) => t.id))];
+    const accessibleTasks = await prisma.task.findMany({
+      where: {
+        id: { in: requestedIds },
+        list: { space: { workspace: { members: { some: { userId: user.id } } } } },
+      },
+      select: { id: true, listId: true },
+    });
+
+    if (accessibleTasks.length !== requestedIds.length) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const listIdByTaskId = new Map(accessibleTasks.map((t) => [t.id, t.listId]));
+    const listIds = [...new Set(accessibleTasks.map((t) => t.listId))];
+    const statuses = await prisma.status.findMany({
+      where: { listId: { in: listIds } },
+      select: { id: true, listId: true },
+    });
+    const listIdByStatusId = new Map(
+      statuses.map((s) => [s.id, s.listId])
+    );
+
+    for (const t of tasks) {
+      if (t.statusId && !t.statusId.startsWith("global:")) {
+        if (listIdByStatusId.get(t.statusId) !== listIdByTaskId.get(t.id)) {
+          return NextResponse.json(
+            { error: "Statut invalide pour cette liste" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Bulk update using a transaction
     await prisma.$transaction(
       async (tx) => {
@@ -42,24 +76,19 @@ export async function PATCH(request: Request) {
           if (t.statusId) {
             if (t.statusId.startsWith("global:")) {
               const statusName = t.statusId.replace("global:", "");
-              
-              // We need the task's listId to find/create the status
-              const task = await tx.task.findUnique({
-                where: { id: t.id },
-                select: { listId: true },
-              });
-              
-              if (task) {
+              const listId = listIdByTaskId.get(t.id);
+
+              if (listId) {
                 // Find status by name in this list
                 let targetStatus = await tx.status.findFirst({
-                  where: { listId: task.listId, name: statusName },
+                  where: { listId, name: { equals: statusName, mode: "insensitive" } },
                 });
-                
+
                 // If not found, auto-create it
                 if (!targetStatus) {
                   // get last order
                   const last = await tx.status.findFirst({
-                    where: { listId: task.listId },
+                    where: { listId },
                     orderBy: { order: "desc" }
                   });
                   targetStatus = await tx.status.create({
@@ -68,11 +97,11 @@ export async function PATCH(request: Request) {
                       color: "#6B7280",
                       type: "custom",
                       order: last ? last.order + 1 : 0,
-                      listId: task.listId,
+                      listId,
                     }
                   });
                 }
-                
+
                 data.statusId = targetStatus.id;
               }
             } else {

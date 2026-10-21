@@ -90,12 +90,38 @@ export async function POST(request: Request) {
       );
     }
 
+    const remindAtDate = new Date(remindAt);
+    if (Number.isNaN(remindAtDate.getTime())) {
+      return NextResponse.json(
+        { error: "remindAt doit être une date valide" },
+        { status: 400 }
+      );
+    }
+
+    let linkedTaskId: string | null = null;
+    if (taskId) {
+      const linkedTask = await prisma.task.findFirst({
+        where: {
+          id: taskId,
+          list: { space: { workspaceId } },
+        },
+        select: { id: true },
+      });
+      if (!linkedTask) {
+        return NextResponse.json(
+          { error: "Tâche introuvable dans ce workspace" },
+          { status: 400 }
+        );
+      }
+      linkedTaskId = linkedTask.id;
+    }
+
     const reminder = await prisma.reminder.create({
       data: {
         title,
         description: description || null,
-        remindAt: new Date(remindAt),
-        taskId: taskId || null,
+        remindAt: remindAtDate,
+        taskId: linkedTaskId,
         userId: user.id,
         workspaceId,
       },

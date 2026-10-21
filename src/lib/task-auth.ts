@@ -25,3 +25,22 @@ export async function verifyTaskAccess(taskId: string, userId: string): Promise<
 
   return !!task;
 }
+
+export async function getTaskWorkspaceId(
+  taskId: string,
+  userId: string
+): Promise<string | null> {
+  const task = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      list: {
+        space: {
+          workspace: { members: { some: { userId } } },
+        },
+      },
+    },
+    select: { list: { select: { space: { select: { workspaceId: true } } } } },
+  });
+
+  return task?.list.space.workspaceId ?? null;
+}

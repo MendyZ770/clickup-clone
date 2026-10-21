@@ -1,22 +1,29 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { writeFile, mkdir } from "fs/promises";
-import { join, extname } from "path";
+import { join } from "path";
 import { randomUUID } from "crypto";
 
 export const dynamic = "force-dynamic";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
-const ALLOWED_TYPES = [
-  "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
-  "application/pdf",
-  "text/plain", "text/csv",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/zip",
-];
+
+// Extension déduite du type MIME : le nom envoyé par le client ne décide jamais de
+// l'extension, sinon un .html ou .svg téléversé serait exécuté sur notre origine.
+const ALLOWED_TYPES: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/gif": ".gif",
+  "image/webp": ".webp",
+  "application/pdf": ".pdf",
+  "text/plain": ".txt",
+  "text/csv": ".csv",
+  "application/msword": ".doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+  "application/vnd.ms-excel": ".xls",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+  "application/zip": ".zip",
+};
 
 export async function POST(request: Request) {
   try {
@@ -34,33 +41,50 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: `File too large. Max size: ${MAX_SIZE / 1024 / 1024}MB` },
+        { error: `Fichier trop volumineux. Taille maximale : ${MAX_SIZE / 1024 / 1024} Mo` },
         { status: 400 }
       );
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    const ext = ALLOWED_TYPES[file.type];
+    if (!ext) {
       return NextResponse.json(
-        { error: `File type not allowed: ${file.type}` },
+        { error: `Type de fichier non autorisé : ${file.type}` },
         { status: 400 }
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-
-    // Generate unique filename
-    const ext = extname(file.name) || ".bin";
-    const filename = `${randomUUID()}${ext}`;
-    const filepath = join(uploadsDir, filename);
-
-    // Write file to disk
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
+    const key = `${randomUUID()}${ext}`;
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
 
-    const url = `/uploads/${filename}`;
+    let url: string;
+    if (blobToken) {
+      const { put } = await import("@vercel/blob");
+      const blob = await put(`uploads/${key}`, buffer, {
+        access: "public",
+        token: blobToken,
+      });
+      url = blob.url;
+    } else {
+      // Self-hosted / Capacitor server : disque local. Sur Vercel le système de
+      // fichiers est en lecture seule, d'où l'erreur explicite plutôt qu'un 500.
+      const uploadsDir = join(process.cwd(), "public", "uploads");
+      try {
+        await mkdir(uploadsDir, { recursive: true });
+        await writeFile(join(uploadsDir, key), buffer);
+      } catch {
+        return NextResponse.json(
+          {
+            error:
+              "Stockage indisponible : configurez BLOB_READ_WRITE_TOKEN pour activer le téléversement.",
+          },
+          { status: 501 }
+        );
+      }
+      url = `/uploads/${key}`;
+    }
 
     return NextResponse.json({
       url,

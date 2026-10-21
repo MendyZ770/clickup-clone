@@ -13,8 +13,8 @@ export async function GET(
     }
     const { entryId } = await params;
 
-    const entry = await prisma.timeEntry.findUnique({
-      where: { id: entryId },
+    const entry = await prisma.timeEntry.findFirst({
+      where: { id: entryId, userId: user.id },
       include: {
         task: {
           select: { id: true, title: true, listId: true },

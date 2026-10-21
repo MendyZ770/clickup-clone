@@ -43,7 +43,6 @@ export async function sendFcmNotification({
       priority: "high",
       notification: {
         channelId: "done-notifications",
-        clickAction: "FLUTTER_NOTIFICATION_CLICK",
         tag: tag ?? "done",
       },
     },

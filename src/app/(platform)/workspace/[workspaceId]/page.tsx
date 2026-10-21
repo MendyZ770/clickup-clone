@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
 import { ViewSwitcher } from "@/components/layout/view-switcher";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BoardView } from "@/components/views/board-view";
@@ -43,10 +44,22 @@ export default function WorkspacePage() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const { data: workspace, isLoading } = useSWR<WorkspaceWithSpaces>(
+  const { data: workspace, isLoading, error, mutate } = useSWR<WorkspaceWithSpaces>(
     `/api/workspaces/${workspaceId}`,
     fetcher
   );
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-7xl p-4 md:p-6">
+        <ErrorState
+          title="Impossible de charger l'espace de travail"
+          description="Les données de cet espace n'ont pas pu être récupérées."
+          onRetry={() => mutate()}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -107,7 +120,7 @@ export default function WorkspacePage() {
       {/* Tabs for Overview vs Board */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="flex items-center mb-6 border-b border-border/50 pb-2">
-          <TabsList className="bg-transparent space-x-2 p-0 h-auto">
+          <TabsList className="max-w-full justify-start overflow-x-auto bg-transparent space-x-2 p-0 h-auto hide-scrollbar">
             <TabsTrigger
               value="overview"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium"
@@ -118,36 +131,36 @@ export default function WorkspacePage() {
               value="list"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
             >
-              <List className="h-4 w-4" />
-              Liste (Everything)
+              <List className="h-4 w-4" aria-hidden="true" />
+              Liste (globale)
             </TabsTrigger>
             <TabsTrigger
               value="board"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
             >
-              <LayoutGrid className="h-4 w-4" />
-              Tableau (Everything)
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+              Tableau (global)
             </TabsTrigger>
             <TabsTrigger
               value="gantt"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
               Gantt
             </TabsTrigger>
             <TabsTrigger
               value="table"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
             >
-              <LayoutGrid className="h-4 w-4" />
-              Table
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+              Tableau
             </TabsTrigger>
             <TabsTrigger
               value="dashboard"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-4 py-2 font-medium flex items-center gap-2"
             >
-              <LayoutGrid className="h-4 w-4" />
-              Dashboard
+              <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+              Tableau de bord
             </TabsTrigger>
           </TabsList>
         </div>

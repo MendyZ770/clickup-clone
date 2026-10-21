@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Check } from "lucide-react";
 import dynamic from "next/dynamic";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 // Import styles
 import "react-quill-new/dist/quill.snow.css";
@@ -22,56 +24,106 @@ export default function DocEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const lastSyncedRef = useRef<{ title: string; content: string } | null>(null);
+  const pendingRef = useRef<{ title: string; content: string } | null>(null);
+  const savingRef = useRef(false);
+
+  const loadDoc = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    lastSyncedRef.current = null;
+    try {
+      const res = await fetch(`/api/docs/${params.docId}`, { cache: "no-store" });
+      if (!res.ok) {
+        if (res.status === 404 || res.status === 403) {
+          router.push(`/workspace/${params.workspaceId}/docs`);
+          return;
+        }
+        throw new Error(`Impossible de charger le document (erreur ${res.status}).`);
+      }
+      const data = await res.json();
+      const loadedTitle = typeof data.title === "string" ? data.title : "";
+      const loadedContent = typeof data.content === "string" ? data.content : "";
+      setTitle(loadedTitle);
+      setContent(loadedContent);
+      lastSyncedRef.current = { title: loadedTitle, content: loadedContent };
+    } catch (error) {
+      setLoadError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Impossible de charger le document."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [params.docId, params.workspaceId, router]);
 
   useEffect(() => {
-    const fetchDoc = async () => {
-      try {
-        const res = await fetch(`/api/docs/${params.docId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setTitle(data.title);
-          setContent(data.content || "");
-        } else {
-          router.push(`/workspace/${params.workspaceId}/docs`);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchDoc();
-  }, [params.docId, params.workspaceId, router]);
+    void loadDoc();
+  }, [loadDoc]);
 
   const saveDoc = useCallback(
     async (newTitle: string, newContent: string) => {
+      if (savingRef.current) {
+        pendingRef.current = { title: newTitle, content: newContent };
+        return;
+      }
+      savingRef.current = true;
       setIsSaving(true);
+      let next: { title: string; content: string } | null = {
+        title: newTitle,
+        content: newContent,
+      };
       try {
-        await fetch(`/api/docs/${params.docId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: newTitle, content: newContent }),
-        });
+        while (next) {
+          const payload = next;
+          next = null;
+          await apiJson(`/api/docs/${params.docId}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          });
+          lastSyncedRef.current = payload;
+          if (pendingRef.current) {
+            next = pendingRef.current;
+            pendingRef.current = null;
+          }
+        }
         setLastSaved(new Date());
       } catch (error) {
-        console.error("Failed to save doc", error);
+        toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
       } finally {
+        savingRef.current = false;
         setIsSaving(false);
       }
     },
     [params.docId]
   );
 
-  // Auto-save logic (debounced)
+  // Auto-save logic (debounced) — jamais tant que le chargement initial n'a pas réussi
   useEffect(() => {
-    if (isLoading) return;
-    
+    if (isLoading || loadError) return;
+    const synced = lastSyncedRef.current;
+    if (!synced) return;
+    if (synced.title === title && synced.content === content) return;
+
     const handler = setTimeout(() => {
-      saveDoc(title, content);
+      void saveDoc(title, content);
     }, 1500); // 1.5 seconds after user stops typing
 
     return () => clearTimeout(handler);
-  }, [title, content, saveDoc, isLoading]);
+  }, [title, content, saveDoc, isLoading, loadError]);
+
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      const synced = lastSyncedRef.current;
+      if (!synced || (synced.title === title && synced.content === content)) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [title, content]);
 
   // Toolbar options for Quill
   const modules = useMemo(() => ({
@@ -89,6 +141,25 @@ export default function DocEditorPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          {loadError} Le document est ouvert en lecture bloquée pour éviter tout écrasement.
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/workspace/${params.workspaceId}/docs`)}
+          >
+            Retour
+          </Button>
+          <Button onClick={() => void loadDoc()}>Réessayer</Button>
+        </div>
       </div>
     );
   }
@@ -131,9 +202,14 @@ export default function DocEditorPage() {
             onChange={(e) => setTitle(e.target.value)}
             className="text-3xl md:text-4xl lg:text-5xl font-bold border-none shadow-none focus-visible:ring-0 px-0 h-auto mb-6 md:mb-8 bg-transparent"
             placeholder="Titre du document..."
+            aria-label="Titre du document"
           />
           
-          <div className="prose prose-slate dark:prose-invert max-w-none">
+          <div
+            className="prose prose-slate dark:prose-invert max-w-none"
+            role="group"
+            aria-label="Contenu du document"
+          >
             {/* We apply some custom styling to override Quill's defaults to match our theme better */}
             <style jsx global>{`
               .ql-container {

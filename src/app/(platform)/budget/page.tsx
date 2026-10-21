@@ -10,6 +10,8 @@ import {
   useDeleteBudget,
 } from "@/hooks/use-budgets";
 import { PageHeader } from "@/components/shared/page-header";
+import { ErrorState } from "@/components/shared/error-state";
+import { useToast } from "@/components/ui/use-toast";
 import { BudgetCard } from "@/components/budget/budget-card";
 import { BudgetFormDialog } from "@/components/budget/budget-form-dialog";
 import { BudgetPageSkeleton } from "@/components/budget/budget-skeleton";
@@ -32,7 +34,8 @@ const item = {
 
 export default function BudgetPage() {
   const { currentWorkspace } = useWorkspace();
-  const { budgets, isLoading, mutate } = useBudgets(currentWorkspace?.id);
+  const { budgets, isLoading, isError, mutate } = useBudgets(currentWorkspace?.id);
+  const { toast } = useToast();
   const { createBudget } = useCreateBudget();
   const { updateBudget } = useUpdateBudget();
   const { deleteBudget } = useDeleteBudget();
@@ -73,14 +76,35 @@ export default function BudgetPage() {
   };
 
   const handleDelete = async (budgetId: string) => {
-    await deleteBudget(budgetId);
-    mutate();
+    try {
+      await deleteBudget(budgetId);
+      toast({ title: "Budget supprimé" });
+      mutate();
+    } catch (err) {
+      toast({
+        title: "Suppression impossible",
+        description: err instanceof Error ? err.message : "Une erreur est survenue.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!currentWorkspace) {
     return (
       <div className="mx-auto max-w-6xl p-3 md:p-6">
         <p className="text-muted-foreground">Sélectionnez un espace de travail pour voir vos budgets.</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-6xl p-3 md:p-6">
+        <ErrorState
+          title="Impossible de charger les budgets"
+          description="Les budgets de cet espace n'ont pas pu être récupérés."
+          onRetry={() => mutate()}
+        />
       </div>
     );
   }

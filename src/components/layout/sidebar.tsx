@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useUnifiedSession } from "@/hooks/use-unified-session";
@@ -133,6 +134,26 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
     return pathname?.startsWith(href);
   };
 
+  const handleSwitchWorkspace = (workspace: (typeof workspaces)[number]) => {
+    setCurrentWorkspace(workspace);
+    onCloseSheet?.();
+    if (pathname?.startsWith("/workspace/")) {
+      router.push(`/workspace/${workspace.id}/dashboard`);
+    }
+  };
+
+  const favoriteHref = (favorite: FavoriteItem): string | null => {
+    if (favorite.type === "task") return `/task/${favorite.targetId}`;
+    if (!currentWorkspace) return null;
+    if (favorite.type === "space") {
+      return `/workspace/${currentWorkspace.id}/space/${favorite.spaceId}`;
+    }
+    if (favorite.type === "list") {
+      return `/workspace/${currentWorkspace.id}/space/${favorite.spaceId}/list/${favorite.targetId}/list-view`;
+    }
+    return null;
+  };
+
   const sectionHeaderClass = "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-3 mb-1.5 flex items-center h-6";
 
   return (
@@ -147,7 +168,10 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
         <div className={cn("shrink-0 pb-2 pt-4 transition-all duration-300", collapsed ? "px-2" : "px-4")}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/10 hover:shadow-sm group/ws-btn outline-none ring-primary focus-visible:ring-2 bg-sidebar/10">
+              <button
+                className="w-full flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/10 hover:shadow-sm group/ws-btn outline-none ring-primary focus-visible:ring-2 bg-sidebar/10"
+                aria-label="Changer d'espace de travail"
+              >
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm transition-transform duration-200 group-hover/ws-btn:scale-105"
                   style={{
@@ -166,7 +190,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                         Espace de travail
                       </span>
                     </div>
-                    <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-colors group-hover/ws-btn:text-primary" />
+                    <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-colors group-hover/ws-btn:text-primary" aria-hidden="true" />
                   </div>
                 )}
               </button>
@@ -177,18 +201,19 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
               {workspaces.map((ws) => (
                 <DropdownMenuItem
                   key={ws.id}
-                  onClick={() => setCurrentWorkspace(ws)}
+                  onClick={() => handleSwitchWorkspace(ws)}
                   className="flex items-center gap-3 cursor-pointer py-2 rounded-md"
                 >
                   <div
                     className="flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold text-white shadow-sm"
                     style={{ backgroundColor: ws.color ?? "#7C3AED" }}
+                    aria-hidden="true"
                   >
                     {ws.name[0]?.toUpperCase()}
                   </div>
                   <span className="flex-1 truncate font-medium">{ws.name}</span>
                   {ws.id === currentWorkspace?.id && (
-                    <Check className="h-4 w-4 text-primary" />
+                    <Check className="h-4 w-4 text-primary" aria-hidden="true" />
                   )}
                 </DropdownMenuItem>
               ))}
@@ -197,7 +222,7 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                 onSelect={(e) => { e.preventDefault(); handleCreateWorkspace(); }}
                 className="cursor-pointer text-primary py-2 font-medium"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                 Créer un espace
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -215,15 +240,11 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
               {navItems.map((item) => {
                 const active = isActive(item.href);
                 const content = (
-                  <button
-                    onClick={() => {
-                      if (item.label === "Rechercher") {
-                        const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });
-                        document.dispatchEvent(event);
-                        return;
-                      }
-                      router.push(item.href);
-                    }}
+                  <Link
+                    href={item.href}
+                    onClick={() => onCloseSheet?.()}
+                    aria-current={active ? "page" : undefined}
+                    aria-label={collapsed ? item.label : undefined}
                     className={cn(
                       "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
                       active
@@ -234,22 +255,31 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                     )}
                   >
                     <span className="relative flex items-center justify-center shrink-0">
-                      <item.icon className={cn("h-[18px] w-[18px] transition-transform duration-200", active ? "scale-110" : "group-hover:scale-110")} />
+                      <item.icon
+                        className={cn("h-[18px] w-[18px] transition-transform duration-200", active ? "scale-110" : "group-hover:scale-110")}
+                        aria-hidden="true"
+                      />
                       {item.badge !== undefined && item.badge > 0 && collapsed && (
-                        <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-sidebar" />
+                        <span
+                          aria-hidden="true"
+                          className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-sidebar"
+                        />
                       )}
                     </span>
                     {!collapsed && (
                       <>
                         <span className="flex-1 text-left truncate">{item.label}</span>
                         {item.badge !== undefined && item.badge > 0 && (
-                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white shadow-sm">
+                          <span
+                            aria-hidden="true"
+                            className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white shadow-sm"
+                          >
                             {item.badge > 99 ? "99+" : item.badge}
                           </span>
                         )}
                       </>
                     )}
-                  </button>
+                  </Link>
                 );
                 
                 if (collapsed) {
@@ -294,8 +324,15 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
             {currentWorkspace && (
               <div className="flex flex-col gap-[2px]">
                 {!collapsed && <div className={sectionHeaderClass}>Connaissances</div>}
-                <button
-                  onClick={() => router.push(`/workspace/${currentWorkspace.id}/docs`)}
+                <Link
+                  href={`/workspace/${currentWorkspace.id}/docs`}
+                  onClick={() => onCloseSheet?.()}
+                  aria-current={
+                    pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`)
+                      ? "page"
+                      : undefined
+                  }
+                  aria-label={collapsed ? "Documents" : undefined}
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200 outline-none ring-primary focus-visible:ring-2",
                     pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`)
@@ -305,10 +342,13 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                   title={collapsed ? "Docs" : undefined}
                 >
                   <span className="flex items-center justify-center shrink-0">
-                    <FileText className={cn("h-[18px] w-[18px] transition-transform duration-200", pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`) ? "scale-110" : "group-hover:scale-110")} />
+                    <FileText
+                      className={cn("h-[18px] w-[18px] transition-transform duration-200", pathname?.startsWith(`/workspace/${currentWorkspace.id}/docs`) ? "scale-110" : "group-hover:scale-110")}
+                      aria-hidden="true"
+                    />
                   </span>
                   {!collapsed && <span className="flex-1 text-left truncate">Documents</span>}
-                </button>
+                </Link>
               </div>
             )}
 
@@ -316,27 +356,28 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
             {favorites.length > 0 && (
               <div className="flex flex-col gap-[2px]">
                 {!collapsed && <div className={sectionHeaderClass}>Favoris</div>}
-                {favorites.map((fav: FavoriteItem) => (
-                  <button
-                    key={fav.id}
-                    onClick={() => {
-                      if (fav.type === "space" && currentWorkspace) {
-                        router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}`);
-                      } else if (fav.type === "list" && currentWorkspace) {
-                        router.push(`/workspace/${currentWorkspace.id}/space/${fav.spaceId}/list/${fav.targetId}/list-view`);
-                      } else if (fav.type === "task") {
-                        router.push(`/task/${fav.targetId}`);
-                      }
-                    }}
-                    className="group flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200 text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
-                    title={collapsed ? fav.name : undefined}
-                  >
-                    <span className="flex items-center justify-center shrink-0">
-                      <Star className="h-[16px] w-[16px] fill-yellow-400 text-yellow-400 transition-transform duration-200 group-hover:scale-110" />
-                    </span>
-                    {!collapsed && <span className="flex-1 text-left truncate">{fav.name}</span>}
-                  </button>
-                ))}
+                {favorites.map((fav: FavoriteItem) => {
+                  const href = favoriteHref(fav);
+                  if (!href) return null;
+                  return (
+                    <Link
+                      key={fav.id}
+                      href={href}
+                      onClick={() => onCloseSheet?.()}
+                      aria-label={collapsed ? fav.name : undefined}
+                      className="group flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200 text-sidebar-foreground/75 hover:bg-primary/5 hover:text-primary"
+                      title={collapsed ? fav.name : undefined}
+                    >
+                      <span className="flex items-center justify-center shrink-0">
+                        <Star
+                          className="h-[16px] w-[16px] fill-yellow-400 text-yellow-400 transition-transform duration-200 group-hover:scale-110"
+                          aria-hidden="true"
+                        />
+                      </span>
+                      {!collapsed && <span className="flex-1 text-left truncate">{fav.name}</span>}
+                    </Link>
+                  );
+                })}
               </div>
             )}
 
@@ -349,13 +390,19 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                     onClick={handleCreateSpace}
                     className="rounded-md p-1 opacity-0 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200 group-hover/spaces:opacity-100"
                     title="Ajouter un espace"
+                    aria-label="Ajouter un espace"
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
                 )}
                 {collapsed && (
-                  <button onClick={handleCreateSpace} className="mx-auto rounded-md p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200" title="Ajouter un espace">
-                    <Plus className="h-4 w-4" />
+                  <button
+                    onClick={handleCreateSpace}
+                    className="mx-auto rounded-md p-1 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-200"
+                    title="Ajouter un espace"
+                    aria-label="Ajouter un espace"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -400,12 +447,14 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
               onClick={toggle}
               className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-muted-foreground transition-all duration-200 hover:bg-primary/5 hover:text-primary group/collapse"
               title={collapsed ? "Développer la barre latérale" : "Réduire la barre latérale"}
+              aria-label={collapsed ? "Développer la barre latérale" : "Réduire la barre latérale"}
+              aria-expanded={!collapsed}
             >
               {collapsed ? (
-                <PanelLeft className="h-[18px] w-[18px] transition-transform duration-200 group-hover/collapse:scale-110" />
+                <PanelLeft className="h-[18px] w-[18px] transition-transform duration-200 group-hover/collapse:scale-110" aria-hidden="true" />
               ) : (
                 <>
-                  <PanelLeftClose className="h-[18px] w-[18px] mr-2.5 transition-transform duration-200 group-hover/collapse:scale-110" />
+                  <PanelLeftClose className="h-[18px] w-[18px] mr-2.5 transition-transform duration-200 group-hover/collapse:scale-110" aria-hidden="true" />
                   <span className="text-xs font-medium">Réduire</span>
                 </>
               )}
@@ -418,9 +467,12 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
           <div className="p-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/5 hover:shadow-sm group/user-btn outline-none">
+                <button
+                  className="flex w-full items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-primary/5 hover:shadow-sm group/user-btn outline-none"
+                  aria-label="Menu du compte"
+                >
                   <Avatar className="h-8 w-8 shrink-0 border border-primary/10 shadow-sm transition-transform duration-200 group-hover/user-btn:scale-105">
-                    <AvatarImage src={user?.image ?? undefined} />
+                    <AvatarImage src={user?.image ?? undefined} alt="" />
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                       {initials}
                     </AvatarFallback>
@@ -496,8 +548,11 @@ export function Sidebar({ onCloseSheet }: { onCloseSheet?: () => void } = {}) {
                 <DropdownMenuSeparator className="my-1" />
                 <DropdownMenuItem
                   onClick={() => {
-                    signOut({ callbackUrl: "/login" }).catch(() => {});
-                    mobileLogout();
+                    void (async () => {
+                      await mobileLogout();
+                      await signOut({ redirect: false }).catch(() => {});
+                      window.location.replace("/login");
+                    })();
                   }}
                   className="cursor-pointer rounded-lg py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
                 >

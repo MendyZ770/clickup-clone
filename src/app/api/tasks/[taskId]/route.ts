@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { workspaceChannelName } from "@/lib/pusher-channels";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { evaluateAutomations } from "@/lib/automation-engine";
@@ -6,10 +7,30 @@ import { updateTaskSchema } from "@/lib/validations/task";
 import { logActivity } from "@/lib/activity-logger";
 import { triggerCalendarSync } from "@/lib/calendar-sync";
 import { pusherServer } from "@/lib/pusher-server";
+import { sendNotificationToUsers } from "@/lib/notifications";
+import type { Prisma } from "@prisma/client";
 
 interface RouteContext {
   params: Promise<{ taskId: string }>;
 }
+
+const taskResponseInclude = {
+  status: true,
+  assignees: {
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true } },
+    },
+  },
+  creator: {
+    select: { id: true, name: true, email: true, image: true },
+  },
+  taskTags: {
+    include: { tag: true },
+  },
+  _count: {
+    select: { subtasks: true, comments: true },
+  },
+} satisfies Prisma.TaskInclude;
 
 export async function GET(request: Request, context: RouteContext) {
   try {
@@ -89,9 +110,10 @@ export async function GET(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    // Remove nested access-check data from response
-    const { list: _list, ...taskData } = task;
+    // Remove nested access-check data and the lock PIN from response
+    const { list: _list, lockedPin: _lockedPin, ...taskData } = task;
     void _list;
+    void _lockedPin;
     return NextResponse.json({ ...taskData, listId: task.listId });
   } catch (error) {
     console.error("GET /api/tasks/[id] error:", error);
@@ -155,6 +177,26 @@ export async function PATCH(request: Request, context: RouteContext) {
           { status: 403 }
         );
       }
+      const pinMatches =
+        !existingTask.lockedPin || data.lockedPin === existingTask.lockedPin;
+      if (!pinMatches) {
+        return NextResponse.json(
+          { error: "Code de déverrouillage incorrect." },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (
+      data.locked === true &&
+      !existingTask.locked &&
+      !data.lockedPin &&
+      !existingTask.lockedPin
+    ) {
+      return NextResponse.json(
+        { error: "Un code à 4 chiffres est requis pour verrouiller la tâche." },
+        { status: 400 }
+      );
     }
 
     const updateData: Record<string, unknown> = {};
@@ -200,22 +242,63 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
-    if (data.statusId !== undefined && data.statusId !== existingTask.statusId) {
-      let targetStatusId = data.statusId;
-      let newStatusName = data.statusId;
-      
-      if (data.statusId.startsWith("global:")) {
-        const statusName = data.statusId.replace("global:", "");
+    // Déplacer la tâche vers une autre liste n'est autorisé qu'au sein du même workspace
+    let targetListId = existingTask.listId;
+    if (data.listId !== undefined && data.listId !== existingTask.listId) {
+      const targetList = await prisma.list.findUnique({
+        where: { id: data.listId },
+        select: { id: true, space: { select: { workspaceId: true } } },
+      });
+      if (
+        !targetList ||
+        targetList.space.workspaceId !== existingTask.list.space.workspace.id
+      ) {
+        return NextResponse.json(
+          { error: "Liste cible introuvable" },
+          { status: 403 }
+        );
+      }
+      targetListId = targetList.id;
+      updateData.listId = targetList.id;
+      activities.push({
+        field: "list",
+        oldValue: existingTask.listId,
+        newValue: targetList.id,
+      });
+    }
+
+    const isMovingList = targetListId !== existingTask.listId;
+    const requestedStatusId =
+      data.statusId !== undefined &&
+      (data.statusId !== existingTask.statusId || isMovingList)
+        ? data.statusId
+        : undefined;
+
+    if (requestedStatusId !== undefined) {
+      let targetStatusId: string;
+      let newStatusName: string;
+
+      if (requestedStatusId.startsWith("global:")) {
+        const statusName = requestedStatusId.slice("global:".length).trim();
+        if (!statusName) {
+          return NextResponse.json(
+            { error: "Nom de statut invalide" },
+            { status: 400 }
+          );
+        }
         newStatusName = statusName;
-        
+
         let targetStatus = await prisma.status.findFirst({
-          where: { listId: existingTask.listId, name: statusName },
+          where: {
+            listId: targetListId,
+            name: { equals: statusName, mode: "insensitive" },
+          },
         });
-        
+
         if (!targetStatus) {
           const last = await prisma.status.findFirst({
-            where: { listId: existingTask.listId },
-            orderBy: { order: "desc" }
+            where: { listId: targetListId },
+            orderBy: { order: "desc" },
           });
           targetStatus = await prisma.status.create({
             data: {
@@ -223,23 +306,47 @@ export async function PATCH(request: Request, context: RouteContext) {
               color: "#6B7280",
               type: "custom",
               order: last ? last.order + 1 : 0,
-              listId: existingTask.listId,
-            }
+              listId: targetListId,
+            },
           });
         }
         targetStatusId = targetStatus.id;
       } else {
-        const newStatus = await prisma.status.findUnique({
-          where: { id: data.statusId },
+        const newStatus = await prisma.status.findFirst({
+          where: { id: requestedStatusId, listId: targetListId },
         });
-        if (newStatus) newStatusName = newStatus.name;
+        if (!newStatus) {
+          return NextResponse.json(
+            { error: "Statut invalide pour cette liste" },
+            { status: 400 }
+          );
+        }
+        targetStatusId = newStatus.id;
+        newStatusName = newStatus.name;
       }
-      
+
       updateData.statusId = targetStatusId;
       activities.push({
         field: "status",
         oldValue: existingTask.status.name,
         newValue: newStatusName,
+      });
+    } else if (isMovingList) {
+      const firstStatus = await prisma.status.findFirst({
+        where: { listId: targetListId },
+        orderBy: { order: "asc" },
+      });
+      if (!firstStatus) {
+        return NextResponse.json(
+          { error: "La liste cible n'a aucun statut" },
+          { status: 400 }
+        );
+      }
+      updateData.statusId = firstStatus.id;
+      activities.push({
+        field: "status",
+        oldValue: existingTask.status.name,
+        newValue: firstStatus.name,
       });
     }
 
@@ -258,15 +365,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       updateData.position = data.position;
     }
 
-    if (data.listId !== undefined && data.listId !== existingTask.listId) {
-      updateData.listId = data.listId;
-      activities.push({
-        field: "list",
-        oldValue: existingTask.listId,
-        newValue: data.listId,
-      });
-    }
-
     if (data.locked !== undefined && data.locked !== existingTask.locked) {
       updateData.locked = data.locked;
       // Quand on déverrouille, on efface le PIN
@@ -278,7 +376,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
-    if (data.lockedPin !== undefined) {
+    if (data.locked !== false && data.lockedPin !== undefined) {
       updateData.lockedPin = data.lockedPin ?? null;
     }
 
@@ -292,28 +390,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
       data: updateData,
-      include: {
-        status: true,
-        assignees: {
-          include: {
-            user: { select: { id: true, name: true, email: true, image: true } }
-          }
-        },
-        creator: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        taskTags: {
-          include: { tag: true },
-        },
-        _count: {
-          select: { subtasks: true, comments: true },
-        },
-      },
+      include: taskResponseInclude,
     });
 
     // Trigger calendar sync if dueDate was modified
     if (updateData.dueDate !== undefined) {
-      triggerCalendarSync();
+      triggerCalendarSync(user.id);
     }
 
     // Log all field changes
@@ -328,20 +410,73 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
+    let automationApplied = false;
+    if (activities.some((activity) => activity.field === "status")) {
+      automationApplied =
+        (await evaluateAutomations(
+          updatedTask.listId,
+          taskId,
+          "STATUS_CHANGED",
+          existingTask,
+          updatedTask,
+          user.id
+        )) || automationApplied;
+    }
+    if (activities.some((activity) => activity.field === "priority")) {
+      automationApplied =
+        (await evaluateAutomations(
+          updatedTask.listId,
+          taskId,
+          "PRIORITY_CHANGED",
+          existingTask,
+          updatedTask,
+          user.id
+        )) || automationApplied;
+    }
+
+    const finalTask = automationApplied
+      ? (await prisma.task.findUnique({
+          where: { id: taskId },
+          include: taskResponseInclude,
+        })) ?? updatedTask
+      : updatedTask;
+
+    // Notifier les assignés d'un changement de statut
+    const statusChange = activities.find((activity) => activity.field === "status");
+    if (statusChange) {
+      const assigneeIds = finalTask.assignees.map((assignee) => assignee.userId);
+      if (assigneeIds.length > 0) {
+        await sendNotificationToUsers(
+          assigneeIds,
+          {
+            type: "taskStatusChanged",
+            message: `« ${finalTask.title} » : ${statusChange.oldValue} → ${finalTask.status.name}`,
+            link: `/task/${taskId}`,
+            title: "🔄 Statut modifié",
+            body: `${statusChange.oldValue} → ${finalTask.status.name}`,
+            tag: "task-status",
+          },
+          user.id
+        ).catch((error) => {
+          console.error("Status notification failed:", error);
+        });
+      }
+    }
+
     // Ne jamais renvoyer le PIN dans la réponse
-    const { lockedPin: _pin, ...taskWithoutPin } = updatedTask;
+    const { lockedPin: _pin, ...taskWithoutPin } = finalTask;
     void _pin;
-    
+
     try {
       await pusherServer.trigger(
-        `workspace-${existingTask.list.space.workspace.id}`,
+        workspaceChannelName(existingTask.list.space.workspace.id),
         "task:updated",
         taskWithoutPin
       );
     } catch (e) {
       console.error("Pusher error:", e);
     }
-    
+
     return NextResponse.json(taskWithoutPin);
   } catch (error) {
     console.error("PATCH /api/tasks/[id] error:", error);
@@ -403,12 +538,12 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     // Trigger calendar sync if deleted task had a due date
     if (task.dueDate) {
-      triggerCalendarSync();
+      triggerCalendarSync(user.id);
     }
 
     try {
       await pusherServer.trigger(
-        `workspace-${task.list.space.workspace.id}`,
+        workspaceChannelName(task.list.space.workspace.id),
         "task:deleted",
         { id: taskId }
       );

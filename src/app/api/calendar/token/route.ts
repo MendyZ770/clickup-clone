@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+
+// Un flux calendrier est accessible sans session : le jeton doit être imprévisible.
+const newFeedToken = () => randomBytes(24).toString("base64url");
 
 // GET: Return user's existing token (or create one if none exists)
 export async function GET() {
@@ -16,7 +20,7 @@ export async function GET() {
 
     if (!calendarToken) {
       calendarToken = await prisma.calendarToken.create({
-        data: { userId: user.id },
+        data: { userId: user.id, token: newFeedToken() },
       });
     }
 
@@ -43,9 +47,9 @@ export async function POST() {
       where: { userId: user.id },
     });
 
-    // Create a new token
+    // Create a new token (secret cryptographique, pas un cuid prévisible)
     const calendarToken = await prisma.calendarToken.create({
-      data: { userId: user.id },
+      data: { userId: user.id, token: newFeedToken() },
     });
 
     return NextResponse.json({ token: calendarToken.token });

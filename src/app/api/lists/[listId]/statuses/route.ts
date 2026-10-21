@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 import { z } from "zod";
 
 const createStatusSchema = z.object({
@@ -188,6 +189,13 @@ export async function DELETE(request: Request, context: RouteContext) {
     const list = await verifyListAccess(listId, user.id);
     if (!list) {
       return NextResponse.json({ error: "List not found" }, { status: 404 });
+    }
+
+    if (!(await isWorkspaceAdmin(list.space.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer un statut" },
+        { status: 403 }
+      );
     }
 
     // Verify status belongs to this list

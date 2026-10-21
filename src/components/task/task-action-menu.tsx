@@ -28,6 +28,10 @@ import {
 import { useDeleteTask, useUpdateTask } from "@/hooks/use-tasks";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useToast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { SetPinDialog } from "./set-pin-dialog";
+import { PinDialog } from "./pin-dialog";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -56,16 +60,22 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
   const { toast } = useToast();
   const [duplicating, setDuplicating] = useState(false);
   const [togglingLock, setTogglingLock] = useState(false);
+  const [setPinOpen, setSetPinOpen] = useState(false);
+  const [unlockPinOpen, setUnlockPinOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const handleToggleLock = async () => {
+  const applyLockChange = async (newLocked: boolean, pin: string) => {
     setTogglingLock(true);
     try {
-      await updateTask(taskId, { locked: !locked } as Parameters<typeof updateTask>[1]);
+      await updateTask(taskId, {
+        locked: newLocked,
+        lockedPin: pin,
+      } as Parameters<typeof updateTask>[1]);
       toast({
-        title: locked ? "Tâche déverrouillée" : "Tâche verrouillée",
-        description: locked
-          ? "Vous pouvez à nouveau la modifier ou la supprimer."
-          : "La tâche est protégée contre les modifications et suppressions.",
+        title: newLocked ? "Tâche verrouillée" : "Tâche déverrouillée",
+        description: newLocked
+          ? "La tâche est protégée contre les modifications et suppressions."
+          : "Vous pouvez à nouveau la modifier ou la supprimer.",
       });
       onAction?.();
     } catch (err) {
@@ -77,6 +87,11 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
     } finally {
       setTogglingLock(false);
     }
+  };
+
+  const handleToggleLock = () => {
+    if (locked) setUnlockPinOpen(true);
+    else setSetPinOpen(true);
   };
 
   const { data: lists } = useSWR<ListInfo[]>(
@@ -127,6 +142,8 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         description: "Impossible de supprimer la tâche",
         variant: "destructive",
       });
+    } finally {
+      setConfirmDelete(false);
     }
   };
 
@@ -136,9 +153,8 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
       const res = await fetch(`/api/tasks/${taskId}`);
       if (!res.ok) return;
       const task = await res.json();
-      await fetch("/api/templates", {
+      await apiJson("/api/templates", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: task.title,
           description: task.description,
@@ -147,8 +163,8 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         }),
       });
       toast({ title: "Modèle enregistré", description: `« ${task.title} » ajouté aux modèles` });
-    } catch {
-      toast({ title: "Erreur", description: "Impossible d'enregistrer le modèle", variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -159,6 +175,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
   const otherLists = (lists ?? []).filter((l) => l.id !== currentListId);
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
@@ -223,7 +240,7 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={handleDelete}
+          onClick={() => setConfirmDelete(true)}
           disabled={locked}
           className="text-red-500 focus:text-red-500"
         >
@@ -232,5 +249,34 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <ConfirmDialog
+      open={confirmDelete}
+      onOpenChange={setConfirmDelete}
+      title="Supprimer la tâche"
+      description="Cette action est irréversible. Les sous-tâches, commentaires et pièces jointes seront également supprimés."
+      confirmLabel="Supprimer"
+      onConfirm={handleDelete}
+    />
+
+    <SetPinDialog
+      open={setPinOpen}
+      onConfirm={(pin) => {
+        setSetPinOpen(false);
+        void applyLockChange(true, pin);
+      }}
+      onCancel={() => setSetPinOpen(false)}
+    />
+
+    <PinDialog
+      open={unlockPinOpen}
+      taskId={taskId}
+      onSuccess={(pin) => {
+        setUnlockPinOpen(false);
+        void applyLockChange(false, pin);
+      }}
+      onCancel={() => setUnlockPinOpen(false)}
+    />
+    </>
   );
 }

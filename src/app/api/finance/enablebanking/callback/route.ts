@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { getCurrentUser, isWorkspaceMember } from "@/lib/auth-helpers";
 import { fetchEnableBanking } from "@/lib/enablebanking";
 import { prisma } from "@/lib/prisma";
+import { verifySignedState } from "@/lib/signed-state";
 
 export async function POST(req: Request) {
   try {
@@ -16,19 +17,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     }
 
-    // Décoder le state
-    let stateData: any;
-    try {
-      stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
-    } catch (e) {
-      return NextResponse.json({ error: "Invalid state" }, { status: 400 });
-    }
+    const stateData = verifySignedState<{
+      workspaceId?: string;
+      userId?: string;
+    }>(state);
 
-    if (stateData.userId !== user.id) {
-      return NextResponse.json({ error: "State mismatch" }, { status: 403 });
+    if (!stateData?.workspaceId || stateData.userId !== user.id) {
+      return NextResponse.json({ error: "Invalid state" }, { status: 403 });
     }
 
     const workspaceId = stateData.workspaceId;
+    if (!(await isWorkspaceMember(workspaceId, user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Échanger le code contre une session
     const redirectUrl = process.env.NEXT_PUBLIC_APP_URL 
@@ -52,18 +53,54 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No accounts found" }, { status: 400 });
     }
 
-    // Sauvegarder chaque compte en BDD
+    // Sauvegarder chaque compte en BDD sans créer de doublons lors des reconnexions
+    const seenIds = new Set<string>();
     for (const acc of accountsData) {
-      // acc.uid is usually the unique id, fallback to acc.account_id or acc
-      const accountId = acc.uid || acc.account_id || acc.id || acc;
-      // On génère un identifiant unique combinant la session et l'account pour Enable Banking
-      const ebId = `${sessionId}:${accountId}`;
+      // identification_hash est stable entre sessions ; à défaut on retombe sur l'uid
+      const accountId =
+        (typeof acc === "object" && acc !== null
+          ? acc.identification_hash || acc.uid || acc.account_id || acc.id || acc.iban
+          : acc) ?? acc;
+      if (accountId === undefined || accountId === null || accountId === "") {
+        console.warn("Enable Banking account without usable identifier, skipping", acc);
+        continue;
+      }
+      const stableId = String(accountId);
+      if (seenIds.has(stableId)) continue;
+      seenIds.add(stableId);
 
       // On récupère les infos basiques (IBAN ou nom)
       let name = "Compte Bancaire";
-      if (acc.iban) name = `Compte ${acc.iban.slice(-4)}`;
-      else if (acc.name) name = acc.name;
-      else if (typeof acc === "string") name = `Compte ${acc.slice(-4)}`;
+      if (typeof acc === "object" && acc !== null) {
+        if (acc.iban) name = `Compte ${String(acc.iban).slice(-4)}`;
+        else if (acc.name) name = String(acc.name);
+      } else if (typeof acc === "string" && acc.length > 0) {
+        name = `Compte ${acc.slice(-4)}`;
+      }
+
+      // Ancien format d'identifiant : `${sessionId}:${accountId}`
+      const existing = await prisma.financeAccount.findFirst({
+        where: {
+          userId: user.id,
+          workspaceId,
+          OR: [
+            { ebAccountId: stableId },
+            { ebAccountId: { endsWith: `:${stableId}` } },
+          ],
+        },
+        select: { id: true, ebAccountId: true },
+      });
+
+      if (existing) {
+        if (existing.ebAccountId !== stableId) {
+          // Migration vers l'identifiant stable pour survivre aux prochaines sessions
+          await prisma.financeAccount.update({
+            where: { id: existing.id },
+            data: { ebAccountId: stableId },
+          });
+        }
+        continue;
+      }
 
       await prisma.financeAccount.create({
         data: {
@@ -72,7 +109,7 @@ export async function POST(req: Request) {
           balance: 0,
           workspaceId,
           userId: user.id,
-          ebAccountId: ebId,
+          ebAccountId: stableId,
           color: "#4F46E5", // Indigo color for Enable Banking
         },
       });

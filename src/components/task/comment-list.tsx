@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeDate } from "@/lib/dates";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommentForm } from "./comment-form";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,7 +41,7 @@ export function CommentList({ taskId, workspaceId }: CommentListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">Comments</h3>
+      <h3 className="text-sm font-semibold">Commentaires</h3>
 
       <CommentForm
         taskId={taskId}
@@ -79,9 +79,7 @@ export function CommentList({ taskId, workspaceId }: CommentListProps) {
                     {comment.user.name ?? comment.user.email}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.createdAt), {
-                      addSuffix: true,
-                    })}
+                    {formatRelativeDate(comment.createdAt)}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
@@ -92,7 +90,7 @@ export function CommentList({ taskId, workspaceId }: CommentListProps) {
           ))}
           {comments?.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No comments yet
+              Aucun commentaire pour le moment
             </p>
           )}
         </div>

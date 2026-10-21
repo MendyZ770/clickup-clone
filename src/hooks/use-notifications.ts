@@ -34,23 +34,58 @@ export function useNotifications() {
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
-      await fetch("/api/notifications/mark-read", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notificationId }),
-      });
-      mutate();
+      try {
+        await mutate(
+          async (current) => {
+            const res = await fetch("/api/notifications/mark-read", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ notificationId }),
+            });
+            if (!res.ok) throw new Error("Failed to mark notification as read");
+            return current;
+          },
+          {
+            optimisticData: (current) =>
+              (current ?? []).map((n) =>
+                n.id === notificationId ? { ...n, read: true } : n
+              ),
+            rollbackOnError: true,
+            revalidate: true,
+            populateCache: false,
+          }
+        );
+        return true;
+      } catch {
+        return false;
+      }
     },
     [mutate]
   );
 
   const markAllAsRead = useCallback(async () => {
-    await fetch("/api/notifications/mark-read", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ all: true }),
-    });
-    mutate();
+    try {
+      await mutate(
+        async (current) => {
+          const res = await fetch("/api/notifications/mark-read", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ all: true }),
+          });
+          if (!res.ok) throw new Error("Failed to mark notifications as read");
+          return current;
+        },
+        {
+          optimisticData: (current) => (current ?? []).map((n) => ({ ...n, read: true })),
+          rollbackOnError: true,
+          revalidate: true,
+          populateCache: false,
+        }
+      );
+      return true;
+    } catch {
+      return false;
+    }
   }, [mutate]);
 
   return {

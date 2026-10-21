@@ -12,6 +12,7 @@ import {
 import { Banknote, Bitcoin, PiggyBank, Landmark, CreditCard, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { formatCurrency } from "@/lib/utils";
+import type { FinanceAccountSerialized } from "@/hooks/use-finance";
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   bank: Landmark,
@@ -28,7 +29,7 @@ function TrendingUpIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-type FinanceAccountWithCount = import("@prisma/client").FinanceAccount & {
+type FinanceAccountWithCount = FinanceAccountSerialized & {
   _count?: { transactions: number };
 };
 
@@ -53,7 +54,8 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: FinanceAc
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer ce compte et toutes ses transactions ?")) return;
     try {
-      const res = await fetch(`/api/finance/accounts/${id}`, { method: "DELETE" });
+      // force=true confirme la suppression de l'historique après confirmation utilisateur
+      const res = await fetch(`/api/finance/accounts/${id}?force=true`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Request failed" }));
         throw new Error(err.error || "Failed to delete account");

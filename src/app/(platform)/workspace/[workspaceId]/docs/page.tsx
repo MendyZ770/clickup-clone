@@ -5,8 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { Plus, FileText, Loader2, MoreVertical, Trash } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 import { Button } from "@/components/ui/button";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -49,21 +51,17 @@ export default function DocsListPage() {
   const handleCreateDoc = async () => {
     setIsCreating(true);
     try {
-      const res = await fetch("/api/docs", {
+      const newDoc = await apiJson<{ id: string }>("/api/docs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: "Document sans titre",
           workspaceId: params.workspaceId,
         }),
       });
 
-      if (res.ok) {
-        const newDoc = await res.json();
-        router.push(`/workspace/${params.workspaceId}/docs/${newDoc.id}`);
-      }
+      router.push(`/workspace/${params.workspaceId}/docs/${newDoc.id}`);
     } catch (error) {
-      console.error("Failed to create doc", error);
+      toast({ title: "Création impossible", description: apiErrorMessage(error), variant: "destructive" });
       setIsCreating(false);
     }
   };
@@ -73,10 +71,10 @@ export default function DocsListPage() {
     if (!confirm("Voulez-vous vraiment supprimer ce document ?")) return;
 
     try {
-      await fetch(`/api/docs/${docId}`, { method: "DELETE" });
+      await apiJson(`/api/docs/${docId}`, { method: "DELETE" });
       setDocs(docs.filter((d) => d.id !== docId));
     } catch (error) {
-      console.error("Failed to delete doc", error);
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 

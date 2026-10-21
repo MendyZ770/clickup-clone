@@ -24,6 +24,7 @@ interface TaskFilters {
   priority?: string;
   assigneeId?: string;
   search?: string;
+  dateFilter?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }
@@ -41,6 +42,7 @@ export function useTasks(
   if (filters?.priority) searchParams.set("priority", filters.priority);
   if (filters?.assigneeId) searchParams.set("assigneeId", filters.assigneeId);
   if (filters?.search) searchParams.set("search", filters.search);
+  if (filters?.dateFilter) searchParams.set("dateFilter", filters.dateFilter);
   if (filters?.sortBy) searchParams.set("sortBy", filters.sortBy);
   if (filters?.sortOrder) searchParams.set("sortOrder", filters.sortOrder);
 

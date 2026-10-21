@@ -31,7 +31,7 @@ export function EmptyState({
       )}
     >
       <div className="mb-4 rounded-full bg-muted p-4">
-        <Icon className="h-9 w-9 text-muted-foreground" />
+        <Icon className="h-9 w-9 text-muted-foreground" aria-hidden="true" />
       </div>
       <h3 className="mb-1 text-xl font-semibold">{title}</h3>
       <p className="mb-4 max-w-sm text-base text-muted-foreground">

@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/popover";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -120,18 +122,15 @@ export function TaskDependencies({
     async (targetTaskId: string) => {
       setCreating(true);
       try {
-        const res = await fetch(`/api/tasks/${taskId}/dependencies`, {
+        await apiJson(`/api/tasks/${taskId}/dependencies`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ targetTaskId, type: selectedType }),
         });
-        if (res.ok) {
-          mutate();
-          setAddDialogOpen(false);
-          setSearchQuery("");
-        }
-      } catch {
-        // La dépendance n'a pas pu être ajoutée (déjà existante ou erreur)
+        mutate();
+        setAddDialogOpen(false);
+        setSearchQuery("");
+      } catch (error) {
+        toast({ title: "Ajout impossible", description: apiErrorMessage(error), variant: "destructive" });
       } finally {
         setCreating(false);
       }
@@ -143,13 +142,13 @@ export function TaskDependencies({
     async (dependencyId: string) => {
       setRemoving(dependencyId);
       try {
-        await fetch(
+        await apiJson(
           `/api/tasks/${taskId}/dependencies?dependencyId=${dependencyId}`,
           { method: "DELETE" }
         );
         mutate();
-      } catch {
-        // Erreur silencieuse — SWR re-synchro au prochain poll
+      } catch (error) {
+        toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
       } finally {
         setRemoving(null);
       }

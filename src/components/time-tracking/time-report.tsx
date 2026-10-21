@@ -14,6 +14,7 @@ import { useTimeReport } from "@/hooks/use-time-entries";
 import { formatSecondsShort } from "./timer-display";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 
 const TimeBarChart = dynamic(
   () => import("recharts").then((mod) => {
@@ -21,7 +22,7 @@ const TimeBarChart = dynamic(
     return {
       default: ({ data }: { data: { day: string; hours: number; seconds: number }[] }) => (
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={data} accessibilityLayer>
             <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}h`} />
             <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
@@ -39,7 +40,7 @@ interface TimeReportProps {
 }
 
 export function TimeReport({ workspaceId }: TimeReportProps) {
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
   const dayStart = startOfDay(now);
@@ -73,7 +74,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
   const chartData = useMemo(() => {
     if (!weeklyReport) return [];
 
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
     const dateMap = new Map<string, number>();
 
     for (const item of weeklyReport.breakdown) {
@@ -101,8 +102,8 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="h-5 w-5" />
-              Today
+              <Clock className="h-5 w-5" aria-hidden="true" />
+              Aujourd&apos;hui
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -110,7 +111,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
               {formatSecondsShort(todayReport?.totalSeconds ?? 0)}
             </p>
             <p className="text-sm text-muted-foreground">
-              {todayReport?.totalEntries ?? 0} entries
+              {todayReport?.totalEntries ?? 0} entrée{(todayReport?.totalEntries ?? 0) > 1 ? "s" : ""}
             </p>
           </CardContent>
         </Card>
@@ -118,8 +119,8 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <TrendingUp className="h-5 w-5" />
-              This Week
+              <TrendingUp className="h-5 w-5" aria-hidden="true" />
+              Cette semaine
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -127,7 +128,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
               {formatSecondsShort(weeklyReport?.totalSeconds ?? 0)}
             </p>
             <p className="text-sm text-muted-foreground">
-              {weeklyReport?.totalEntries ?? 0} entries
+              {weeklyReport?.totalEntries ?? 0} entrée{(weeklyReport?.totalEntries ?? 0) > 1 ? "s" : ""}
             </p>
           </CardContent>
         </Card>
@@ -137,10 +138,15 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">
-            Time by Day
+            Temps par jour
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <ChartDataTable
+            caption="Temps enregistré par jour cette semaine"
+            columns={["Jour", "Durée"]}
+            rows={chartData.map((entry) => [entry.day, formatSecondsShort(entry.seconds)])}
+          />
           <div className="h-48">
             <TimeBarChart data={chartData} />
           </div>
@@ -152,7 +158,7 @@ export function TimeReport({ workspaceId }: TimeReportProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              By Task (This Week)
+              Par tâche (cette semaine)
             </CardTitle>
           </CardHeader>
           <CardContent>

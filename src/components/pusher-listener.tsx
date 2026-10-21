@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useSWRConfig } from "swr";
 import { useWorkspace } from "@/providers/workspace-provider";
 import { getPusherClient } from "@/lib/pusher-client";
+import { workspaceChannelName } from "@/lib/pusher-channels";
 
 export function PusherListener() {
   const { currentWorkspace } = useWorkspace();
@@ -13,7 +14,7 @@ export function PusherListener() {
     if (!currentWorkspace?.id) return;
 
     const pusher = getPusherClient();
-    const channelName = `workspace-${currentWorkspace.id}`;
+    const channelName = workspaceChannelName(currentWorkspace.id);
     const channel = pusher.subscribe(channelName);
 
     const handleTaskChange = () => {

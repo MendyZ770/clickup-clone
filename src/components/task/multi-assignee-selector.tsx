@@ -3,10 +3,12 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { UserPlus, X } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -56,17 +58,24 @@ export function MultiAssigneeSelector({ taskId, workspaceId }: MultiAssigneeSele
   });
 
   const handleAdd = async (userId: string) => {
-    await fetch(`/api/tasks/${taskId}/assignees`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
-    mutate();
+    try {
+      await apiJson(`/api/tasks/${taskId}/assignees`, {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+      });
+      mutate();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const handleRemove = async (userId: string) => {
-    await fetch(`/api/tasks/${taskId}/assignees?userId=${userId}`, { method: "DELETE" });
-    mutate();
+    try {
+      await apiJson(`/api/tasks/${taskId}/assignees?userId=${userId}`, { method: "DELETE" });
+      mutate();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   return (

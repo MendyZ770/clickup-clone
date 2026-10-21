@@ -47,8 +47,37 @@ export async function POST(request: Request, context: RouteContext) {
     const body = await request.json().catch(() => ({}));
     const targetListId = body.listId ?? task.listId;
 
+    const targetList = await prisma.list.findUnique({
+      where: { id: targetListId },
+      select: {
+        id: true,
+        space: { select: { workspaceId: true } },
+        statuses: { orderBy: { order: "asc" }, select: { id: true } },
+      },
+    });
+
+    if (
+      !targetList ||
+      targetList.space.workspaceId !== task.list.space.workspaceId
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const targetStatusId = targetList.statuses.some(
+      (status) => status.id === task.statusId
+    )
+      ? task.statusId
+      : targetList.statuses[0]?.id;
+
+    if (!targetStatusId) {
+      return NextResponse.json(
+        { error: "La liste cible n'a aucun statut" },
+        { status: 400 }
+      );
+    }
+
     const lastTask = await prisma.task.findFirst({
-      where: { listId: targetListId, statusId: task.statusId },
+      where: { listId: targetListId, statusId: targetStatusId },
       orderBy: { position: "desc" },
     });
 
@@ -60,7 +89,7 @@ export async function POST(request: Request, context: RouteContext) {
         dueDate: task.dueDate,
         position: lastTask ? lastTask.position + 65536 : 65536,
         listId: targetListId,
-        statusId: task.statusId,
+        statusId: targetStatusId,
         creatorId: user.id,
         assignees: {
           create: task.assignees.map((a) => ({ userId: a.userId }))

@@ -29,6 +29,21 @@ export function useCapacitorPush() {
           return;
         }
 
+        // Android 8+ : le canal référencé par firebase-admin doit exister,
+        // sinon le système supprime la notification. No-op sur iOS.
+        try {
+          await PushNotifications.createChannel({
+            id: "done-notifications",
+            name: "Rappels et échéances",
+            description: "Tâches, rappels et échéances de vos espaces",
+            importance: 4,
+            visibility: 1,
+            vibration: true,
+          });
+        } catch {
+          // Canal déjà créé ou plateforme non Android.
+        }
+
         // Enregistrer auprès de FCM
         await PushNotifications.register();
 
@@ -37,12 +52,14 @@ export function useCapacitorPush() {
           "registration",
           async (token) => {
             try {
-              await fetch("/api/push/register-fcm", {
+              const res = await fetch("/api/push/register-fcm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fcmToken: token.value }),
               });
-              console.log("[FCM] Token enregistré");
+              if (!res.ok) {
+                console.error("[FCM] Enregistrement du token refusé:", res.status);
+              }
             } catch (err) {
               console.error("[FCM] Erreur enregistrement token:", err);
             }
@@ -61,7 +78,6 @@ export function useCapacitorPush() {
         const foregroundListener = await PushNotifications.addListener(
           "pushNotificationReceived",
           (notification) => {
-            console.log("[FCM] Notification foreground:", notification);
             // On pourrait afficher un toast ici
           }
         );

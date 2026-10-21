@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { serializeMoney } from "@/lib/money";
 
 export async function GET(req: Request) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
       },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(goals);
+    return NextResponse.json(serializeMoney(goals));
   } catch (error) {
     console.error("GET /api/goals error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
       },
       include: { creator: { select: { id: true, name: true, image: true } }, targets: true },
     });
-    return NextResponse.json(goal, { status: 201 });
+    return NextResponse.json(serializeMoney(goal), { status: 201 });
   } catch (error) {
     console.error("POST /api/goals error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

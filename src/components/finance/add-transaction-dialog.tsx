@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { useFinanceAccounts, useFinanceCategories } from "@/hooks/use-finance";
 import { revalidateFinance } from "@/lib/swr-config";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface AddTransactionDialogProps {
   open: boolean;
@@ -57,15 +59,28 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
     return c.type === type;
   });
 
+  const sourceAccount = accounts.find((a) => a.id === accountId);
+  const targetAccounts = accounts.filter(
+    (a) => a.id !== accountId && (!sourceAccount || a.currency === sourceAccount.currency)
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !accountId || !workspaceId) return;
 
+    if (type === "transfer" && !targetAccountId) {
+      toast({
+        title: "Compte destinataire requis",
+        description: "Sélectionnez le compte vers lequel transférer.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/finance/transactions", {
+      await apiJson("/api/finance/transactions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: parseFloat(amount),
           type,
@@ -79,15 +94,11 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
           recurringFrequency: recurringFrequency !== "none" ? recurringFrequency : undefined,
         }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error || "Failed to create transaction");
-      }
       await revalidateFinance(workspaceId);
       reset();
       onOpenChange(false);
     } catch (error) {
-      console.error(error);
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +127,14 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
 
           <div className="space-y-2">
             <Label>Compte</Label>
-            <Select value={accountId} onValueChange={setAccountId}>
+            <Select value={accountId} onValueChange={(value) => {
+              setAccountId(value);
+              const nextSource = accounts.find((a) => a.id === value);
+              const target = accounts.find((a) => a.id === targetAccountId);
+              if (nextSource && target && target.currency !== nextSource.currency) {
+                setTargetAccountId("");
+              }
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Choisir un compte" />
               </SelectTrigger>
@@ -136,8 +154,8 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
                   <SelectValue placeholder="Choisir un compte" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.filter((a) => a.id !== accountId).map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  {targetAccounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.name} ({a.currency})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -162,7 +180,7 @@ export function AddTransactionDialog({ open, onOpenChange, workspaceId }: AddTra
 
           <div className="space-y-2">
             <Label>Montant</Label>
-            <Input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
+            <Input type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
           </div>
 
           <div className="space-y-2">

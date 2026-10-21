@@ -71,27 +71,35 @@ function getActivityDescription(activity: ActivityItem): string {
       : activity.task.title;
 
   if (activity.action === "created") {
-    return `created task "${taskTitle}"`;
+    return `a créé la tâche « ${taskTitle} »`;
   }
 
   if (activity.action === "updated" && activity.field) {
     if (activity.field === "status") {
-      return `changed status of "${taskTitle}" from ${activity.oldValue ?? "—"} to ${activity.newValue ?? "—"}`;
+      return `a changé le statut de « ${taskTitle} » de ${activity.oldValue ?? "—"} à ${activity.newValue ?? "—"}`;
     }
     if (activity.field === "priority") {
-      return `changed priority of "${taskTitle}" to ${activity.newValue ?? "—"}`;
+      return `a changé la priorité de « ${taskTitle} » en ${activity.newValue ?? "—"}`;
     }
     if (activity.field === "assignee") {
-      return `updated assignee on "${taskTitle}"`;
+      return `a modifié les assignés de « ${taskTitle} »`;
     }
-    return `updated ${activity.field} on "${taskTitle}"`;
+    return `a modifié ${activity.field} sur « ${taskTitle} »`;
   }
 
   if (activity.action === "deleted") {
-    return `deleted task "${taskTitle}"`;
+    return `a supprimé la tâche « ${taskTitle} »`;
   }
 
-  return `${activity.action} on "${taskTitle}"`;
+  if (activity.action === "completed") {
+    return `a terminé « ${taskTitle} »`;
+  }
+
+  if (activity.action === "comment") {
+    return `a commenté « ${taskTitle} »`;
+  }
+
+  return `${activity.action} sur « ${taskTitle} »`;
 }
 
 

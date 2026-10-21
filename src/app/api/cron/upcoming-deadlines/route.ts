@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
+import { verifyCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotificationToUsers } from "@/lib/notifications";
 import { addHours, addDays } from "date-fns";
 
-const CRON_SECRET = process.env.CRON_SECRET;
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret") ?? request.headers.get("x-vercel-cron-secret");
-  if (!CRON_SECRET || secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = verifyCronSecret(request);
+  if (denied) return denied;
 
   const now = new Date();
-  // Tâches qui arrivent à échéance dans les prochaines 24h
-  const windowStart = addHours(now, 1);
+  // Tâches qui arrivent à échéance dans les prochaines 24h (bornes incluses)
+  const windowStart = now;
   const windowEnd = addDays(now, 1);
 
   try {
@@ -43,31 +41,41 @@ export async function GET(request: Request) {
       userTaskMap.set(a.userId, existing);
     }
 
+    // Une seule requête de déduplication plutôt qu'un findFirst par tâche
+    const taskLinks = tasks.map((task) => `/task/${task.id}`);
+    const existingNotifications =
+      taskLinks.length > 0
+        ? await prisma.notification.findMany({
+            where: {
+              type: "taskDueSoon",
+              link: { in: taskLinks },
+              createdAt: { gte: addHours(now, -24) },
+            },
+            select: { userId: true, link: true },
+          })
+        : [];
+    const alreadyNotified = new Set(
+      existingNotifications.map((notification) => `${notification.userId}:${notification.link}`)
+    );
+
     let notified = 0;
     for (const [userId, userTasks] of userTaskMap) {
       for (const task of userTasks) {
-        // Éviter les doublons : vérifier si déjà notifié dans les 12h
-        const existing = await prisma.notification.findFirst({
-          where: {
-            userId,
-            type: "taskDueSoon",
-            link: `/task/${task.id}`,
-            createdAt: { gte: addHours(now, -12) },
-          },
-        });
-        if (existing) continue;
+        const dedupeKey = `${userId}:/task/${task.id}`;
+        if (alreadyNotified.has(dedupeKey)) continue;
 
         await sendNotificationToUsers(
           [userId],
           {
             type: "taskDueSoon",
-            message: `Échéance dans moins de 24h : "${task.title}"`,
+            message: `Échéance dans moins de 24h : « ${task.title} »`,
             link: `/task/${task.id}`,
             title: "⚠️ Échéance proche",
             body: task.title,
             tag: "due-soon",
           }
         );
+        alreadyNotified.add(dedupeKey);
         notified++;
       }
     }

@@ -35,7 +35,11 @@ export async function GET(request: Request, context: RouteContext) {
       orderBy: { position: "asc" },
     });
 
-    return NextResponse.json(subtasks);
+    const subtasksWithoutPin = subtasks.map(({ lockedPin: _lockedPin, ...subtask }) => {
+      void _lockedPin;
+      return subtask;
+    });
+    return NextResponse.json(subtasksWithoutPin);
   } catch (error) {
     console.error("GET /api/tasks/[id]/subtasks error:", error);
     return NextResponse.json(

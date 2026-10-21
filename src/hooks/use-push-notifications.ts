@@ -2,81 +2,118 @@
 
 import { useEffect, useCallback, useState } from "react";
 
+const SW_READY_TIMEOUT_MS = 10_000;
+
+function waitForServiceWorker(): Promise<ServiceWorkerRegistration> {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<never>((_, reject) => {
+      setTimeout(
+        () => reject(new Error("Service worker indisponible (délai dépassé)")),
+        SW_READY_TIMEOUT_MS
+      );
+    }),
+  ]);
+}
+
+async function readJson(res: Response): Promise<Record<string, unknown> | null> {
+  try {
+    return (await res.json()) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window) {
-      setIsSupported(true);
-      checkSubscription();
-    }
-  }, []);
-
-  const checkSubscription = async () => {
+  const checkSubscription = useCallback(async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await waitForServiceWorker();
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch {
       setIsSubscribed(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window
+    ) {
+      setIsSupported(true);
+      checkSubscription();
+    }
+  }, [checkSubscription]);
 
   const subscribe = useCallback(async () => {
     if (!isSupported) return;
 
     try {
-      // Get VAPID public key
-      const res = await fetch("/api/push/vapid-public-key");
-      const { key } = await res.json();
-      if (!key) {
-        console.warn("[PUSH] No VAPID public key from server");
-        return;
-      }
+      const keyRes = await fetch("/api/push/vapid-public-key");
+      if (!keyRes.ok) throw new Error("Clé VAPID indisponible");
+      const keyData = await readJson(keyRes);
+      const key = typeof keyData?.key === "string" ? keyData.key : null;
+      if (!key) throw new Error("Clé VAPID absente");
 
-      // Request permission
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         console.warn("[PUSH] Permission denied");
         return;
       }
 
-      // Subscribe
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await waitForServiceWorker();
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(key),
       });
 
-      // Send to server
-      await fetch("/api/push/subscribe", {
+      const p256dh = subscription.getKey("p256dh");
+      const auth = subscription.getKey("auth");
+      if (!p256dh || !auth) {
+        await subscription.unsubscribe().catch(() => {});
+        throw new Error("Clés d'abonnement push manquantes");
+      }
+
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: subscription.endpoint,
-          p256dh: arrayBufferToBase64(subscription.getKey("p256dh")!),
-          auth: arrayBufferToBase64(subscription.getKey("auth")!),
+          p256dh: arrayBufferToBase64(p256dh),
+          auth: arrayBufferToBase64(auth),
         }),
       });
+      if (!res.ok) {
+        await subscription.unsubscribe().catch(() => {});
+        throw new Error("Enregistrement de l'abonnement push refusé");
+      }
 
       setIsSubscribed(true);
     } catch (err) {
       console.error("[PUSH] Subscribe failed:", err);
+      setIsSubscribed(false);
     }
   }, [isSupported]);
 
   const unsubscribe = useCallback(async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await waitForServiceWorker();
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
-        await fetch("/api/push/unsubscribe", {
+        const res = await fetch("/api/push/unsubscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ endpoint: subscription.endpoint }),
         });
+        if (!res.ok) {
+          console.error("[PUSH] Unsubscribe rejected by server");
+        }
       }
       setIsSubscribed(false);
     } catch (err) {

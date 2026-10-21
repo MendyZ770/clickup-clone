@@ -60,6 +60,8 @@ import { useModal } from "@/hooks/use-modal";
 import { useCreateTask, useUpdateTask } from "@/hooks/use-tasks";
 import { cn } from "@/lib/utils";
 import { CalendarSyncSettings } from "@/components/calendar/calendar-sync-settings";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { ErrorState } from "@/components/shared/error-state";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -118,6 +120,7 @@ export default function GlobalCalendarPage() {
   const [newPriority, setNewPriority] = useState<string>("normal");
   const [submitting, setSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CalendarTask | null>(null);
 
   useEffect(() => {
     if (currentWorkspace?.id) setWorkspaceId(currentWorkspace.id);
@@ -126,7 +129,12 @@ export default function GlobalCalendarPage() {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
 
-  const { data: tasks, mutate } = useSWR<CalendarTask[]>(
+  const {
+    data: tasks,
+    isLoading,
+    error,
+    mutate,
+  } = useSWR<CalendarTask[]>(
     currentWorkspace
       ? `/api/tasks/calendar?workspaceId=${currentWorkspace.id}&start=${monthStart.toISOString()}&end=${monthEnd.toISOString()}`
       : null,
@@ -163,6 +171,24 @@ export default function GlobalCalendarPage() {
     const key = format(selectedDay, "yyyy-MM-dd");
     return tasksByDate.get(key) ?? [];
   }, [selectedDay, tasksByDate]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await fetch(`/api/tasks/${deleteTarget.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Suppression impossible");
+      mutate();
+      toast({ title: "Tâche supprimée" });
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: err instanceof Error ? err.message : "Impossible de supprimer la tâche",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
 
   const openCreateDialog = (date: Date) => {
     setCreateDate(date);
@@ -216,10 +242,26 @@ export default function GlobalCalendarPage() {
     try {
       await updateTask(taskId, { dueDate: newDate.toISOString() });
       mutate();
-    } catch {
-      // silently fail
+    } catch (err) {
+      toast({
+        title: "Déplacement impossible",
+        description: err instanceof Error ? err.message : "Impossible de modifier l'échéance",
+        variant: "destructive",
+      });
     }
   };
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-6xl p-4 md:p-6">
+        <ErrorState
+          title="Impossible de charger le calendrier"
+          description="Les tâches du calendrier n'ont pas pu être récupérées."
+          onRetry={() => mutate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-y-auto">
@@ -257,20 +299,26 @@ export default function GlobalCalendarPage() {
           </TabsList>
 
           <TabsContent value="calendar" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+            {isLoading ? (
+              <div className="flex items-center justify-center rounded-lg border py-24" role="status" aria-live="polite">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="sr-only">Chargement du calendrier</span>
+              </div>
+            ) : (
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
           {/* Calendar grid */}
           <div className="flex-1 min-w-0">
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
-                  <ChevronLeft className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subMonths(currentDate, 1))} aria-label="Mois précédent">
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                 </Button>
                 <h2 className="text-sm md:text-lg font-semibold min-w-[140px] md:min-w-[200px] text-center capitalize">
                   {format(currentDate, "MMMM yyyy", { locale: fr })}
                 </h2>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addMonths(currentDate, 1))} aria-label="Mois suivant">
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={() => { setCurrentDate(new Date()); setSelectedDay(new Date()); }}>
@@ -461,6 +509,7 @@ export default function GlobalCalendarPage() {
                           size="icon"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 -mt-1 -mr-1"
                           onClick={(e) => e.stopPropagation()}
+                          aria-label={`Actions pour ${task.title}`}
                         >
                           <MoreHorizontal className="h-3.5 w-3.5" />
                         </Button>
@@ -468,20 +517,7 @@ export default function GlobalCalendarPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={async () => {
-                            if (!confirm("Supprimer cette tâche ?")) return;
-                            try {
-                              const res = await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
-                              if (res.ok) {
-                                mutate();
-                                toast({ title: "Tâche supprimée" });
-                              } else {
-                                throw new Error("Failed");
-                              }
-                            } catch {
-                              toast({ title: "Erreur", description: "Impossible de supprimer", variant: "destructive" });
-                            }
-                          }}
+                          onClick={() => setDeleteTarget(task)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Supprimer
@@ -512,6 +548,7 @@ export default function GlobalCalendarPage() {
             </div>
           </div>
         </div>
+            )}
         </TabsContent>
         <TabsContent value="sync" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
           <div className="max-w-4xl mx-auto py-4">
@@ -539,8 +576,9 @@ export default function GlobalCalendarPage() {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium">Titre</label>
+              <label htmlFor="calendar-task-title" className="text-xs font-medium">Titre</label>
               <Input
+                id="calendar-task-title"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Nom de la tâche"
@@ -555,9 +593,9 @@ export default function GlobalCalendarPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium">Liste</label>
+              <label htmlFor="calendar-task-list" className="text-xs font-medium">Liste</label>
               <Select value={newListId} onValueChange={setNewListId}>
-                <SelectTrigger>
+                <SelectTrigger id="calendar-task-list">
                   <SelectValue placeholder="Choisir une liste" />
                 </SelectTrigger>
                 <SelectContent>
@@ -591,9 +629,9 @@ export default function GlobalCalendarPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium">Priorité</label>
+              <label htmlFor="calendar-task-priority" className="text-xs font-medium">Priorité</label>
               <Select value={newPriority} onValueChange={setNewPriority}>
-                <SelectTrigger>
+                <SelectTrigger id="calendar-task-priority">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -626,6 +664,16 @@ export default function GlobalCalendarPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Supprimer la tâche"
+        description={`Êtes-vous sûr de vouloir supprimer « ${deleteTarget?.title ?? ""} » ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        onConfirm={handleDelete}
+        variant="destructive"
+      />
     </div>
   );
 }

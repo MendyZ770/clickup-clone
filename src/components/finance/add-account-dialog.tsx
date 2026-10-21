@@ -41,6 +41,7 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: AddAccount
   const [bankName, setBankName] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [balance, setBalance] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reset = () => {
@@ -55,6 +56,7 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: AddAccount
     e.preventDefault();
     if (!name || !type || !workspaceId) return;
 
+    setError(null);
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/finance/accounts", {
@@ -77,7 +79,7 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: AddAccount
       reset();
       onOpenChange(false);
     } catch (error) {
-      console.error(error);
+      setError(error instanceof Error ? error.message : "Impossible de créer le compte");
     } finally {
       setIsSubmitting(false);
     }
@@ -136,6 +138,10 @@ export function AddAccountDialog({ open, onOpenChange, workspaceId }: AddAccount
             <Label>Solde initial</Label>
             <Input type="number" step="0.01" value={balance} onChange={(e) => setBalance(e.target.value)} placeholder="0.00" />
           </div>
+
+          {error && (
+            <p role="alert" className="text-sm text-red-600">{error}</p>
+          )}
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || !name || !type}>

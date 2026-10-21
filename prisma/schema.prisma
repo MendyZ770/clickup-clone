@@ -265,12 +265,12 @@ model Task {
   updatedAt    DateTime  @updatedAt
   listId       String
   statusId     String
-  creatorId    String
+  creatorId    String?
   parentId     String?
 
   list              List               @relation(fields: [listId], references: [id], onDelete: Cascade)
   status            Status             @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  creator           User               @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creator           User?              @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   parent            Task?              @relation("TaskSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
   subtasks          Task[]             @relation("TaskSubtasks")
   checklists        Checklist[]
@@ -288,6 +288,7 @@ model Task {
 
   @@index([listId])
   @@index([statusId])
+  @@index([listId, statusId])
   @@index([creatorId])
   @@index([parentId])
   @@index([dueDate])
@@ -491,6 +492,8 @@ model TaskRecurrence {
 
   taskId String @unique
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([nextDueDate])
 }
 
 // ─── Multiple Assignees ───────────────────────────────────────────────────
@@ -554,8 +557,8 @@ model Goal {
 
   workspaceId String
   workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  creatorId   String
-  creator     User         @relation(fields: [creatorId], references: [id])
+  creatorId   String?
+  creator     User?        @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   targets     GoalTarget[]
 }
 
@@ -563,8 +566,8 @@ model GoalTarget {
   id           String   @id @default(cuid())
   name         String
   type         String   @default("number") // "number" | "currency" | "boolean" | "task_completion"
-  currentValue Float    @default(0)
-  targetValue  Float    @default(100)
+  currentValue Decimal  @default(0) @db.Decimal(14, 2)
+  targetValue  Decimal  @default(100) @db.Decimal(14, 2)
   unit         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -609,9 +612,10 @@ model Reminder {
   id          String   @id @default(cuid())
   title       String
   description String?
-  remindAt    DateTime
-  completed   Boolean  @default(false)
-  taskId      String?
+  remindAt       DateTime
+  completed      Boolean   @default(false)
+  lastNotifiedAt DateTime?
+  taskId         String?
   userId      String
   workspaceId String
   createdAt   DateTime @default(now())
@@ -619,6 +623,8 @@ model Reminder {
   task      Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@index([remindAt])
+  @@index([completed, remindAt])
 }
 
 // ─── Task Templates ────────────────────────────────────────────────────────
@@ -703,7 +709,7 @@ model Budget {
   id          String   @id @default(cuid())
   name        String
   description String?  @db.Text
-  amount      Float
+  amount      Decimal  @db.Decimal(14, 2)
   currency    String   @default("EUR")
   color       String   @default("#10B981")
   createdAt   DateTime @default(now())
@@ -711,8 +717,8 @@ model Budget {
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  creatorId   String
-  creator     User      @relation(fields: [creatorId], references: [id])
+  creatorId   String?
+  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   transactions BudgetTransaction[]
   alerts       BudgetAlert[]
@@ -722,7 +728,7 @@ model Budget {
 
 model BudgetTransaction {
   id          String   @id @default(cuid())
-  amount      Float
+  amount      Decimal  @db.Decimal(14, 2)
   type        String // "income" | "expense"
   subType     String? // "salary", "freelance", "rent", "food", "transport", "health", "leisure", "shopping", "bills", "other"
   description String?
@@ -741,8 +747,8 @@ model BudgetTransaction {
 
   budgetId   String
   budget     Budget          @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  creatorId  String
-  creator    User            @relation(fields: [creatorId], references: [id])
+  creatorId  String?
+  creator    User?           @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   categoryId String?
   category   BudgetCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
@@ -786,7 +792,7 @@ model BudgetTransactionTag {
 model BudgetTemplate {
   id          String  @id @default(cuid())
   name        String
-  amount      Float
+  amount      Decimal @db.Decimal(14, 2)
   type        String // "income" | "expense"
   subType     String?
   description String?
@@ -794,8 +800,8 @@ model BudgetTemplate {
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  creatorId   String
-  creator     User      @relation(fields: [creatorId], references: [id])
+  creatorId   String?
+  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -806,7 +812,7 @@ model BudgetTemplate {
 model BudgetAlert {
   id        String  @id @default(cuid())
   type      String // "threshold", "recurring_missing", "overspend"
-  threshold Float? // pourcentage ou montant
+  threshold Decimal? @db.Decimal(14, 2) // pourcentage ou montant
   isActive  Boolean @default(true)
 
   budgetId String
@@ -828,7 +834,7 @@ model FinanceAccount {
   type      String // "bank", "cash", "crypto", "savings", "investment", "other"
   bankName  String? // nom de la banque si type="bank"
   currency  String   @default("EUR")
-  balance   Float    @default(0)
+  balance   Decimal  @default(0) @db.Decimal(14, 2)
   color     String   @default("#3B82F6")
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -845,6 +851,7 @@ model FinanceAccount {
 
   @@index([workspaceId])
   @@index([userId])
+  @@index([ebAccountId])
 }
 
 model FinanceCategory {
@@ -867,7 +874,7 @@ model FinanceCategory {
 
 model FinanceTransaction {
   id          String   @id @default(cuid())
-  amount      Float
+  amount      Decimal  @db.Decimal(14, 2)
   type        String // "income" | "expense" | "transfer"
   description String?
   date        DateTime @default(now())
@@ -889,7 +896,8 @@ model FinanceTransaction {
   categoryId String?
   category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  @@index([accountId])
+  @@index([accountId, date])
+  @@index([targetAccountId])
   @@index([userId])
   @@index([categoryId])
   @@index([date])
@@ -900,8 +908,8 @@ model FinanceGoal {
   id            String    @id @default(cuid())
   name          String // "Voiture", "Apport maison", "Vacances"
   description   String?
-  targetAmount  Float
-  currentAmount Float     @default(0)
+  targetAmount  Decimal   @db.Decimal(14, 2)
+  currentAmount Decimal   @default(0) @db.Decimal(14, 2)
   currency      String    @default("EUR")
   color         String    @default("#10B981")
   deadline      DateTime?
@@ -925,7 +933,7 @@ model FinanceGoal {
 
 model FinanceGoalContribution {
   id        String   @id @default(cuid())
-  amount    Float
+  amount    Decimal  @db.Decimal(14, 2)
   date      DateTime @default(now())
   note      String?
   createdAt DateTime @default(now())
@@ -1003,4 +1011,17 @@ model Widget {
   dashboard   Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
 
   @@index([dashboardId])
+}
+
+// Liste de révocation des JWT mobiles : un token reste valide jusqu'à son expir
+// sauf s'il apparaît ici (déconnexion, appareil perdu).
+model RevokedMobileToken {
+  id        String   @id @default(cuid())
+  jti       String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([userId])
 }

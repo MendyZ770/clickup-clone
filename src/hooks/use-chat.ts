@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import { useEffect } from "react";
 import { getPusherClient } from "@/lib/pusher-client";
+import { chatChannelName } from "@/lib/pusher-channels";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -27,7 +28,7 @@ export function useChat(listId: string) {
     if (!listId) return;
 
     const pusher = getPusherClient();
-    const channelName = `list-${listId}-chat`;
+    const channelName = chatChannelName(listId);
     const channel = pusher.subscribe(channelName);
 
     channel.bind("message:created", (newMessage: ChatMessage) => {

@@ -1,21 +1,30 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import { verifyCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotificationToUsers } from "@/lib/notifications";
-import { subHours } from "date-fns";
+import { addMonths, startOfMonth } from "date-fns";
 
-const CRON_SECRET = process.env.CRON_SECRET;
+export const maxDuration = 60;
+
+const DEFAULT_THRESHOLDS = [80, 100];
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret") ?? request.headers.get("x-vercel-cron-secret");
-  if (!CRON_SECRET || secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = verifyCronSecret(request);
+  if (denied) return denied;
+
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = addMonths(monthStart, 1);
 
   try {
+    // Les alertes portent sur le mois en cours, pas sur tout l'historique
     const budgets = await prisma.budget.findMany({
       include: {
-        transactions: { select: { type: true, amount: true } },
+        alerts: {
+          where: { isActive: true },
+          select: { threshold: true },
+        },
         workspace: {
           include: {
             members: { select: { userId: true } },
@@ -24,55 +33,96 @@ export async function GET(request: Request) {
       },
     });
 
+    const expenseSums = await prisma.budgetTransaction.groupBy({
+      by: ["budgetId"],
+      where: {
+        budgetId: { in: budgets.map((budget) => budget.id) },
+        date: { gte: monthStart, lt: monthEnd },
+        isTransfer: false,
+        type: "expense",
+      },
+      _sum: { amount: true },
+    });
+
+    const expenseByBudget = new Map(
+      expenseSums.map((row) => [row.budgetId, row._sum.amount ?? new Prisma.Decimal(0)])
+    );
+
     let alertsSent = 0;
+    let usersNotified = 0;
 
     for (const budget of budgets) {
-      const totalExpense = budget.transactions
-        .filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
+      if (budget.amount.lte(0)) continue;
 
-      const percent = budget.amount > 0 ? (totalExpense / budget.amount) * 100 : 0;
+      const totalExpense = expenseByBudget.get(budget.id) ?? new Prisma.Decimal(0);
+      const percent = totalExpense.div(budget.amount).times(100).toNumber();
 
-      // Alertes à 80% et 100%
-      const thresholds = [
-        { pct: 100, label: "dépassé", emoji: "🚨" },
-        { pct: 80, label: "à 80%", emoji: "⚠️" },
-      ];
+      const configuredThresholds = budget.alerts
+        .map((alert) => alert.threshold)
+        .filter((threshold): threshold is Prisma.Decimal => threshold !== null)
+        .map((threshold) => threshold.toNumber());
+      const thresholds = (
+        configuredThresholds.length > 0 ? configuredThresholds : DEFAULT_THRESHOLDS
+      )
+        .filter((threshold) => threshold > 0)
+        .sort((a, b) => a - b);
 
-      for (const threshold of thresholds) {
-        if (percent < threshold.pct) continue;
+      const crossedThresholds = thresholds.filter(
+        (threshold) => percent >= threshold
+      );
+      if (crossedThresholds.length === 0) continue;
 
-        const memberIds = budget.workspace.members.map((m) => m.userId);
-        if (memberIds.length === 0) continue;
+      // Une seule alerte par exécution, pour le seuil le plus élevé atteint
+      const threshold = crossedThresholds[crossedThresholds.length - 1];
+      const memberIds = budget.workspace.members.map((member) => member.userId);
+      if (memberIds.length === 0) continue;
 
-        // Éviter les doublons : pas de re-notification dans les 24h
-        const existing = await prisma.notification.findFirst({
-          where: {
-            userId: memberIds[0],
-            type: "budgetAlert",
-            message: { contains: budget.name },
-            createdAt: { gte: subHours(new Date(), 24) },
-          },
-        });
-        if (existing) break; // déjà notifié pour ce budget
+      const budgetLink = `/budget/${budget.id}`;
+      const thresholdKey = `seuil de ${threshold}%`;
 
-        await sendNotificationToUsers(
-          memberIds,
-          {
-            type: "budgetAlert",
-            message: `Budget "${budget.name}" ${threshold.label} (${Math.round(percent)}%)`,
-            link: `/budget/${budget.id}`,
-            title: `${threshold.emoji} Budget ${threshold.label}`,
-            body: `"${budget.name}" : ${Math.round(percent)}% utilisé`,
-            tag: "budget-alert",
-          }
-        );
-        alertsSent++;
-        break; // une seule alerte par budget (la plus haute)
-      }
+      // Idempotence par membre, budget, mois et seuil (le lien est unique)
+      const alreadyNotified = await prisma.notification.findMany({
+        where: {
+          userId: { in: memberIds },
+          type: "budgetAlert",
+          link: budgetLink,
+          message: { contains: thresholdKey },
+          createdAt: { gte: monthStart },
+        },
+        select: { userId: true },
+      });
+      const notifiedIds = new Set(
+        alreadyNotified.map((notification) => notification.userId)
+      );
+      const recipients = memberIds.filter((userId) => !notifiedIds.has(userId));
+      if (recipients.length === 0) continue;
+
+      const exceeded = threshold >= 100;
+      await sendNotificationToUsers(
+        recipients,
+        {
+          type: "budgetAlert",
+          message: `Budget « ${budget.name} » : ${thresholdKey} atteint (${Math.round(percent)}% utilisé)`,
+          link: budgetLink,
+          title: exceeded ? "🚨 Budget dépassé" : "⚠️ Budget presque atteint",
+          body: `« ${budget.name} » : ${Math.round(percent)}% du budget mensuel utilisé`,
+          tag: "budget-alert",
+        }
+      );
+
+      alertsSent++;
+      usersNotified += recipients.length;
     }
 
-    return NextResponse.json({ ok: true, alertsSent, budgetsChecked: budgets.length });
+    return NextResponse.json({
+      ok: true,
+      alertsSent,
+      usersNotified,
+      budgetsChecked: budgets.length,
+      period: `${monthStart.getFullYear()}-${String(
+        monthStart.getMonth() + 1
+      ).padStart(2, "0")}`,
+    });
   } catch (error) {
     console.error("[CRON] Budget alerts error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

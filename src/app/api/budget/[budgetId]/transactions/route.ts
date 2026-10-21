@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { parseMoney, serializeMoney } from "@/lib/money";
 import { z } from "zod";
 
 const transactionSchema = z.object({
-  amount: z.number().positive(),
+  amount: z.union([z.number(), z.string()]),
   type: z.enum(["income", "expense"]),
   subType: z.string().optional(),
   description: z.string().max(500).optional(),
@@ -23,9 +24,9 @@ async function checkBudgetAccess(userId: string, budgetId: string) {
       id: budgetId,
       workspace: { members: { some: { userId } } },
     },
-    select: { id: true },
+    select: { id: true, workspaceId: true },
   });
-  return !!budget;
+  return budget;
 }
 
 interface RouteContext {
@@ -39,8 +40,8 @@ export async function GET(request: Request, context: RouteContext) {
 
     const { budgetId } = await context.params;
 
-    const hasAccess = await checkBudgetAccess(user.id, budgetId);
-    if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const budget = await checkBudgetAccess(user.id, budgetId);
+    if (!budget) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
@@ -100,7 +101,7 @@ export async function GET(request: Request, context: RouteContext) {
      
     const transactions = await prisma.budgetTransaction.findMany(queryArgs);
 
-    return NextResponse.json(transactions);
+    return NextResponse.json(serializeMoney(transactions));
   } catch (error) {
     console.error("[TRANSACTIONS_GET]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -114,8 +115,8 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { budgetId } = await context.params;
 
-    const hasAccess = await checkBudgetAccess(user.id, budgetId);
-    if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const budget = await checkBudgetAccess(user.id, budgetId);
+    if (!budget) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await request.json();
     const parsed = transactionSchema.safeParse(body);
@@ -126,16 +127,53 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    const { tags, recurrenceEnd, ...data } = parsed.data;
+    const { tags, recurrenceEnd, amount, ...data } = parsed.data;
 
-     
+    const parsedAmount = parseMoney(amount);
+    if (!parsedAmount) {
+      return NextResponse.json({ error: "Montant invalide" }, { status: 400 });
+    }
+
+    if (data.categoryId) {
+      const category = await prisma.budgetCategory.findFirst({
+        where: { id: data.categoryId, workspaceId: budget.workspaceId },
+        select: { id: true, type: true },
+      });
+      if (!category) {
+        return NextResponse.json(
+          { error: "Catégorie introuvable dans ce workspace" },
+          { status: 400 }
+        );
+      }
+      if (category.type !== "both" && category.type !== data.type) {
+        return NextResponse.json(
+          { error: "La catégorie ne correspond pas au type de transaction" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const parsedDate = data.date ? new Date(data.date) : new Date();
+    if (Number.isNaN(parsedDate.getTime())) {
+      return NextResponse.json({ error: "Date invalide" }, { status: 400 });
+    }
+
+    let parsedRecurrenceEnd: Date | null = null;
+    if (recurrenceEnd) {
+      parsedRecurrenceEnd = new Date(recurrenceEnd);
+      if (Number.isNaN(parsedRecurrenceEnd.getTime())) {
+        return NextResponse.json({ error: "Date de fin invalide" }, { status: 400 });
+      }
+    }
+
     const transaction = await prisma.budgetTransaction.create({
       data: {
         ...data,
+        amount: parsedAmount,
         budgetId,
         creatorId: user.id,
-        date: data.date ? new Date(data.date) : new Date(),
-        recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
+        date: parsedDate,
+        recurrenceEnd: parsedRecurrenceEnd,
         tags: tags && tags.length > 0
           ? { create: tags.map((name) => ({ name })) }
           : undefined,
@@ -147,7 +185,7 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    return NextResponse.json(transaction, { status: 201 });
+    return NextResponse.json(serializeMoney(transaction), { status: 201 });
   } catch (error) {
     console.error("[TRANSACTIONS_POST]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

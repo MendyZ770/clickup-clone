@@ -8,18 +8,39 @@ import { NotificationItem } from "@/components/notifications/notification-item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ErrorState } from "@/components/shared/error-state";
+import { useToast } from "@/components/ui/use-toast";
 
 type Filter = "all" | "unread";
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState<Filter>("all");
-  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } =
-    useNotifications();
+  const { toast } = useToast();
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    isError,
+    mutate,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   const filteredNotifications =
     filter === "unread"
       ? notifications.filter((n) => !n.read)
       : notifications;
+
+  const handleMarkAllAsRead = async () => {
+    const ok = await markAllAsRead();
+    if (!ok) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de marquer les notifications comme lues.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
@@ -36,10 +57,10 @@ export default function NotificationsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => markAllAsRead()}
+              onClick={handleMarkAllAsRead}
               className="gap-2"
             >
-              <CheckCheck className="h-4 w-4" />
+              <CheckCheck className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">Tout marquer comme lu</span>
               <span className="sm:hidden">Tout lire</span>
             </Button>
@@ -48,8 +69,15 @@ export default function NotificationsPage() {
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
+      <div
+        role="tablist"
+        aria-label="Filtrer les notifications"
+        className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1"
+      >
         <button
+          role="tab"
+          type="button"
+          aria-selected={filter === "all"}
           onClick={() => setFilter("all")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             filter === "all"
@@ -60,6 +88,9 @@ export default function NotificationsPage() {
           Toutes
         </button>
         <button
+          role="tab"
+          type="button"
+          aria-selected={filter === "unread"}
           onClick={() => setFilter("unread")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             filter === "unread"
@@ -69,7 +100,10 @@ export default function NotificationsPage() {
         >
           Non lues
           {unreadCount > 0 && (
-            <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
+            <span
+              aria-hidden="true"
+              className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white"
+            >
               {unreadCount}
             </span>
           )}
@@ -78,7 +112,9 @@ export default function NotificationsPage() {
 
       {/* Notification list */}
       <div className="rounded-lg border border-border/50">
-        {isLoading ? (
+        {isError ? (
+          <ErrorState onRetry={() => mutate()} />
+        ) : isLoading ? (
           <div className="space-y-0 divide-y divide-border/50">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-start gap-3 p-4">

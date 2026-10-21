@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useUnifiedSession } from "@/hooks/use-unified-session";
 import { User, Lock, Bell, Moon, Sun, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -44,6 +45,7 @@ const NOTIF_ITEMS: { key: keyof NotifPrefs; label: string; description: string }
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
   const { user: sessionUser } = useUnifiedSession();
   const { toast } = useToast();
   const { mode, setMode } = useTheme();
@@ -72,18 +74,30 @@ export default function SettingsPage() {
   });
   const [savingNotifs, setSavingNotifs] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
+  const [notifLoadError, setNotifLoadError] = useState(false);
 
   useEffect(() => {
     if (sessionUser?.name) setName(sessionUser.name);
   }, [sessionUser?.name]);
 
-  useEffect(() => {
-    fetch("/api/me/notification-preferences")
-      .then((r) => r.json())
-      .then((data) => setNotifPrefs(data))
-      .catch(() => {})
-      .finally(() => setLoadingNotifs(false));
+  const loadNotifPrefs = useCallback(async () => {
+    setLoadingNotifs(true);
+    setNotifLoadError(false);
+    try {
+      const res = await fetch("/api/me/notification-preferences");
+      if (!res.ok) throw new Error("Erreur de chargement");
+      const data = await res.json();
+      setNotifPrefs((prev) => ({ ...prev, ...data }));
+    } catch {
+      setNotifLoadError(true);
+    } finally {
+      setLoadingNotifs(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void loadNotifPrefs();
+  }, [loadNotifPrefs]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +114,7 @@ export default function SettingsPage() {
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Erreur");
       toast({ title: "Profil mis à jour" });
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       toast({ title: "Erreur", description: err instanceof Error ? err.message : "Impossible de sauvegarder", variant: "destructive" });
     } finally {
@@ -136,8 +150,8 @@ export default function SettingsPage() {
   };
 
   const handleToggleNotif = async (key: keyof NotifPrefs, value: boolean) => {
-    const updated = { ...notifPrefs, [key]: value };
-    setNotifPrefs(updated);
+    const previous = notifPrefs[key];
+    setNotifPrefs((prev) => ({ ...prev, [key]: value }));
     setSavingNotifs(true);
     try {
       const res = await fetch("/api/me/notification-preferences", {
@@ -145,11 +159,17 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [key]: value }),
       });
-      if (!res.ok) throw new Error("Erreur");
-    } catch {
-      // Rollback
-      setNotifPrefs(notifPrefs);
-      toast({ title: "Erreur", description: "Impossible de sauvegarder", variant: "destructive" });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.error ?? "Impossible de sauvegarder");
+      }
+    } catch (error) {
+      setNotifPrefs((prev) => ({ ...prev, [key]: previous }));
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Impossible de sauvegarder",
+        variant: "destructive",
+      });
     } finally {
       setSavingNotifs(false);
     }
@@ -177,8 +197,8 @@ export default function SettingsPage() {
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Votre nom" maxLength={100} />
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={sessionUser?.email ?? ""} disabled readOnly />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={sessionUser?.email ?? ""} disabled readOnly />
               <p className="text-[10px] text-muted-foreground">{"L'email n'est pas modifiable pour le moment."}</p>
             </div>
             <Button type="submit" disabled={savingProfile}>
@@ -281,6 +301,15 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+          ) : notifLoadError ? (
+            <div className="flex items-center justify-between gap-4" role="alert">
+              <p className="text-sm text-destructive">
+                Impossible de charger vos préférences de notification.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => loadNotifPrefs()}>
+                Réessayer
+              </Button>
+            </div>
           ) : (
             <div className="space-y-1">
               {NOTIF_ITEMS.map((item, i) => (
@@ -296,6 +325,8 @@ export default function SettingsPage() {
                       <p className="text-xs text-muted-foreground">{item.description}</p>
                     </div>
                     <Switch
+                      id={`notif-${item.key}`}
+                      aria-label={item.label}
                       checked={notifPrefs[item.key]}
                       onCheckedChange={(v: boolean) => handleToggleNotif(item.key, v)}
                       disabled={savingNotifs || (item.key !== "pushEnabled" && !notifPrefs.pushEnabled)}

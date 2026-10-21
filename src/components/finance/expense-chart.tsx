@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartDataTable } from "@/components/shared/chart-data-table";
 import { formatCurrency } from "@/lib/utils";
 
 const COLORS = [
@@ -46,9 +47,14 @@ export function ExpenseChart({ data }: { data: Array<{ amount: number; category?
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <ChartDataTable
+            caption="Dépenses par catégorie"
+            columns={["Catégorie", "Montant"]}
+            rows={chartData.map((item) => [item.name, formatCurrency(item.value, "EUR")])}
+          />
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <PieChart accessibilityLayer>
                 <Pie
                   data={chartData}
                   cx="50%"
@@ -82,6 +88,7 @@ export function ExpenseChart({ data }: { data: Array<{ amount: number; category?
                 <div
                   className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: item.color || COLORS[i % COLORS.length] }}
+                  aria-hidden="true"
                 />
                 <span className="text-muted-foreground truncate max-w-[80px]">{item.name}</span>
               </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { google } from "googleapis";
-import { getCurrentUser } from "@/lib/auth-helpers";
+import { getCurrentUser, GCAL_OAUTH_STATE_COOKIE } from "@/lib/auth-helpers";
 
 export async function GET() {
   try {
@@ -25,6 +26,8 @@ export async function GET() {
       `${baseUrl}/api/calendar/google/callback`
     );
 
+    const state = randomBytes(16).toString("hex");
+
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -32,10 +35,19 @@ export async function GET() {
         "https://www.googleapis.com/auth/calendar.readonly",
       ],
       prompt: "consent",
-      state: user.id,
+      state,
     });
 
-    return NextResponse.redirect(authUrl);
+    const response = NextResponse.redirect(authUrl);
+    // Anti-CSRF : le state est comparé au callback, il ne porte pas l'identité.
+    response.cookies.set(GCAL_OAUTH_STATE_COOKIE, state, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 600,
+    });
+    return response;
   } catch (error) {
     console.error("GET /api/calendar/google/auth error:", error);
     return NextResponse.json(

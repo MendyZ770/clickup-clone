@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { format, isToday, isPast, isTomorrow } from "date-fns";
+import { fr } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
 import {
   Popover,
@@ -39,10 +40,10 @@ export function DueDatePicker({
 
   const getDateLabel = () => {
     if (!dateObj) return "Sans échéance";
-    if (isOverdue) return `En retard : ${format(dateObj, "d MMM")}`;
+    if (isOverdue) return `En retard : ${format(dateObj, "d MMM", { locale: fr })}`;
     if (isDueToday) return "Aujourd'hui";
     if (isDueTomorrow) return "Demain";
-    return format(dateObj, "d MMM yyyy");
+    return format(dateObj, "d MMM yyyy", { locale: fr });
   };
 
   const trigger = (

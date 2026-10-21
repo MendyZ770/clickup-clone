@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { decryptToken, encryptToken } from "@/lib/token-crypto";
 
 export async function POST() {
   try {
@@ -32,9 +33,12 @@ export async function POST() {
       `${baseUrl}/api/calendar/google/callback`
     );
 
+    const storedAccessToken = decryptToken(syncRecord.accessToken);
+    const storedRefreshToken = decryptToken(syncRecord.refreshToken);
+
     oauth2Client.setCredentials({
-      access_token: syncRecord.accessToken,
-      refresh_token: syncRecord.refreshToken,
+      access_token: storedAccessToken,
+      refresh_token: storedRefreshToken,
       expiry_date: syncRecord.tokenExpiry.getTime(),
     });
 
@@ -45,8 +49,8 @@ export async function POST() {
         await prisma.googleCalendarSync.update({
           where: { userId: user.id },
           data: {
-            accessToken: credentials.access_token || syncRecord.accessToken,
-            refreshToken: credentials.refresh_token || syncRecord.refreshToken,
+            accessToken: encryptToken(credentials.access_token || storedAccessToken),
+            refreshToken: encryptToken(credentials.refresh_token || storedRefreshToken),
             tokenExpiry: credentials.expiry_date
               ? new Date(credentials.expiry_date)
               : new Date(Date.now() + 3600 * 1000),

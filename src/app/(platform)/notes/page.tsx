@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { cn } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface Note {
   id: string;
@@ -53,7 +54,7 @@ export default function NotesPage() {
   const { currentWorkspace } = useWorkspace();
   const { toast } = useToast();
 
-  const { data: notes, mutate } = useSWR<Note[]>(
+  const { data: notes, isLoading, error, mutate } = useSWR<Note[]>(
     currentWorkspace ? `/api/notes?workspaceId=${currentWorkspace.id}` : null,
     fetcher
   );
@@ -102,20 +103,19 @@ export default function NotesPage() {
 
       setSaving(true);
       try {
-        await fetch(`/api/notes/${id}`, {
+        await apiJson(`/api/notes/${id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title, content, color }),
         });
         lastSaved.current = { title, content, color };
         mutate();
-      } catch {
-        // silently retry on next change
+      } catch (error) {
+        toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
       } finally {
         setSaving(false);
       }
     },
-    [mutate]
+    [mutate, toast]
   );
 
   const scheduleAutosave = useCallback(
@@ -128,6 +128,41 @@ export default function NotesPage() {
     },
     [selectedId, saveNote]
   );
+
+  // Conserve les dernières valeurs pour le flush au démontage / à la fermeture
+  const latestEdit = useRef({ selectedId, editTitle, editContent, editColor });
+  useEffect(() => {
+    latestEdit.current = { selectedId, editTitle, editContent, editColor };
+  });
+
+  useEffect(() => {
+    const flushOnHide = () => {
+      const snapshot = latestEdit.current;
+      if (snapshot.selectedId) {
+        void saveNote(
+          snapshot.selectedId,
+          snapshot.editTitle,
+          snapshot.editContent,
+          snapshot.editColor
+        );
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flushOnHide();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("beforeunload", flushOnHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("beforeunload", flushOnHide);
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+      flushOnHide();
+    };
+  }, [saveNote]);
 
   // Flush save avant de changer de note
   const flushSave = useCallback(async () => {
@@ -173,12 +208,12 @@ export default function NotesPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await fetch(`/api/notes/${deleteTarget.id}`, { method: "DELETE" });
+      await apiJson(`/api/notes/${deleteTarget.id}`, { method: "DELETE" });
       if (selectedId === deleteTarget.id) setSelectedId(null);
       mutate();
       toast({ title: "Note supprimée" });
-    } catch {
-      toast({ title: "Erreur", description: "Impossible de supprimer", variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setDeleteTarget(null);
     }
@@ -187,14 +222,13 @@ export default function NotesPage() {
   const handleTogglePin = async (note: Note, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await fetch(`/api/notes/${note.id}`, {
+      await apiJson(`/api/notes/${note.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pinned: !note.pinned }),
       });
       mutate();
-    } catch {
-      toast({ title: "Erreur", variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -240,15 +274,34 @@ export default function NotesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher..."
+              aria-label="Rechercher dans les notes"
               className="pl-7 h-7 text-xs"
             />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-1">
-          {filtered.length === 0 && (
+          {isLoading && (
+            <div className="flex items-center justify-center py-6" role="status" aria-live="polite">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <span className="sr-only">Chargement des notes</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="px-3 py-4" role="alert">
+              <p className="text-xs text-destructive">Impossible de charger les notes.</p>
+              <Button variant="outline" size="sm" className="mt-2 h-7 text-xs" onClick={() => mutate()}>
+                Réessayer
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && !error && filtered.length === 0 && (
             <div className="px-3 py-6 text-center">
-              <p className="text-xs text-muted-foreground">Aucune note</p>
+              <p className="text-xs text-muted-foreground">
+                {search ? "Aucun résultat" : "Aucune note"}
+              </p>
             </div>
           )}
 
@@ -317,9 +370,12 @@ export default function NotesPage() {
                 {NOTE_COLORS.map((c) => (
                   <button
                     key={c.value}
+                    type="button"
                     onClick={() => handleColorChange(c.value)}
+                    aria-label={`Couleur ${c.label}`}
+                    aria-pressed={editColor === c.value}
                     className={cn(
-                      "h-5 w-5 rounded-full border-2 transition-transform hover:scale-110",
+                      "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110",
                       editColor === c.value
                         ? "border-foreground scale-110"
                         : "border-transparent"
@@ -351,6 +407,7 @@ export default function NotesPage() {
                   scheduleAutosave(e.target.value, editContent, editColor);
                 }}
                 placeholder="Sans titre"
+                aria-label="Titre de la note"
                 className="w-full bg-transparent text-2xl md:text-3xl font-bold outline-none placeholder:text-muted-foreground/40 mb-4"
                 maxLength={200}
               />
@@ -363,6 +420,7 @@ export default function NotesPage() {
                   scheduleAutosave(editTitle, e.target.value, editColor);
                 }}
                 placeholder="Commencez à écrire..."
+                aria-label="Contenu de la note"
                 className="w-full min-h-[60vh] bg-transparent border-none resize-none outline-none text-sm leading-relaxed focus-visible:ring-0 p-0"
               />
             </div>
@@ -406,10 +464,18 @@ function NoteItem({
   onDelete: (e: React.MouseEvent) => void;
 }) {
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       className={cn(
-        "group w-full flex items-start gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/50",
+        "group w-full flex items-start gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/50 cursor-pointer",
         selected && "bg-muted"
       )}
     >
@@ -427,9 +493,10 @@ function NoteItem({
       </div>
       <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         <button
+          type="button"
           onClick={onPin}
-          className="p-1.5 rounded hover:bg-muted-foreground/20"
-          title={note.pinned ? "Désépingler" : "Épingler"}
+          aria-label={note.pinned ? "Désépingler la note" : "Épingler la note"}
+          className="p-2 rounded hover:bg-muted-foreground/20"
         >
           {note.pinned ? (
             <PinOff className="h-3.5 w-3.5 text-amber-500" />
@@ -438,13 +505,14 @@ function NoteItem({
           )}
         </button>
         <button
+          type="button"
           onClick={onDelete}
-          className="p-1.5 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-500"
-          title="Supprimer"
+          aria-label="Supprimer la note"
+          className="p-2 rounded hover:bg-red-500/20 text-muted-foreground hover:text-red-500"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
-    </button>
+    </div>
   );
 }

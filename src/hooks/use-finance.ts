@@ -6,12 +6,29 @@ import type {
   FinanceGoal,
 } from "@prisma/client";
 
-export type FinanceTransactionWithCategory = FinanceTransaction & {
+// Les routes API sérialisent les Decimal Prisma en nombres à 2 décimales.
+export type FinanceAccountSerialized = Omit<FinanceAccount, "balance"> & {
+  balance: number;
+};
+
+export type FinanceTransactionSerialized = Omit<FinanceTransaction, "amount"> & {
+  amount: number;
+};
+
+export type FinanceGoalSerialized = Omit<
+  FinanceGoal,
+  "targetAmount" | "currentAmount"
+> & {
+  targetAmount: number;
+  currentAmount: number;
+};
+
+export type FinanceTransactionWithCategory = FinanceTransactionSerialized & {
   category?: FinanceCategory | null;
   account?: { id: string; name: string; currency: string } | null;
 };
 
-export type FinanceGoalWithAccount = FinanceGoal & {
+export type FinanceGoalWithAccount = FinanceGoalSerialized & {
   account?: { name: string } | null;
 };
 
@@ -29,11 +46,16 @@ function ensureArray<T>(data: unknown): T[] {
 }
 
 export function useFinanceAccounts(workspaceId?: string) {
-  const { data, error, mutate } = useSWR<FinanceAccount[]>(
+  const { data, error, mutate } = useSWR<FinanceAccountSerialized[]>(
     workspaceId ? `/api/finance/accounts?workspaceId=${workspaceId}` : null,
     fetcher
   );
-  return { accounts: ensureArray<FinanceAccount>(data), isLoading: !error && !data, error, mutate };
+  return {
+    accounts: ensureArray<FinanceAccountSerialized>(data),
+    isLoading: !error && !data,
+    error,
+    mutate,
+  };
 }
 
 export function useFinanceCategories(workspaceId?: string, type?: string) {
@@ -62,11 +84,19 @@ export function useFinanceGoals(workspaceId?: string) {
 }
 
 export interface FinanceStats {
+  currency: string;
   totalBalance: number;
+  balances: Array<{ currency: string; balance: number }>;
   accountsCount: number;
   monthlyIncome: number;
   monthlyExpense: number;
   monthlyNet: number;
+  monthlyByCurrency: Array<{
+    currency: string;
+    income: number;
+    expense: number;
+    net: number;
+  }>;
   categoryBreakdown: Array<{
     categoryId: string | null;
     amount: number;
@@ -76,6 +106,13 @@ export interface FinanceStats {
   totalTarget: number;
   totalSaved: number;
   goalsProgress: number;
+  goalsByCurrency: Array<{
+    currency: string;
+    count: number;
+    totalTarget: number;
+    totalSaved: number;
+    progress: number;
+  }>;
 }
 
 export function useFinanceStats(workspaceId?: string) {

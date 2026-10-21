@@ -12,7 +12,7 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto px-6 py-16">
         <Link
           href="/"
-          className="text-sm text-white/40 hover:text-white/70 transition-colors"
+          className="text-sm text-white/60 hover:text-white/80 transition-colors"
         >
           ← Retour à l'accueil
         </Link>
@@ -20,7 +20,7 @@ export default function TermsPage() {
         <h1 className="mt-6 text-3xl font-bold tracking-tight">
           Conditions d'utilisation
         </h1>
-        <p className="mt-2 text-white/40 text-sm">
+        <p className="mt-2 text-white/60 text-sm">
           Dernière mise à jour : 26 mai 2026
         </p>
 

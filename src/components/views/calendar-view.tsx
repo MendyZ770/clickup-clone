@@ -15,6 +15,8 @@ import {
   parseISO,
 } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useToast } from "@/components/ui/use-toast";
+import { apiErrorMessage } from "@/lib/api-client";
 import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react";
 import {
   DndContext,
@@ -112,6 +114,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
   const { openTaskModal, setWorkspaceId } = useModal();
   const { createTask } = useCreateTask();
   const { updateTask } = useUpdateTask();
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -136,6 +139,7 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
       priority: getFilter("priority") ?? undefined,
       assigneeId: getFilter("assigneeId") ?? undefined,
       search: getFilter("search") ?? undefined,
+      dateFilter: getFilter("dateFilter") ?? undefined,
       sortBy: getFilter("sortBy") ?? undefined,
       sortOrder: (getFilter("sortOrder") as "asc" | "desc") ?? undefined,
     }
@@ -202,8 +206,13 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
     try {
       await updateTask(taskId, { dueDate: newDate.toISOString() });
       mutate();
-    } catch {
-      // silently fail
+    } catch (error) {
+      mutate();
+      toast({
+        title: "Déplacement impossible",
+        description: apiErrorMessage(error),
+        variant: "destructive",
+      });
     }
   };
 
@@ -383,7 +392,8 @@ export function CalendarView({ listId, workspaceId }: CalendarViewProps) {
             );
           })}
         </div>
-        
+        </div>
+
         {/* Drag Overlay for smooth visual feedback */}
         <DragOverlay>
           {activeTask ? (

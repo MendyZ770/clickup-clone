@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ChevronRight,
@@ -85,11 +86,10 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <Link
+            href={`/workspace/${workspaceId}/space/${space.id}`}
+            aria-label={space.name}
             className="flex w-full items-center justify-center rounded-md py-1.5 transition-colors hover:bg-sidebar-accent"
-            title={space.name}
           >
             <motion.div
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded"
@@ -97,9 +97,9 @@ export function SidebarSpaceItem({ space, workspaceId, mutateSpaces, collapsed }
               whileHover={{ rotate: 5 }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
-              <SpaceIcon className="h-5 w-5 text-white" />
+              <SpaceIcon className="h-5 w-5 text-white" aria-hidden="true" />
             </motion.div>
-          </motion.button>
+          </Link>
         </TooltipTrigger>
         <TooltipContent side="right">{space.name}</TooltipContent>
       </Tooltip>

@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
+import { verifyCronSecret } from "@/lib/cron-auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotificationToUsers } from "@/lib/notifications";
 import { startOfDay, endOfDay } from "date-fns";
 
-const CRON_SECRET = process.env.CRON_SECRET;
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret") ?? request.headers.get("x-vercel-cron-secret");
-  if (!CRON_SECRET || secret !== CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = verifyCronSecret(request);
+  if (denied) return denied;
 
   const now = new Date();
   const todayStart = startOfDay(now);
@@ -48,6 +46,17 @@ export async function GET(request: Request) {
 
     let notified = 0;
     for (const [userId, userTasks] of userTaskMap) {
+      // Idempotence : un seul résumé par utilisateur et par jour
+      const alreadySent = await prisma.notification.findFirst({
+        where: {
+          userId,
+          type: "dailySummary",
+          createdAt: { gte: todayStart },
+        },
+        select: { id: true },
+      });
+      if (alreadySent) continue;
+
       const count = userTasks.length;
       const taskList = userTasks.slice(0, 3).map((t) => `• ${t.title}`).join("\n");
       const more = count > 3 ? `\n+ ${count - 3} autre(s)` : "";

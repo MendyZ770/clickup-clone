@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
+import { ErrorState } from "@/components/shared/error-state";
 
 interface SearchTask {
   id: string;
@@ -67,27 +68,41 @@ function SearchContent() {
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
   const debouncedQuery = useDebounce(query, 300);
 
   const performSearch = useCallback(
     async (q: string) => {
+      const requestId = ++requestIdRef.current;
       if (!q.trim() || !currentWorkspace) {
         setResults(null);
+        setSearchError(null);
+        setIsSearching(false);
         return;
       }
       setIsSearching(true);
+      setSearchError(null);
       try {
         const res = await fetch(
           `/api/search?q=${encodeURIComponent(q)}&workspaceId=${currentWorkspace.id}`
         );
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data);
+        if (requestId !== requestIdRef.current) return;
+        if (!res.ok) {
+          throw new Error(
+            res.status === 403
+              ? "Accès refusé à cet espace de travail."
+              : "La recherche a échoué. Réessayez."
+          );
         }
-      } catch {
-        // Silently fail
+        const data = await res.json();
+        if (requestId === requestIdRef.current) setResults(data);
+      } catch (err) {
+        if (requestId === requestIdRef.current) {
+          setSearchError(err instanceof Error ? err.message : "La recherche a échoué.");
+        }
       } finally {
-        setIsSearching(false);
+        if (requestId === requestIdRef.current) setIsSearching(false);
       }
     },
     [currentWorkspace]
@@ -96,6 +111,18 @@ function SearchContent() {
   useEffect(() => {
     performSearch(debouncedQuery);
   }, [debouncedQuery, performSearch]);
+
+  // Conserve la requête dans l'URL pour que le retour arrière la restaure
+  useEffect(() => {
+    const current = searchParams.get("q");
+    const next = debouncedQuery.trim() || null;
+    if (current === next) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set("q", next);
+    else params.delete("q");
+    const qs = params.toString();
+    router.replace(qs ? `/search?${qs}` : "/search", { scroll: false });
+  }, [debouncedQuery, router, searchParams]);
 
   const totalResults =
     (results?.tasks.length ?? 0) +
@@ -120,6 +147,7 @@ function SearchContent() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Rechercher tâches, listes, espaces..."
+          aria-label="Rechercher des tâches, listes et espaces"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-10 pr-10"
@@ -129,6 +157,15 @@ function SearchContent() {
           <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
         )}
       </div>
+
+      {searchError && (
+        <ErrorState
+          title="Recherche impossible"
+          description={searchError}
+          onRetry={() => performSearch(debouncedQuery)}
+          className="py-10"
+        />
+      )}
 
       {/* Results */}
       {hasResults && (

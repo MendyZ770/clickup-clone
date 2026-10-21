@@ -3,6 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { verifyTaskAccess } from "@/lib/task-auth";
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function isSafeUploadUrl(value: string): boolean {
+  return /^\/uploads\/[A-Za-z0-9._-]+$/.test(value) && !value.includes("..");
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const user = await getCurrentUser();
@@ -29,6 +42,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ taskId:
     if (!(await verifyTaskAccess(taskId, user.id))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const { name, url, type, mimeType, size } = await req.json();
     if (!name || !url) return NextResponse.json({ error: "name and url required" }, { status: 400 });
+    if (typeof url !== "string" || (!isHttpUrl(url) && !isSafeUploadUrl(url))) {
+      return NextResponse.json({ error: "Invalid attachment URL" }, { status: 400 });
+    }
 
     const attachment = await prisma.attachment.create({
       data: { name, url, type: type ?? "link", mimeType, size, taskId, userId: user.id },
@@ -58,12 +74,17 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ taskI
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Delete local file if it's an upload
-    if (attachment.url.startsWith("/uploads/")) {
+    // Delete local file if it's a safe upload path
+    if (isSafeUploadUrl(attachment.url)) {
       try {
         const { unlink } = await import("fs/promises");
-        const { join } = await import("path");
-        await unlink(join(process.cwd(), "public", attachment.url));
+        const { resolve, sep } = await import("path");
+        const uploadsRoot = resolve(process.cwd(), "public", "uploads");
+        const fileName = attachment.url.replace(/^\/uploads\//, "");
+        const filePath = resolve(uploadsRoot, fileName);
+        if (filePath.startsWith(uploadsRoot + sep)) {
+          await unlink(filePath);
+        }
       } catch { /* file may not exist */ }
     }
 

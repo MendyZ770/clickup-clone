@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { format, isToday, isBefore, isThisWeek, startOfDay } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Bell, Trash2, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ function ReminderItem({
           onToggleComplete(reminder.id, checked as boolean)
         }
         className="mt-0.5"
+        aria-label={`Marquer « ${reminder.title} » comme ${reminder.completed ? "à faire" : "terminé"}`}
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -83,7 +85,7 @@ function ReminderItem({
           </span>
           {reminder.task && (
             <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
               {reminder.task.title}
             </span>
           )}
@@ -94,7 +96,7 @@ function ReminderItem({
           </p>
         )}
         <p className={`mt-1 text-xs ${colorClass}`}>
-          {format(new Date(reminder.remindAt), "d MMM yyyy 'à' HH:mm")}
+          {format(new Date(reminder.remindAt), "d MMM yyyy 'à' HH:mm", { locale: fr })}
         </p>
       </div>
       <Button
@@ -102,8 +104,9 @@ function ReminderItem({
         size="icon"
         className="h-8 w-8 text-muted-foreground hover:text-destructive"
         onClick={() => onDelete(reminder.id)}
+        aria-label={`Supprimer le rappel « ${reminder.title} »`}
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -127,9 +130,9 @@ function ReminderGroup({
   if (reminders.length === 0) return null;
 
   return (
-    <div>
+    <div role="group" aria-label={title}>
       <div className="flex items-center gap-2 px-4 py-2 bg-muted/30">
-        <div className={`h-2 w-2 rounded-full ${dotColor}`} />
+        <div className={`h-2 w-2 rounded-full ${dotColor}`} aria-hidden="true" />
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {title}
         </span>
@@ -183,7 +186,7 @@ export function ReminderList({
       <div className="rounded-lg border border-border/50">
         <div className="flex flex-col items-center justify-center py-16">
           <div className="mb-4 rounded-full bg-muted p-4">
-            <Bell className="h-8 w-8 text-muted-foreground" />
+            <Bell className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
           </div>
           <h3 className="mb-1 text-lg font-semibold">Aucun rappel</h3>
           <p className="max-w-sm text-center text-sm text-muted-foreground">

@@ -55,7 +55,6 @@ export async function sendPushNotification({
     // 410 = subscription expired or unsubscribed
     const error = err as { statusCode?: number; message?: string };
     if (error.statusCode === 410) {
-      console.log("[PUSH] Subscription expired, will be cleaned up");
       throw new Error("GONE");
     }
     console.error("[PUSH] Failed to send:", err);

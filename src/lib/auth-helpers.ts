@@ -4,8 +4,10 @@ import { cookies, headers } from "next/headers";
 import { jwtVerify } from "jose";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isMobileTokenRevoked } from "@/lib/mobile-token-store";
 
 export const MOBILE_SESSION_COOKIE = "mobile_session";
+export const GCAL_OAUTH_STATE_COOKIE = "gcal_oauth_state";
 
 const getSecret = () => new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
@@ -20,9 +22,14 @@ const userSelect = {
   updatedAt: true,
 } as const;
 
+export async function verifyMobileToken(token: string) {
+  return jwtVerify(token, getSecret(), { clockTolerance: 60 });
+}
+
 async function getUserFromMobileToken(token: string) {
-  const { payload } = await jwtVerify(token, getSecret(), { clockTolerance: 60 });
+  const { payload } = await verifyMobileToken(token);
   if (!payload.id) return null;
+  if (payload.jti && (await isMobileTokenRevoked(payload.jti))) return null;
   return prisma.user.findUnique({
     where: { id: payload.id as string },
     select: userSelect,
@@ -61,6 +68,14 @@ export async function getCurrentUser() {
   });
 
   return user;
+}
+
+export async function isWorkspaceMember(workspaceId: string, userId: string) {
+  const membership = await prisma.workspaceMember.findFirst({
+    where: { workspaceId, userId },
+    select: { id: true },
+  });
+  return !!membership;
 }
 
 export async function requireAuth() {

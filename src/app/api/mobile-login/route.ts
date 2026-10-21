@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 import { SignJWT } from "jose";
 import { MOBILE_SESSION_COOKIE } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
@@ -15,7 +16,10 @@ export async function POST(req: NextRequest) {
     const realIp = req.headers.get("x-real-ip");
     const identifier = forwardedFor?.split(",")[0]?.trim() || realIp || "anonymous";
 
-    const rateLimit = await checkRateLimit(identifier);
+    const rateLimit = await checkRateLimit(`mobile-login:ip:${identifier}`, {
+      limit: 10,
+      windowMs: 60_000,
+    });
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: "Too many requests", code: "RATE_LIMITED" },
@@ -33,6 +37,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Email and password required" },
         { status: 400 }
+      );
+    }
+
+    const accountLimit = await checkRateLimit(`mobile-login:account:${normalizedEmail}`, {
+      limit: 5,
+      windowMs: 60_000,
+    });
+    if (!accountLimit.success) {
+      return NextResponse.json(
+        { error: "Too many attempts", code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil((accountLimit.reset - Date.now()) / 1000)) },
+        }
       );
     }
 
@@ -69,6 +87,7 @@ export async function POST(req: NextRequest) {
       image: user.image,
     })
       .setProtectedHeader({ alg: "HS256" })
+      .setJti(randomUUID())
       .setIssuedAt()
       .setExpirationTime("30d")
       .sign(getSecret());

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { isWorkspaceAdmin } from "@/lib/workspace-auth";
 import { updateSpaceSchema } from "@/lib/validations/space";
 
 interface RouteContext {
@@ -83,6 +84,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Space not found" }, { status: 404 });
     }
 
+    if (!(await isWorkspaceAdmin(space.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent modifier cet espace" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const parsed = updateSpaceSchema.safeParse(body);
     if (!parsed.success) {
@@ -129,6 +137,13 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!space || space.workspace.members.length === 0) {
       return NextResponse.json({ error: "Space not found" }, { status: 404 });
+    }
+
+    if (!(await isWorkspaceAdmin(space.workspaceId, user.id))) {
+      return NextResponse.json(
+        { error: "Seuls les administrateurs peuvent supprimer cet espace" },
+        { status: 403 }
+      );
     }
 
     await prisma.space.delete({ where: { id: spaceId } });

@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { parseMoney, serializeMoney } from "@/lib/money";
 import { z } from "zod";
 
 const budgetSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
-  amount: z.number().positive(),
-  currency: z.string().max(3).default("EUR"),
-  color: z.string().max(7).default("#10B981"),
+  amount: z.union([z.number(), z.string()]),
+  currency: z.string().regex(/^[A-Z]{3}$/).default("EUR"),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#10B981"),
   workspaceId: z.string().min(1),
 });
 
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(budgets);
+    return NextResponse.json(serializeMoney(budgets));
   } catch (error) {
     console.error("[BUDGET_GET]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -61,14 +62,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const { workspaceId, ...data } = parsed.data;
+    const { workspaceId, amount, ...data } = parsed.data;
 
     const hasAccess = await checkWorkspaceAccess(user.id, workspaceId);
     if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+    const parsedAmount = parseMoney(amount);
+    if (!parsedAmount) {
+      return NextResponse.json({ error: "Montant invalide" }, { status: 400 });
+    }
+
     const budget = await prisma.budget.create({
       data: {
         ...data,
+        amount: parsedAmount,
         workspaceId,
         creatorId: user.id,
       },
@@ -78,7 +85,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(budget, { status: 201 });
+    return NextResponse.json(serializeMoney(budget), { status: 201 });
   } catch (error) {
     console.error("[BUDGET_POST]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,9 +1,27 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
 const connectionString = process.env.DATABASE_URL!;
-const adapter = new PrismaPg(connectionString);
+
+// Le seed supprime toutes les lignes avant de réinsérer des données de démo.
+const host = (() => {
+  try {
+    return new URL(connectionString.replace(/\$/g, "")).hostname;
+  } catch {
+    return "";
+  }
+})();
+const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
+if (!isLocalHost && process.env.SEED_ALLOW_REMOTE !== "1") {
+  throw new Error(
+    `Seed refusé : DATABASE_URL pointe vers "${host}" (base distante). ` +
+      "Ce script efface toutes les données. Utilisez une base locale, ou posez SEED_ALLOW_REMOTE=1 après sauvegarde."
+  );
+}
+
+const adapter = new PrismaPg(new Pool({ connectionString }));
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
@@ -221,7 +239,7 @@ async function main() {
       listId: uiComponentsList.id,
       statusId: uiStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -248,7 +266,7 @@ async function main() {
       listId: uiComponentsList.id,
       statusId: uiStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -277,7 +295,7 @@ async function main() {
       listId: featuresList.id,
       statusId: featureStatuses[2].id, // Review
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -304,7 +322,7 @@ async function main() {
       listId: featuresList.id,
       statusId: featureStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -319,7 +337,7 @@ async function main() {
       listId: apiList.id,
       statusId: apiStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -399,7 +417,7 @@ async function main() {
       listId: contentList.id,
       statusId: contentStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 
@@ -426,7 +444,7 @@ async function main() {
       listId: campaignList.id,
       statusId: campaignStatuses[1].id, // In Progress
       creatorId: user.id,
-      assigneeId: user.id,
+      assignees: { create: [{ userId: user.id }] },
     },
   });
 

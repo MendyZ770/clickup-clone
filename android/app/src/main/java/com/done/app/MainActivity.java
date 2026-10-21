@@ -10,12 +10,11 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    WebView.setWebContentsDebuggingEnabled(true);
+    WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
 
-    // Clear WebView cache so new deployments are always picked up
+    // Keep the HTTP cache across launches so the app can start without network.
     WebView webView = this.getBridge().getWebView();
-    webView.clearCache(true);
-    webView.getSettings().setCacheMode(android.webkit.WebSettings.LOAD_NO_CACHE);
+    webView.getSettings().setCacheMode(android.webkit.WebSettings.LOAD_DEFAULT);
 
     configureEdgeToEdge();
   }

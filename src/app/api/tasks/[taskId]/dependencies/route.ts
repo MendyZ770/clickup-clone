@@ -8,6 +8,32 @@ interface RouteContext {
   params: Promise<{ taskId: string }>;
 }
 
+async function wouldCreateCycle(
+  dependentTaskId: string,
+  dependencyTaskId: string
+): Promise<boolean> {
+  const seen = new Set<string>();
+  let frontier = [dependencyTaskId];
+
+  while (frontier.length > 0) {
+    const batch = frontier.filter((id) => !seen.has(id));
+    if (batch.length === 0) return false;
+    for (const id of batch) {
+      seen.add(id);
+      if (id === dependentTaskId) return true;
+    }
+    if (seen.size > 500) return true;
+    frontier = (
+      await prisma.taskDependency.findMany({
+        where: { dependentTaskId: { in: batch } },
+        select: { dependencyTaskId: true },
+      })
+    ).map((d) => d.dependencyTaskId);
+  }
+
+  return false;
+}
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
@@ -135,8 +161,11 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    const targetTask = await prisma.task.findUnique({
-      where: { id: targetTaskId },
+    const targetTask = await prisma.task.findFirst({
+      where: {
+        id: targetTaskId,
+        list: { space: { workspaceId: task.list.space.workspace.id } },
+      },
       select: { id: true, title: true },
     });
 
@@ -163,6 +192,16 @@ export async function POST(request: Request, context: RouteContext) {
       // linked_to: direction doesn't matter semantically, but we store it consistently
       dependentTaskId = taskId;
       dependencyTaskId = targetTaskId;
+    }
+
+    if (
+      type !== "linked_to" &&
+      (await wouldCreateCycle(dependentTaskId, dependencyTaskId))
+    ) {
+      return NextResponse.json(
+        { error: "Cette dépendance créerait un cycle" },
+        { status: 409 }
+      );
     }
 
     // Check for existing dependency

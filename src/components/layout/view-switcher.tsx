@@ -62,7 +62,11 @@ export function ViewSwitcher({ basePath }: ViewSwitcherProps) {
   };
 
   return (
-    <div className="flex items-center gap-0.5 rounded-lg border bg-muted/30 p-0.5">
+    <div
+      role="group"
+      aria-label="Changer de vue"
+      className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-lg border bg-muted/30 p-0.5 hide-scrollbar"
+    >
       {options.map((option) => {
         const isActive = currentView === option.id;
         const Icon = option.icon;
@@ -70,15 +74,18 @@ export function ViewSwitcher({ basePath }: ViewSwitcherProps) {
         return (
           <button
             key={option.id}
+            type="button"
             onClick={() => handleViewChange(option)}
+            aria-label={option.label}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-1 md:gap-1.5 rounded-md px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium transition-all",
+              "flex shrink-0 items-center gap-1 md:gap-1.5 rounded-md px-2 md:px-3 py-1.5 text-xs md:text-sm font-medium transition-all",
               isActive
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">{option.label}</span>
           </button>
         );

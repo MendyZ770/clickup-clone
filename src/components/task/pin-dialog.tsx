@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Lock, Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 interface PinDialogProps {
   open: boolean;
   taskId: string;
-  onSuccess: () => void;
+  onSuccess: (pin: string) => void;
   onCancel: () => void;
 }
 
@@ -40,21 +42,21 @@ export function PinDialog({ open, taskId, onSuccess, onCancel }: PinDialogProps)
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/tasks/${taskId}/verify-pin`, {
+      const data = await apiJson<{ valid?: boolean }>(`/api/tasks/${taskId}/verify-pin`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin }),
       });
-      const data = await res.json();
-      if (data.valid) {
-        onSuccess();
+      if (data?.valid) {
+        onSuccess(pin);
       } else {
         setError("Code incorrect. Réessayez.");
         setPin("");
         setTimeout(() => inputRef.current?.focus(), 50);
       }
-    } catch {
-      setError("Erreur de connexion. Réessayez.");
+    } catch (error) {
+      setError(apiErrorMessage(error));
+      toast({ title: "Vérification impossible", description: apiErrorMessage(error), variant: "destructive" });
+      setPin("");
     } finally {
       setLoading(false);
     }

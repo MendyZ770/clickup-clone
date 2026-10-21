@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-import { MOBILE_SESSION_COOKIE } from "@/lib/auth-helpers";
-
-const getSecret = () => new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || (() => { throw new Error("NEXTAUTH_SECRET must be set"); })()
-);
+import { MOBILE_SESSION_COOKIE, verifyMobileToken } from "@/lib/auth-helpers";
+import { isMobileTokenRevoked } from "@/lib/mobile-token-store";
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,9 +10,10 @@ export async function GET(req: NextRequest) {
     }
 
     const token = authHeader.slice(7);
-    const { payload } = await jwtVerify(token, getSecret(), {
-      clockTolerance: 60,
-    });
+    const { payload } = await verifyMobileToken(token);
+    if (payload.jti && (await isMobileTokenRevoked(payload.jti))) {
+      return NextResponse.json({ error: "Session révoquée" }, { status: 401 });
+    }
 
     const response = NextResponse.json({
       id: payload.id,

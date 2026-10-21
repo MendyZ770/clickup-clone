@@ -105,9 +105,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const isMember = doc.workspace.members.some((m) => m.userId === user.id);
-    if (!isMember) {
+    const member = doc.workspace.members.find((m) => m.userId === user.id);
+    if (!member) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const isAdmin = member.role === "owner" || member.role === "admin";
+    if (doc.userId !== user.id && !isAdmin) {
+      return NextResponse.json(
+        { error: "Seuls l'auteur ou un administrateur peuvent supprimer ce document" },
+        { status: 403 }
+      );
     }
 
     await prisma.document.delete({

@@ -168,6 +168,13 @@ export async function GET(request: Request) {
       count: priorityMap.get(priority) ?? 0,
     }));
 
+    const upcomingDeadlinesWithoutPin = upcomingDeadlines.map(
+      ({ lockedPin: _lockedPin, ...task }) => {
+        void _lockedPin;
+        return task;
+      }
+    );
+
     return NextResponse.json(
       {
         totalTasks,
@@ -177,7 +184,7 @@ export async function GET(request: Request) {
         tasksByStatus,
         tasksByPriority,
         recentActivities,
-        upcomingDeadlines,
+        upcomingDeadlines: upcomingDeadlinesWithoutPin,
       },
       {
         headers: {

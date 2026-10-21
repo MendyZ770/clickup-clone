@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Repeat, X, Loader2 } from "lucide-react";
 import useSWR from "swr";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -42,21 +44,26 @@ export function TaskRecurrence({ taskId }: TaskRecurrenceProps) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetch(`/api/tasks/${taskId}/recurrence`, {
+      await apiJson(`/api/tasks/${taskId}/recurrence`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pattern, interval }),
       });
       mutate();
       setOpen(false);
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
   const handleRemove = async () => {
-    await fetch(`/api/tasks/${taskId}/recurrence`, { method: "DELETE" });
-    mutate();
+    try {
+      await apiJson(`/api/tasks/${taskId}/recurrence`, { method: "DELETE" });
+      mutate();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   if (data?.pattern) {

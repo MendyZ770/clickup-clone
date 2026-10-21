@@ -28,7 +28,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { addAccount } = useAccounts();
-  const { status } = useMobileAuth();
+  const { status, refresh } = useMobileAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
@@ -123,6 +123,7 @@ export function LoginForm() {
         name: mobileData.user.name ?? null,
         image: mobileData.user.image ?? null,
       });
+      await refresh();
 
       router.push("/dashboard");
       router.refresh();
@@ -169,7 +170,7 @@ export function LoginForm() {
           Bon retour
         </motion.h1>
         <motion.p
-          className="text-white/40 text-sm mt-1"
+          className="text-white/60 text-sm mt-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -197,7 +198,7 @@ export function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
           <div className="space-y-2">
@@ -210,7 +211,7 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-purple-500/50 focus:ring-purple-500/20"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 focus:ring-purple-500/20"
             />
           </div>
         </motion.div>
@@ -225,7 +226,7 @@ export function LoginForm() {
           </Button>
         </motion.div>
 
-        <motion.p variants={staggerItem} className="text-sm text-white/30 text-center">
+        <motion.p variants={staggerItem} className="text-sm text-white/60 text-center">
           {"Pas encore de compte ? "}
           <Link
             href="/register"
@@ -236,17 +237,17 @@ export function LoginForm() {
         </motion.p>
       </form>
 
-      <motion.div variants={staggerItem} className="mt-6 flex items-center justify-center gap-4 text-xs text-white/20">
+      <motion.div variants={staggerItem} className="mt-6 flex items-center justify-center gap-4 text-xs text-white/50">
         <Link
           href="/privacy"
-          className="hover:text-white/40 transition-colors"
+          className="hover:text-white/70 transition-colors"
         >
           Politique de confidentialité
         </Link>
         <span>|</span>
         <Link
           href="/terms"
-          className="hover:text-white/40 transition-colors"
+          className="hover:text-white/70 transition-colors"
         >
           Conditions
         </Link>

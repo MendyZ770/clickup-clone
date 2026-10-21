@@ -4,8 +4,72 @@ import withPWAInit from "@ducanh2912/next-pwa";
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  // L'enregistrement est fait par le layout, qui l'ignore dans Capacitor.
+  register: false,
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
+  // Le rejeu de l'outbox gère la reconnexion ; un reload global l'interromprait.
+  reloadOnOnline: false,
+  caches: [],
+  // Injecte les handlers push/notificationclick dans le SW Workbox généré.
+  customWorkerSrc: "worker",
+  customWorkerDest: "public",
+  customWorkerPrefix: "worker",
+  workboxOptions: {
+    importScripts: [],
+    runtimeCaching: [
+      {
+        urlPattern: ({ url, sameOrigin }) =>
+          sameOrigin && url.pathname.startsWith("/api/"),
+        handler: "NetworkOnly",
+      },
+      {
+        urlPattern: ({ url, sameOrigin }) =>
+          sameOrigin &&
+          (url.pathname.startsWith("/auth/") ||
+            url.pathname === "/login" ||
+            url.pathname === "/register"),
+        handler: "NetworkOnly",
+      },
+      {
+        urlPattern: ({ url }) =>
+          url.pathname.startsWith("/_next/static/") ||
+          url.pathname.startsWith("/_next/image"),
+        handler: "CacheFirst",
+        options: {
+          cacheName: "static",
+          expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        },
+      },
+      {
+        urlPattern: ({ request }) =>
+          ["style", "script", "font", "image"].includes(request.destination),
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "assets",
+          expiration: { maxEntries: 120, maxAgeSeconds: 7 * 24 * 60 * 60 },
+        },
+      },
+      {
+        urlPattern: ({ request, sameOrigin }) =>
+          sameOrigin && request.mode === "navigate",
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "pages",
+          networkTimeoutSeconds: 4,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 },
+          cacheableResponse: { statuses: [200] },
+          plugins: [
+            {
+              handlerDidError: async () =>
+                (await caches.match("/offline")) ?? Response.error(),
+            },
+          ],
+        },
+      },
+    ],
+    additionalManifestEntries: [{ url: "/offline", revision: "v1" }],
+  },
 });
 
 /** @type {import('next').NextConfig} */

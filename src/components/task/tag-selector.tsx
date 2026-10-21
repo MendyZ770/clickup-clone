@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { Plus, X, Tag as TagIcon } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import {
   Popover,
   PopoverContent,
@@ -11,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -57,19 +59,26 @@ export function TagSelector({
   const attachedTagIds = new Set(taskTags.map((tt) => tt.tag.id));
 
   const handleAddTag = async (tagId: string) => {
-    await fetch(`/api/tasks/${taskId}/tags`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tagId }),
-    });
-    onTagAdded?.();
+    try {
+      await apiJson(`/api/tasks/${taskId}/tags`, {
+        method: "POST",
+        body: JSON.stringify({ tagId }),
+      });
+      onTagAdded?.();
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const handleRemoveTag = async (tagId: string) => {
-    await fetch(`/api/tasks/${taskId}/tags?tagId=${tagId}`, {
-      method: "DELETE",
-    });
-    onTagRemoved?.();
+    try {
+      await apiJson(`/api/tasks/${taskId}/tags?tagId=${tagId}`, {
+        method: "DELETE",
+      });
+      onTagRemoved?.();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const handleCreateTag = async () => {
@@ -86,21 +95,19 @@ export function TagSelector({
         "#EC4899",
       ];
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const res = await fetch("/api/tags", {
+      const tag = await apiJson<{ id: string }>("/api/tags", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newTagName.trim(),
           color,
           workspaceId,
         }),
       });
-      if (res.ok) {
-        const tag = await res.json();
-        await handleAddTag(tag.id);
-        mutateTags();
-        setNewTagName("");
-      }
+      await handleAddTag(tag.id);
+      mutateTags();
+      setNewTagName("");
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setIsCreating(false);
     }

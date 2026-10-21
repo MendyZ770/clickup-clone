@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   CircleDot,
   Flag,
@@ -225,14 +226,14 @@ export function TaskProperties({
           <Clock className="h-4 w-4" />
           <span>Créé le</span>
           <span className="ml-auto text-foreground">
-            {format(new Date(task.createdAt), "d MMM yyyy")}
+            {format(new Date(task.createdAt), "d MMM yyyy", { locale: fr })}
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
           <span>Modifié le</span>
           <span className="ml-auto text-foreground">
-            {format(new Date(task.updatedAt), "d MMM yyyy")}
+            {format(new Date(task.updatedAt), "d MMM yyyy", { locale: fr })}
           </span>
         </div>
         {task.creator && (

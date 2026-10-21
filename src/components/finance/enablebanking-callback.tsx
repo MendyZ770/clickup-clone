@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 export function EnableBankingCallback({ handleMutate }: { handleMutate: () => void }) {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -21,14 +22,12 @@ export function EnableBankingCallback({ handleMutate }: { handleMutate: () => vo
         description: "Liaison du compte bancaire en cours...",
       });
 
-      fetch("/api/finance/enablebanking/callback", {
+      apiJson<{ success?: boolean; error?: string }>("/api/finance/enablebanking/callback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, state }),
       })
-        .then((res) => res.json())
         .then((data) => {
-          if (data.success) {
+          if (data?.success) {
             toast({
               title: "Succès",
               description: "Compte bancaire lié avec succès.",
@@ -36,14 +35,17 @@ export function EnableBankingCallback({ handleMutate }: { handleMutate: () => vo
             handleMutate();
             router.replace("/finance");
           } else {
-            throw new Error(data.error || "Erreur inconnue");
+            toast({
+              title: "Erreur",
+              description: data?.error || "Impossible de lier le compte bancaire.",
+              variant: "destructive",
+            });
           }
         })
-        .catch((err) => {
-          console.error(err);
+        .catch((error) => {
           toast({
             title: "Erreur",
-            description: err.message || "Impossible de lier le compte bancaire.",
+            description: apiErrorMessage(error),
             variant: "destructive",
           });
         })

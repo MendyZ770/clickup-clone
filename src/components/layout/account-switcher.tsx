@@ -104,8 +104,11 @@ export function AccountSwitcher() {
                 key={account.id}
                 className="flex items-center gap-3 p-2 cursor-pointer"
                 onSelect={() => {
-                  signOut({ redirect: false }).catch(() => {});
-                  mobileLogout();
+                  void (async () => {
+                    await mobileLogout();
+                    await signOut({ redirect: false }).catch(() => {});
+                    window.location.replace("/login");
+                  })();
                 }}
               >
                 <Avatar className="h-10 w-10">
@@ -131,8 +134,11 @@ export function AccountSwitcher() {
         <DropdownMenuItem
           className="cursor-pointer gap-2"
           onSelect={() => {
-            signOut({ redirect: false }).catch(() => {});
-            mobileLogout();
+            void (async () => {
+              await mobileLogout();
+              await signOut({ redirect: false }).catch(() => {});
+              window.location.replace("/login");
+            })();
           }}
         >
           <Plus className="h-5 w-5" />
@@ -144,8 +150,11 @@ export function AccountSwitcher() {
         <DropdownMenuItem
           className="cursor-pointer gap-2 text-destructive focus:text-destructive"
           onSelect={() => {
-            signOut({ callbackUrl: "/login" }).catch(() => {});
-            mobileLogout();
+            void (async () => {
+              await mobileLogout();
+              await signOut({ redirect: false }).catch(() => {});
+              window.location.replace("/login");
+            })();
           }}
         >
           <LogOut className="h-5 w-5" />

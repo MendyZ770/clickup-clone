@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { formatDate } from "@/lib/dates";
 import {
   Star,
   Link,
@@ -26,7 +26,7 @@ import {
 import {
   Calendar as CalendarWidget,
 } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, safeHref } from "@/lib/utils";
 
 interface CustomFieldRendererProps {
   fieldType: string;
@@ -98,7 +98,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors min-w-0 flex-1"
             >
-              {value || <span className="text-muted-foreground italic">Empty</span>}
+              {value || <span className="text-muted-foreground italic">Vide</span>}
             </button>
           )}
         </div>
@@ -132,7 +132,7 @@ export function CustomFieldRenderer({
               onClick={() => { setLocalValue(value ?? ""); setEditing(true); }}
               className="text-sm text-left truncate hover:text-primary transition-colors"
             >
-              {value ?? <span className="text-muted-foreground italic">Empty</span>}
+              {value ?? <span className="text-muted-foreground italic">Vide</span>}
             </button>
           )}
         </div>
@@ -144,7 +144,7 @@ export function CustomFieldRenderer({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className={cn("h-8 text-base justify-between", className)}>
               <span className="truncate">
-                {value || <span className="text-muted-foreground">Select...</span>}
+                {value || <span className="text-muted-foreground">Sélectionner...</span>}
               </span>
               <ChevronDown className="h-4 w-4 ml-1 shrink-0" />
             </Button>
@@ -169,7 +169,7 @@ export function CustomFieldRenderer({
                   onClick={() => onChange(null)}
                   className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-muted transition-colors text-muted-foreground"
                 >
-                  Clear
+                  Effacer
                 </button>
               </>
             )}
@@ -185,7 +185,7 @@ export function CustomFieldRenderer({
             onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
           />
           <span className="text-sm text-muted-foreground">
-            {value === "true" ? "Yes" : "No"}
+            {value === "true" ? "Oui" : "Non"}
           </span>
         </div>
       );
@@ -196,7 +196,7 @@ export function CustomFieldRenderer({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className={cn("h-8 text-base", className)}>
               <Calendar className="h-4 w-4 mr-1" />
-              {value ? format(new Date(value), "MMM d, yyyy") : "Set date"}
+              {value ? formatDate(value, "d MMM yyyy") : "Choisir une date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -403,11 +403,14 @@ function renderViewValue(
 
   switch (type) {
     case "checkbox":
-      return value === "true" ? "Yes" : "No";
+      return value === "true" ? "Oui" : "Non";
     case "date":
-      return format(new Date(value), "MMM d, yyyy");
+      return formatDate(value, "d MMM yyyy");
     case "currency":
-      return `$${parseFloat(value).toFixed(2)}`;
+      return new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+      }).format(parseFloat(value));
     case "rating":
       return (
         <span className="inline-flex gap-0.5">
@@ -422,12 +425,15 @@ function renderViewValue(
           ))}
         </span>
       );
-    case "url":
+    case "url": {
+      const href = safeHref(value);
+      if (href === "#") return <span className="truncate">{value}</span>;
       return (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline truncate">
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline truncate">
           {value}
         </a>
       );
+    }
     default:
       return value;
   }

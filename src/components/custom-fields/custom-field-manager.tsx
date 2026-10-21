@@ -21,6 +21,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { getFieldTypeIcon } from "./custom-field-renderer";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -92,9 +94,8 @@ export function CustomFieldManager({
           .map((o) => o.trim())
           .filter(Boolean);
       }
-      await fetch("/api/custom-fields", {
+      await apiJson("/api/custom-fields", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
       setNewName("");
@@ -105,7 +106,7 @@ export function CustomFieldManager({
       mutate();
       onFieldsChanged();
     } catch (error) {
-      console.error("Failed to create field:", error);
+      toast({ title: "Création impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setCreating(false);
     }
@@ -114,11 +115,11 @@ export function CustomFieldManager({
   const handleDelete = async (fieldId: string) => {
     setDeleting(fieldId);
     try {
-      await fetch(`/api/custom-fields/${fieldId}`, { method: "DELETE" });
+      await apiJson(`/api/custom-fields/${fieldId}`, { method: "DELETE" });
       mutate();
       onFieldsChanged();
     } catch (error) {
-      console.error("Failed to delete field:", error);
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setDeleting(null);
     }
@@ -126,15 +127,14 @@ export function CustomFieldManager({
 
   const handleToggleRequired = async (field: CustomField) => {
     try {
-      await fetch(`/api/custom-fields/${field.id}`, {
+      await apiJson(`/api/custom-fields/${field.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ required: !field.required }),
       });
       mutate();
       onFieldsChanged();
     } catch (error) {
-      console.error("Failed to update field:", error);
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 

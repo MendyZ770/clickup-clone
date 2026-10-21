@@ -51,17 +51,23 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { taskId } = await context.params;
 
-    if (!(await verifyTaskAccess(taskId, user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      select: { title: true }
+    const task = await prisma.task.findFirst({
+      where: {
+        id: taskId,
+        list: {
+          space: {
+            workspace: { members: { some: { userId: user.id } } },
+          },
+        },
+      },
+      select: {
+        title: true,
+        list: { select: { space: { select: { workspaceId: true } } } },
+      },
     });
 
     if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -118,10 +124,20 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Notifier les mentions @
-    if (mentionedUserIds.length > 0) {
+    // Notifier les mentions @, limitées aux membres du workspace
+    const requestedMentions = [...new Set(mentionedUserIds)].filter(
+      (id) => id !== user.id
+    );
+    if (requestedMentions.length > 0) {
       const { sendNotificationToUsers } = await import("@/lib/notifications");
-      const uniqueMentioned = [...new Set(mentionedUserIds)].filter(id => id !== user.id);
+      const members = await prisma.workspaceMember.findMany({
+        where: {
+          workspaceId: task.list.space.workspaceId,
+          userId: { in: requestedMentions },
+        },
+        select: { userId: true },
+      });
+      const uniqueMentioned = members.map((m) => m.userId);
       if (uniqueMentioned.length > 0) {
         await sendNotificationToUsers(
           uniqueMentioned,

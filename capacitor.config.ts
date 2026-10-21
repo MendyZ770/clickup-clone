@@ -1,17 +1,29 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
+const productionUrl = "https://clickup-clone-three.vercel.app";
+const serverUrl = process.env.CAPACITOR_SERVER_URL?.trim() || productionUrl;
+
+function originOf(url: string): string {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return productionUrl;
+  }
+}
+
 const config: CapacitorConfig = {
   appId: "com.done.app",
   appName: "Done",
   webDir: "public",
   server: {
-    url: "https://clickup-clone-three.vercel.app",
-    allowNavigation: [
-      "clickup-clone-three.vercel.app",
-      "*.ngrok-free.app",
-      "*.vercel.app",
-    ],
-    cleartext: false,
+    url: serverUrl,
+    // Aucune origine supplémentaire : la WebView reste limitée à l'origine de
+    // l'app. Pour tester sur téléphone, définir CAPACITOR_SERVER_URL puis
+    // relancer `npx cap sync android` (ne jamais committer d'URL ngrok).
+    allowNavigation: [],
+    cleartext: originOf(serverUrl).startsWith("http://"),
+    // Page locale embarquée dans l'APK quand le serveur est injoignable.
+    errorPath: "index.html",
   },
   // NOTE: Pour le Play Store, une migration vers Trusted Web Activity (TWA)
   // via @bubblewrap/cli est recommandée plutôt qu'un wrapper WebView Capacitor

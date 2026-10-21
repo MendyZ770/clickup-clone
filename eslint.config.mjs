@@ -2,7 +2,20 @@ import next from "eslint-config-next";
 
 const eslintConfig = [
   {
-    ignores: ["src/generated/**", "node_modules/**", ".next/**", "android/**", "apk/**", "ios/**"],
+    ignores: [
+      "src/generated/**",
+      "node_modules/**",
+      ".next/**",
+      "android/**",
+      "apk/**",
+      "ios/**",
+      "public/sw.js",
+      "public/workbox-*.js",
+      "public/worker-*.js",
+      "public/fallback-*.js",
+      "test-results/**",
+      "playwright-report/**",
+    ],
   },
   ...next,
   {

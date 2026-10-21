@@ -12,6 +12,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get("taskId");
+    const workspaceId = searchParams.get("workspaceId");
     const userId = searchParams.get("userId");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
@@ -22,17 +23,28 @@ export async function GET(request: Request) {
       if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    if (workspaceId) {
+      const membership = await prisma.workspaceMember.findUnique({
+        where: { workspaceId_userId: { workspaceId, userId: user.id } },
+      });
+      if (!membership) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
     const where: Prisma.TimeEntryWhereInput = {};
 
     if (taskId) where.taskId = taskId;
     if (userId) where.userId = userId;
 
     if (!taskId) {
-      // If no taskId is provided, only return entries for tasks the user can access
+      // If no taskId is provided, only return entries for tasks in the requested
+      // workspace (or all workspaces the user belongs to).
       where.task = {
         list: {
           space: {
             workspace: {
+              ...(workspaceId ? { id: workspaceId } : {}),
               members: { some: { userId: user.id } },
             },
           },
