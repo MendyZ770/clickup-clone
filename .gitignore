@@ -8,6 +8,14 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+
+# generated service worker artifacts (rebuilt by next build)
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/fallback-*.js
 
 # next.js
 /.next/
