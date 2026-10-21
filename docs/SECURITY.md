@@ -33,6 +33,19 @@ Les headers suivants sont configurés dans `next.config.mjs` :
 - Mot de passe base de données Neon.
 - Certificat de signing Android (keystore + alias password).
 
+## Secrets de build Android
+
+`android/app/google-services.json` (clé API Firebase, numéro de projet, identifiants FCM)
+n'est pas versionné — règle active dans `android/.gitignore`. Chaque poste le récupère
+depuis la console Firebase (Paramètres du projet → Applications Android → `com.done.app`)
+et le dépose à cet emplacement. Sans lui, `android/app/build.gradle` n'applique pas le
+plugin `google-services` et les notifications push FCM sont simplement désactivées.
+
+Le fichier a été commité dans `2856a5d` (2026-06-29) et poussé sur `origin/main` : sa clé
+est donc dans l'historique public. À traiter dans la console Google Cloud
+(API et services → Identifiants) : restreindre la clé Android au package `com.done.app`
+et au SHA-1 du certificat de signing, ou la régénérer.
+
 ## Signalement de vulnérabilités
 
 Contact : support@done.app
