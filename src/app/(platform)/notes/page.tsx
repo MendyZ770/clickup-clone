@@ -75,22 +75,38 @@ export default function NotesPage() {
     content: "",
     color: "",
   });
+  const activeNoteId = useRef<string | null>(null);
 
   const selectedNote = notes?.find((n) => n.id === selectedId) ?? null;
 
-  // Quand on sélectionne une note
+  // Initialise l'éditeur une seule fois par note, y compris quand la note
+  // arrive après la sélection : une saisie en cours ne doit jamais être écrasée.
   useEffect(() => {
-    if (selectedNote) {
-      setEditTitle(selectedNote.title);
-      setEditContent(selectedNote.content);
-      setEditColor(selectedNote.color);
-      lastSaved.current = {
-        title: selectedNote.title,
-        content: selectedNote.content,
-        color: selectedNote.color,
-      };
-    }
-  }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!selectedNote) return;
+    if (activeNoteId.current === selectedNote.id) return;
+    activeNoteId.current = selectedNote.id;
+    setEditTitle(selectedNote.title);
+    setEditContent(selectedNote.content);
+    setEditColor(selectedNote.color);
+    lastSaved.current = {
+      title: selectedNote.title,
+      content: selectedNote.content,
+      color: selectedNote.color,
+    };
+  }, [selectedNote]);
+
+  const openNote = (note: Note) => {
+    activeNoteId.current = note.id;
+    setEditTitle(note.title);
+    setEditContent(note.content);
+    setEditColor(note.color);
+    lastSaved.current = {
+      title: note.title,
+      content: note.content,
+      color: note.color,
+    };
+    setSelectedId(note.id);
+  };
 
   // Autosave
   const saveNote = useCallback(
@@ -176,24 +192,41 @@ export default function NotesPage() {
   }, [selectedId, editTitle, editContent, editColor, saveNote]);
 
   const handleCreate = async () => {
-    if (!currentWorkspace || creating) return;
+    if (creating) return;
+    if (!currentWorkspace) {
+      toast({
+        title: "Espace de travail indisponible",
+        description: "Patientez pendant le chargement de votre espace.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await flushSave();
     setCreating(true);
     try {
-      const res = await fetch("/api/notes", {
+      const created = await apiJson<Note | { queued: true }>("/api/notes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workspaceId: currentWorkspace.id,
           title: "Sans titre",
           content: "",
         }),
       });
-      if (!res.ok) throw new Error("Erreur");
-      const note: Note = await res.json();
+      if (!("id" in created)) {
+        toast({
+          title: "Note enregistrée hors ligne",
+          description: "Elle sera synchronisée au retour de la connexion.",
+        });
+        return;
+      }
       await mutate();
-      setSelectedId(note.id);
-    } catch {
-      toast({ title: "Erreur", description: "Impossible de créer", variant: "destructive" });
+      openNote(created);
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: apiErrorMessage(error),
+        variant: "destructive",
+      });
     } finally {
       setCreating(false);
     }
@@ -202,14 +235,21 @@ export default function NotesPage() {
   const handleSelectNote = async (note: Note) => {
     if (note.id === selectedId) return;
     await flushSave();
-    setSelectedId(note.id);
+    openNote(note);
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
       await apiJson(`/api/notes/${deleteTarget.id}`, { method: "DELETE" });
-      if (selectedId === deleteTarget.id) setSelectedId(null);
+      if (selectedId === deleteTarget.id) {
+        if (saveTimer.current) {
+          clearTimeout(saveTimer.current);
+          saveTimer.current = null;
+        }
+        activeNoteId.current = null;
+        setSelectedId(null);
+      }
       mutate();
       toast({ title: "Note supprimée" });
     } catch (error) {
@@ -258,7 +298,7 @@ export default function NotesPage() {
               variant="ghost"
               className="h-7 w-7"
               onClick={handleCreate}
-              disabled={creating}
+              disabled={creating || !currentWorkspace}
               aria-label="Nouvelle note"
             >
               {creating ? (
@@ -408,7 +448,8 @@ export default function NotesPage() {
                 }}
                 placeholder="Sans titre"
                 aria-label="Titre de la note"
-                className="w-full bg-transparent text-2xl md:text-3xl font-bold outline-none placeholder:text-muted-foreground/40 mb-4"
+                disabled={creating}
+                className="w-full bg-transparent text-2xl md:text-3xl font-bold outline-none placeholder:text-muted-foreground/40 mb-4 disabled:opacity-60"
                 maxLength={200}
               />
 
@@ -421,7 +462,8 @@ export default function NotesPage() {
                 }}
                 placeholder="Commencez à écrire..."
                 aria-label="Contenu de la note"
-                className="w-full min-h-[60vh] bg-transparent border-none resize-none outline-none text-sm leading-relaxed focus-visible:ring-0 p-0"
+                disabled={creating}
+                className="w-full min-h-[60vh] bg-transparent border-none resize-none outline-none text-sm leading-relaxed focus-visible:ring-0 p-0 disabled:opacity-60"
               />
             </div>
           </div>

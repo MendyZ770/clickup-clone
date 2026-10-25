@@ -148,10 +148,17 @@ export function TaskActionMenu({ taskId, currentListId, locked = false, onAction
   };
 
   const handleSaveAsTemplate = async () => {
-    if (!currentWorkspace) return;
+    if (!currentWorkspace) {
+      toast({
+        title: "Espace de travail indisponible",
+        description: "Patientez pendant le chargement de votre espace.",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       const res = await fetch(`/api/tasks/${taskId}`);
-      if (!res.ok) return;
+      if (!res.ok) throw new Error("Impossible de charger la tâche");
       const task = await res.json();
       await apiJson("/api/templates", {
         method: "POST",

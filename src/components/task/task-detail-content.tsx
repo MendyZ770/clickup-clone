@@ -69,8 +69,18 @@ export function TaskDetailContent({
   }, [task]);
 
   const handleUpdate = async (data: Record<string, unknown>) => {
-    await updateTask(taskId, data as Parameters<typeof updateTask>[1]);
-    mutate();
+    try {
+      await updateTask(taskId, data as Parameters<typeof updateTask>[1]);
+      mutate();
+    } catch (err) {
+      toast({
+        title: "Mise à jour impossible",
+        description:
+          err instanceof Error ? err.message : "La tâche n'a pas pu être modifiée.",
+        variant: "destructive",
+      });
+      mutate();
+    }
   };
 
   const handleTitleBlur = async () => {
@@ -344,12 +354,18 @@ export function TaskDetailContent({
             ) : (
               <button
                 type="button"
+                disabled={task.locked}
                 onClick={() => {
+                  if (task.locked) return;
                   setEditingDesc(true);
                   setTimeout(() => descRef.current?.focus(), 0);
                 }}
-                aria-label="Modifier la description"
-                className="block w-full min-h-[60px] cursor-text rounded-xl border border-transparent p-3 text-left text-[15px] text-muted-foreground hover:bg-muted/20 hover:border-border/30 transition-all whitespace-pre-wrap"
+                aria-label={task.locked ? "Description verrouillée" : "Modifier la description"}
+                className={`block w-full min-h-[60px] rounded-xl border border-transparent p-3 text-left text-[15px] text-muted-foreground transition-all whitespace-pre-wrap ${
+                  task.locked
+                    ? "cursor-default"
+                    : "cursor-text hover:bg-muted/20 hover:border-border/30"
+                }`}
               >
                 {task.description || "Ajouter une description détaillée..."}
               </button>

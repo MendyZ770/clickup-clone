@@ -31,16 +31,16 @@ const fetcher = (url: string) =>
   });
 
 const FIELD_TYPES = [
-  { value: "text", label: "Text" },
-  { value: "number", label: "Number" },
-  { value: "dropdown", label: "Dropdown" },
-  { value: "checkbox", label: "Checkbox" },
+  { value: "text", label: "Texte" },
+  { value: "number", label: "Nombre" },
+  { value: "dropdown", label: "Liste" },
+  { value: "checkbox", label: "Case à cocher" },
   { value: "date", label: "Date" },
   { value: "url", label: "URL" },
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
-  { value: "currency", label: "Currency" },
-  { value: "rating", label: "Rating" },
+  { value: "email", label: "E-mail" },
+  { value: "phone", label: "Téléphone" },
+  { value: "currency", label: "Devise" },
+  { value: "rating", label: "Note" },
 ];
 
 interface CustomField {
@@ -142,13 +142,13 @@ export function CustomFieldManager({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Manage Custom Fields</DialogTitle>
+          <DialogTitle>Gérer les champs personnalisés</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 max-h-[400px] overflow-y-auto">
           {!fields || fields.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              No custom fields yet. Add one below.
+              Aucun champ personnalisé pour le moment. Ajoutez-en un ci-dessous.
             </p>
           ) : (
             fields.map((field) => {
@@ -168,8 +168,8 @@ export function CustomFieldManager({
                     <p className="text-sm font-medium truncate">{field.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {FIELD_TYPES.find((t) => t.value === field.type)?.label ?? field.type}
-                      {field.required && " (required)"}
-                      {parsedOptions.length > 0 && ` - ${parsedOptions.length} options`}
+                      {field.required && " (obligatoire)"}
+                      {parsedOptions.length > 0 && ` - ${parsedOptions.length} option${parsedOptions.length > 1 ? "s" : ""}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -178,7 +178,8 @@ export function CustomFieldManager({
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-foreground"
                       onClick={() => handleToggleRequired(field)}
-                      title={field.required ? "Make optional" : "Make required"}
+                      title={field.required ? "Rendre facultatif" : "Rendre obligatoire"}
+                      aria-label={field.required ? "Rendre facultatif" : "Rendre obligatoire"}
                     >
                       <span className={cn("text-sm font-bold", field.required && "text-red-500")}>
                         *
@@ -190,6 +191,8 @@ export function CustomFieldManager({
                       className="h-8 w-8 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(field.id)}
                       disabled={deleting === field.id}
+                      aria-label={`Supprimer le champ ${field.name}`}
+                      title="Supprimer le champ"
                     >
                       {deleting === field.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -209,18 +212,18 @@ export function CustomFieldManager({
         {showAdd ? (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-sm">Field Name</Label>
+              <Label className="text-sm">Nom du champ</Label>
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g., Priority Score"
+                placeholder="ex. Score de priorité"
                 className="h-8"
                 autoFocus
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm">Field Type</Label>
+              <Label className="text-sm">Type de champ</Label>
               <div className="grid grid-cols-5 gap-1">
                 {FIELD_TYPES.map((t) => {
                   const TypeIcon = getFieldTypeIcon(t.value);
@@ -245,7 +248,7 @@ export function CustomFieldManager({
             {newType === "dropdown" && (
               <div className="space-y-1.5">
                 <Label className="text-sm">
-                  Options (comma-separated)
+                  Options (séparées par des virgules)
                 </Label>
                 <Input
                   value={newOptions}
@@ -265,7 +268,7 @@ export function CustomFieldManager({
                 }
               />
               <label htmlFor="required" className="text-sm">
-                Required field
+                Champ obligatoire
               </label>
             </div>
 
@@ -281,7 +284,7 @@ export function CustomFieldManager({
                 ) : (
                   <Plus className="h-4 w-4 mr-1" />
                 )}
-                Create Field
+                Créer le champ
               </Button>
               <Button
                 variant="ghost"
@@ -295,7 +298,7 @@ export function CustomFieldManager({
                 size="sm"
                 className="h-8"
               >
-                Cancel
+                Annuler
               </Button>
             </div>
           </div>
@@ -307,7 +310,7 @@ export function CustomFieldManager({
             size="sm"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add Custom Field
+            Ajouter un champ personnalisé
           </Button>
         )}
       </DialogContent>

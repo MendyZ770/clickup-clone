@@ -19,7 +19,7 @@ export default function ChatViewPage() {
         <ViewSwitcher basePath={basePath} />
       </div>
       <div className="flex-1 overflow-hidden">
-        <ChatView listId={listId} />
+        <ChatView listId={listId} workspaceId={workspaceId} />
       </div>
     </div>
   );

@@ -53,11 +53,14 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
   }
 
   const method = (init?.method ?? "GET").toUpperCase();
-  const isJsonMutation =
-    MUTATIONS.includes(method) && headers.get("Content-Type")?.includes("application/json");
+  const hasJsonBody = headers.get("Content-Type")?.includes("application/json");
+  // Les DELETE n'ont pas de corps : on les met aussi en file pour que les
+  // suppressions fonctionnent hors-ligne.
+  const isQueuedMutation =
+    (hasJsonBody && MUTATIONS.includes(method)) || method === "DELETE";
 
   // Hors-ligne : les écritures JSON sont mises en file et rejouées à la reconnexion.
-  if (isJsonMutation && typeof navigator !== "undefined" && !navigator.onLine) {
+  if (isQueuedMutation && typeof navigator !== "undefined" && !navigator.onLine) {
     const record: Record<string, string> = {};
     headers.forEach((value, key) => (record[key] = value));
     await enqueue(

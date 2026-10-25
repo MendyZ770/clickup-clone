@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/popover";
 import { useTemplates, type TaskTemplate } from "@/hooks/use-templates";
 import { useCreateTask } from "@/hooks/use-tasks";
+import { toast } from "@/components/ui/use-toast";
+import { apiErrorMessage } from "@/lib/api-client";
 
 interface TemplatePickerProps {
   workspaceId: string | undefined | null;
@@ -35,15 +37,19 @@ export function TemplatePicker({
   const [saving, setSaving] = useState(false);
 
   const handleUseTemplate = async (template: TaskTemplate) => {
-    await createTask({
-      title: template.name,
-      description: template.description ?? undefined,
-      priority: template.priority,
-      listId,
-      statusId,
-    });
-    onCreated?.();
-    setOpen(false);
+    try {
+      await createTask({
+        title: template.name,
+        description: template.description ?? undefined,
+        priority: template.priority,
+        listId,
+        statusId,
+      });
+      onCreated?.();
+      setOpen(false);
+    } catch (error) {
+      toast({ title: "Création impossible", description: apiErrorMessage(error), variant: "destructive" });
+    }
   };
 
   const handleCreateTemplate = async () => {
@@ -59,8 +65,18 @@ export function TemplatePicker({
       setNewDesc("");
       setNewPriority("normal");
       setShowCreate(false);
+    } catch (error) {
+      toast({ title: "Enregistrement impossible", description: apiErrorMessage(error), variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      await deleteTemplate(id);
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -69,12 +85,12 @@ export function TemplatePicker({
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="h-8 text-sm gap-1 text-muted-foreground">
           <BookmarkPlus className="h-4 w-4" />
-          Templates
+          Modèles
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="start">
         <div className="p-3 border-b">
-          <p className="text-sm font-medium">Templates de tâches</p>
+          <p className="text-sm font-medium">Modèles de tâches</p>
           <p className="text-xs text-muted-foreground">
             Créez des tâches à partir de modèles
           </p>
@@ -84,7 +100,7 @@ export function TemplatePicker({
           {templates.length === 0 && !showCreate && (
             <div className="px-3 py-6 text-center">
               <BookmarkPlus className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Aucun template</p>
+              <p className="text-sm text-muted-foreground">Aucun modèle</p>
             </div>
           )}
           {templates.map((t) => (
@@ -104,7 +120,9 @@ export function TemplatePicker({
                 )}
               </button>
               <button
-                onClick={() => deleteTemplate(t.id)}
+                onClick={() => handleDeleteTemplate(t.id)}
+                aria-label={`Supprimer le modèle ${t.name}`}
+                title="Supprimer"
                 className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition-all shrink-0"
               >
                 <Trash2 className="h-4 w-4" />
@@ -117,7 +135,7 @@ export function TemplatePicker({
           {showCreate ? (
             <div className="space-y-2">
               <Input
-                placeholder="Nom du template"
+                placeholder="Nom du modèle"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 className="h-8 text-sm"
@@ -161,7 +179,7 @@ export function TemplatePicker({
               onClick={() => setShowCreate(true)}
             >
               <Plus className="h-4 w-4" />
-              Nouveau template
+              Nouveau modèle
             </Button>
           )}
         </div>

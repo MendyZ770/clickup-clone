@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -51,42 +51,63 @@ export function LoginForm() {
 
       // ── Mode Web standard ──
       if (!native) {
-        const result = await signIn("credentials", {
-          email: cleanEmail,
-          password,
-          redirect: false,
-        });
+        const attemptSignIn = async () => {
+          const result = await signIn("credentials", {
+            email: cleanEmail,
+            password,
+            redirect: false,
+          });
+          if (result?.error) return { ok: false, retryable: false };
+          // signIn peut répondre sans erreur tout en ayant échoué (jeton CSRF
+          // périmé par une réponse /session concurrente) : on vérifie la session.
+          const session = await getSession();
+          return { ok: !!session?.user, retryable: !session?.user };
+        };
 
-        if (!result?.error) {
-          try {
-            const meRes = await fetch("/api/me");
-            if (meRes.ok) {
-              const me = await meRes.json();
-              addAccount({
-                id: me.id ?? cleanEmail,
-                email: me.email ?? cleanEmail,
-                name: me.name ?? null,
-                image: me.image ?? null,
-              });
-            }
-          } catch {
-            addAccount({
-              id: cleanEmail,
-              email: cleanEmail,
-              name: null,
-              image: null,
-            });
-          }
-          router.push("/dashboard");
-          router.refresh();
+        let outcome = await attemptSignIn();
+        if (!outcome.ok && outcome.retryable) {
+          // Un second essai récupère un jeton CSRF frais.
+          outcome = await attemptSignIn();
+        }
+
+        if (!outcome.ok) {
+          toast(
+            outcome.retryable
+              ? {
+                  title: "Connexion impossible",
+                  description: "La session n'a pas pu être créée. Réessayez.",
+                  variant: "destructive",
+                }
+              : {
+                  title: "Connexion échouée",
+                  description: "Email ou mot de passe incorrect.",
+                  variant: "destructive",
+                }
+          );
           return;
         }
 
-        toast({
-          title: "Connexion échouée",
-          description: "Email ou mot de passe incorrect.",
-          variant: "destructive",
-        });
+        try {
+          const meRes = await fetch("/api/me");
+          if (meRes.ok) {
+            const me = await meRes.json();
+            addAccount({
+              id: me.id ?? cleanEmail,
+              email: me.email ?? cleanEmail,
+              name: me.name ?? null,
+              image: me.image ?? null,
+            });
+          }
+        } catch {
+          addAccount({
+            id: cleanEmail,
+            email: cleanEmail,
+            name: null,
+            image: null,
+          });
+        }
+        router.push("/dashboard");
+        router.refresh();
         return;
       }
 

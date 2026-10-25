@@ -12,6 +12,8 @@ import {
 import { TrendingUp, TrendingDown, ArrowRightLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { formatCurrency } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
+import { toast } from "@/components/ui/use-toast";
 
 import type { FinanceAccountSerialized, FinanceTransactionWithCategory } from "@/hooks/use-finance";
 
@@ -46,14 +48,11 @@ export function FinanceTransactionList({ transactions, accounts, onMutate, onAdd
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer cette transaction ?")) return;
     try {
-      const res = await fetch(`/api/finance/transactions/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error || "Failed to delete transaction");
-      }
+      await apiJson(`/api/finance/transactions/${id}`, { method: "DELETE" });
+      toast({ title: "Transaction supprimée" });
       onMutate?.();
     } catch (error) {
-      console.error(error);
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -175,19 +174,14 @@ function EditTransactionDialog({ transaction, open, onOpenChange, onMutate }: { 
     setError(null);
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/finance/transactions/${transaction.id}`, {
+      await apiJson(`/api/finance/transactions/${transaction.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: parseFloat(amount), description: description || null, date }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error || "Failed to update transaction");
-      }
       onMutate?.();
       onOpenChange(false);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Impossible de modifier la transaction");
+      setError(apiErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

@@ -26,6 +26,28 @@ function upstashFor({ limit, windowMs }: Window): Ratelimit {
   return bucket;
 }
 
+// Un Upstash injoignable ne doit pas bloquer la requête : on borne l'attente
+// puis on bascule sur la fenêtre mémoire pendant 30 s avant de réessayer.
+const UPSTASH_TIMEOUT_MS = 1_500;
+const UPSTASH_RETRY_COOLDOWN_MS = 30_000;
+let upstashRetryAt = 0;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Upstash timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 // Fallback used when Redis is not configured: per-process sliding window.
 // Not shared across serverless instances, so it stays deliberately conservative.
 type MemoryBucket = { hits: number[] }
@@ -83,12 +105,16 @@ export async function checkRateLimit(
   identifier: string,
   { limit = 5, windowMs = 60_000 }: Partial<Window> = {}
 ): Promise<RateLimitResult> {
-  if (redis) {
+  if (redis && Date.now() >= upstashRetryAt) {
     try {
-      return await upstashFor({ limit, windowMs }).limit(identifier);
+      return await withTimeout(
+        upstashFor({ limit, windowMs }).limit(identifier),
+        UPSTASH_TIMEOUT_MS
+      );
     } catch {
       // Upstash injoignable : on retombe sur la fenêtre locale plutôt que de
       // faire échouer la connexion pour une panne de cache externe.
+      upstashRetryAt = Date.now() + UPSTASH_RETRY_COOLDOWN_MS;
       console.warn("[RATE_LIMIT] Upstash unreachable, using in-memory window");
     }
   }

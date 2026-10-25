@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
+import { toast } from "@/components/ui/use-toast";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -52,14 +54,17 @@ export function useCustomFieldsSidebar(taskId: string, workspaceId: string) {
   const handleChange = useCallback(
     async (fieldId: string, value: string | null) => {
       try {
-        await fetch(`/api/tasks/${taskId}/custom-fields`, {
+        await apiJson(`/api/tasks/${taskId}/custom-fields`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ fieldId, value }),
         });
         mutateValues();
       } catch (error) {
-        console.error("Failed to update custom field:", error);
+        toast({
+          title: "Enregistrement impossible",
+          description: apiErrorMessage(error),
+          variant: "destructive",
+        });
       }
     },
     [taskId, mutateValues]

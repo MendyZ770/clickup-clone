@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/components/ui/use-toast";
+import { apiErrorMessage } from "@/lib/api-client";
 
 interface CreateReminderDialogProps {
   open: boolean;
@@ -40,6 +42,7 @@ export function CreateReminderDialog({
   workspaceId,
   tasks,
 }: CreateReminderDialogProps) {
+  const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -65,6 +68,15 @@ export function CreateReminderDialog({
     const remindAt = new Date(date);
     remindAt.setHours(hours, minutes, 0, 0);
 
+    if (remindAt.getTime() < Date.now()) {
+      toast({
+        title: "Date invalide",
+        description: "Choisissez une date et une heure futures.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit({
@@ -77,7 +89,11 @@ export function CreateReminderDialog({
       resetForm();
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to create reminder:", error);
+      toast({
+        title: "Création impossible",
+        description: apiErrorMessage(error),
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

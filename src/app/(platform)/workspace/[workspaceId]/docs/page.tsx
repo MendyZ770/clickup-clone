@@ -51,13 +51,22 @@ export default function DocsListPage() {
   const handleCreateDoc = async () => {
     setIsCreating(true);
     try {
-      const newDoc = await apiJson<{ id: string }>("/api/docs", {
+      const newDoc = await apiJson<{ id?: string }>("/api/docs", {
         method: "POST",
         body: JSON.stringify({
           title: "Document sans titre",
           workspaceId: params.workspaceId,
         }),
       });
+
+      if (!newDoc.id) {
+        toast({
+          title: "Document enregistré hors ligne",
+          description: "Il sera synchronisé au retour de la connexion.",
+        });
+        setIsCreating(false);
+        return;
+      }
 
       router.push(`/workspace/${params.workspaceId}/docs/${newDoc.id}`);
     } catch (error) {

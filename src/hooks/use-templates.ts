@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { apiJson, ApiError } from "@/lib/api-client";
 
 const fetcher = (url: string) =>
   fetch(url).then((r) => {
@@ -34,17 +35,16 @@ export function useTemplates(workspaceId: string | undefined | null) {
     checklists?: unknown;
     tags?: unknown;
   }) => {
-    if (!workspaceId) return;
-    await fetch("/api/templates", {
+    if (!workspaceId) throw new ApiError("Espace de travail indisponible.", 0);
+    await apiJson("/api/templates", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...template, workspaceId }),
     });
     mutate();
   };
 
   const deleteTemplate = async (id: string) => {
-    await fetch(`/api/templates?id=${id}`, { method: "DELETE" });
+    await apiJson(`/api/templates?id=${id}`, { method: "DELETE" });
     mutate();
   };
 

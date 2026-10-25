@@ -80,7 +80,7 @@ export function CustomFieldsSection({
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Custom Fields</h3>
+          <h3 className="text-sm font-semibold">Champs personnalisés</h3>
           <Button
             variant="ghost"
             size="sm"
@@ -88,11 +88,11 @@ export function CustomFieldsSection({
             onClick={() => setManagerOpen(true)}
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add Field
+            Ajouter un champ
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          No custom fields defined for this workspace.
+          Aucun champ personnalisé défini pour cet espace de travail.
         </p>
         <CustomFieldManager
           open={managerOpen}
@@ -115,7 +115,7 @@ export function CustomFieldsSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Custom Fields</h3>
+        <h3 className="text-sm font-semibold">Champs personnalisés</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -123,7 +123,7 @@ export function CustomFieldsSection({
           onClick={() => setManagerOpen(true)}
         >
           <Settings2 className="h-4 w-4 mr-1" />
-          Manage
+          Gérer
         </Button>
       </div>
 

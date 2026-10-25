@@ -68,7 +68,15 @@ export default function GoalsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Goal | null>(null);
 
   const handleCreate = async () => {
-    if (!newName.trim() || !currentWorkspace) return;
+    if (!newName.trim()) return;
+    if (!currentWorkspace) {
+      toast({
+        title: "Espace de travail indisponible",
+        description: "Patientez pendant le chargement de votre espace.",
+        variant: "destructive",
+      });
+      return;
+    }
     setCreating(true);
     try {
       await apiJson("/api/goals", {
@@ -88,81 +96,58 @@ export default function GoalsPage() {
 
   const handleAddTarget = async (goalId: string) => {
     if (!targetName.trim()) return;
-    const res = await fetch(`/api/goals/${goalId}/targets`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: targetName, targetValue: parseFloat(targetValue) || 100 }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      toast({
-        title: "Erreur",
-        description: data.error ?? "Impossible d'ajouter la cible",
-        variant: "destructive",
+    try {
+      await apiJson(`/api/goals/${goalId}/targets`, {
+        method: "POST",
+        body: JSON.stringify({ name: targetName, targetValue: parseFloat(targetValue) || 100 }),
       });
-      return;
+      setTargetName("");
+      setTargetValue("100");
+      mutate();
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     }
-    setTargetName("");
-    setTargetValue("100");
-    mutate();
   };
 
   const handleUpdateTarget = async (goalId: string, targetId: string, currentValue: number) => {
-    const res = await fetch(`/api/goals/${goalId}/targets`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: targetId, currentValue }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      toast({
-        title: "Erreur",
-        description: data.error ?? "Impossible de mettre à jour la cible",
-        variant: "destructive",
+    try {
+      await apiJson(`/api/goals/${goalId}/targets`, {
+        method: "PATCH",
+        body: JSON.stringify({ id: targetId, currentValue }),
       });
-      return;
+      mutate();
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     }
-    mutate();
   };
 
   const handleDeleteGoal = async (goalId: string) => {
-    const res = await fetch(`/api/goals/${goalId}`, { method: "DELETE" });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      toast({
-        title: "Suppression impossible",
-        description: data.error ?? "Une erreur est survenue",
-        variant: "destructive",
-      });
-      return;
+    try {
+      await apiJson(`/api/goals/${goalId}`, { method: "DELETE" });
+      toast({ title: "Objectif supprimé" });
+      setDeleteTarget(null);
+      mutate();
+    } catch (error) {
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
-    toast({ title: "Objectif supprimé" });
-    setDeleteTarget(null);
-    mutate();
   };
 
   const handleToggleLock = async (goalId: string, currentlyLocked: boolean) => {
-    const res = await fetch(`/api/goals/${goalId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ locked: !currentlyLocked }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      toast({
-        title: "Erreur",
-        description: data.error ?? "Impossible de changer l'état",
-        variant: "destructive",
+    try {
+      await apiJson(`/api/goals/${goalId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ locked: !currentlyLocked }),
       });
-      return;
+      toast({
+        title: currentlyLocked ? "Objectif déverrouillé" : "Objectif verrouillé",
+        description: currentlyLocked
+          ? "Vous pouvez à nouveau le modifier."
+          : "Protection activée contre modifications et suppression.",
+      });
+      mutate();
+    } catch (error) {
+      toast({ title: "Erreur", description: apiErrorMessage(error), variant: "destructive" });
     }
-    toast({
-      title: currentlyLocked ? "Objectif déverrouillé" : "Objectif verrouillé",
-      description: currentlyLocked
-        ? "Vous pouvez à nouveau le modifier."
-        : "Protection activée contre modifications et suppression.",
-    });
-    mutate();
   };
 
   const getProgress = (goal: Goal) => {
@@ -193,7 +178,7 @@ export default function GoalsPage() {
           actions={
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="gap-1.5">
+                <Button size="sm" className="gap-1.5" disabled={!currentWorkspace}>
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Nouvel objectif</span>
                   <span className="sm:hidden">Nouveau</span>
@@ -206,7 +191,7 @@ export default function GoalsPage() {
                 <div className="space-y-3 pt-2">
                   <Input aria-label="Nom de l'objectif" placeholder="Nom de l'objectif" value={newName} onChange={(e) => setNewName(e.target.value)} />
                   <Input aria-label="Description de l'objectif (optionnel)" placeholder="Description (optionnel)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
-                  <Button onClick={handleCreate} disabled={creating || !newName.trim()} className="w-full">
+                  <Button onClick={handleCreate} disabled={creating || !newName.trim() || !currentWorkspace} className="w-full">
                     {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     Créer
                   </Button>
@@ -231,7 +216,17 @@ export default function GoalsPage() {
             title="Aucun objectif"
             description="Créez un objectif pour suivre vos KPIs et la progression de vos équipes."
             actionLabel="Créer un objectif"
-            onAction={() => setDialogOpen(true)}
+            onAction={() => {
+              if (!currentWorkspace) {
+                toast({
+                  title: "Espace de travail indisponible",
+                  description: "Patientez pendant le chargement de votre espace.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              setDialogOpen(true);
+            }}
           />
         )}
 

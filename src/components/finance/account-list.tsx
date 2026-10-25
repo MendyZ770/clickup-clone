@@ -12,6 +12,8 @@ import {
 import { Banknote, Bitcoin, PiggyBank, Landmark, CreditCard, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/components/ui/animated-container";
 import { formatCurrency } from "@/lib/utils";
+import { apiJson, apiErrorMessage } from "@/lib/api-client";
+import { toast } from "@/components/ui/use-toast";
 import type { FinanceAccountSerialized } from "@/hooks/use-finance";
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -55,14 +57,11 @@ export function FinanceAccountList({ accounts, onMutate }: { accounts: FinanceAc
     if (!confirm("Supprimer ce compte et toutes ses transactions ?")) return;
     try {
       // force=true confirme la suppression de l'historique après confirmation utilisateur
-      const res = await fetch(`/api/finance/accounts/${id}?force=true`, { method: "DELETE" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error || "Failed to delete account");
-      }
+      await apiJson(`/api/finance/accounts/${id}?force=true`, { method: "DELETE" });
+      toast({ title: "Compte supprimé" });
       onMutate?.();
     } catch (error) {
-      console.error(error);
+      toast({ title: "Suppression impossible", description: apiErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -169,25 +168,22 @@ function EditAccountDialog({ account, open, onOpenChange, onMutate }: { account:
   const [balance, setBalance] = useState(String(account.balance));
   const [currency, setCurrency] = useState(account.currency || "EUR");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
+    setError(null);
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/finance/accounts/${account.id}`, {
+      await apiJson(`/api/finance/accounts/${account.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, bankName: bankName || undefined, balance: parseFloat(balance), currency }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        throw new Error(err.error || "Failed to update account");
-      }
       onMutate?.();
       onOpenChange(false);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(apiErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -220,6 +216,7 @@ function EditAccountDialog({ account, open, onOpenChange, onMutate }: { account:
             <label className="text-sm font-medium">Solde initial</label>
             <input type="number" step="0.01" value={balance} onChange={(e) => setBalance(e.target.value)} className="w-full h-10 rounded-md border bg-transparent px-3 text-sm" />
           </div>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <div className="flex gap-2 justify-end pt-2">
             <button type="button" onClick={() => onOpenChange(false)} className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition-colors">Annuler</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50">Enregistrer</button>

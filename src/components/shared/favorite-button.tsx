@@ -3,6 +3,8 @@
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/use-favorites";
+import { apiErrorMessage } from "@/lib/api-client";
+import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
 interface FavoriteButtonProps {
@@ -24,9 +26,19 @@ export function FavoriteButton({ type, targetId, workspaceId, size = "sm" }: Fav
         "shrink-0",
         size === "sm" ? "h-8 w-8" : "h-9 w-9"
       )}
-      onClick={(e) => {
+      aria-label={active ? "Retirer des favoris" : "Ajouter aux favoris"}
+      aria-pressed={active}
+      onClick={async (e) => {
         e.stopPropagation();
-        toggleFavorite(type, targetId);
+        try {
+          await toggleFavorite(type, targetId);
+        } catch (error) {
+          toast({
+            title: "Favoris indisponibles",
+            description: apiErrorMessage(error),
+            variant: "destructive",
+          });
+        }
       }}
     >
       <Star

@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import { apiJson } from "@/lib/api-client";
 
 export interface FavoriteItem {
   id: string;
@@ -41,18 +42,15 @@ export function useFavorites(workspaceId: string | null | undefined) {
 
     if (existing) {
       // Remove favorite
-      const res = await fetch(`/api/favorites?id=${existing.id}`, {
+      await apiJson(`/api/favorites?id=${existing.id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to remove favorite");
     } else {
       // Add favorite
-      const res = await fetch("/api/favorites", {
+      await apiJson("/api/favorites", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, targetId, workspaceId }),
       });
-      if (!res.ok) throw new Error("Failed to add favorite");
     }
 
     mutate();

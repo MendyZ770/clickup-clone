@@ -95,7 +95,7 @@ export function TagSelector({
         "#EC4899",
       ];
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const tag = await apiJson<{ id: string }>("/api/tags", {
+      const tag = await apiJson<{ id?: string }>("/api/tags", {
         method: "POST",
         body: JSON.stringify({
           name: newTagName.trim(),
@@ -103,6 +103,14 @@ export function TagSelector({
           workspaceId,
         }),
       });
+      if (!tag.id) {
+        toast({
+          title: "Tag enregistré hors ligne",
+          description: "Il sera synchronisé au retour de la connexion.",
+        });
+        setNewTagName("");
+        return;
+      }
       await handleAddTag(tag.id);
       mutateTags();
       setNewTagName("");
